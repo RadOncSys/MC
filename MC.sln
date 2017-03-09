@@ -1,0 +1,95 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MC", "MC", "{FCF84258-49CC-4956-84D1-FB725ADAF56B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Geometry", "MC\Geometry\Geometry.vcxproj", "{8B3C5D17-2B89-4C55-9754-BD143465D571}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MC", "MC\MC\MC.vcxproj", "{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MC.Tests", "MC\MC.Tests\MC.Tests.vcxproj", "{FB149A49-AC54-46A1-8500-4376BEAC6869}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Applications", "{DB18164A-B89D-40CB-B800-BBA716B94C7D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MCSimulator", "Applications\MCSimulator\MCSimulator.vcxproj", "{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{D377A3E0-4D7E-47DD-996C-5A6F928D821B}"
+	ProjectSection(SolutionItems) = preProject
+		Data\AcceleratorSimulator.pegs4dat = Data\AcceleratorSimulator.pegs4dat
+		Data\vrmlview.zip = Data\vrmlview.zip
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "XML", "XML", "{59B0D4E3-65AC-425B-B244-497336D60143}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Parameters", "Parameters", "{24015754-EBEF-4C17-8258-5D1AE514713F}"
+	ProjectSection(SolutionItems) = preProject
+		Data\Parameters\S_C60_sphere.xml = Data\Parameters\S_C60_sphere.xml
+		Data\Parameters\S_CK_6X.xml = Data\Parameters\S_CK_6X.xml
+		Data\Parameters\S_Ross.xml = Data\Parameters\S_Ross.xml
+		Data\Parameters\S_Target.xml = Data\Parameters\S_Target.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Geometries", "Geometries", "{EFF1B1ED-9964-41E1-BE5D-3A2A7622D96F}"
+	ProjectSection(SolutionItems) = preProject
+		Data\Geometries\G_C60_sphere.xml = Data\Geometries\G_C60_sphere.xml
+		Data\Geometries\G_CyberKnife.xml = Data\Geometries\G_CyberKnife.xml
+		Data\Geometries\G_Ross.xml = Data\Geometries\G_Ross.xml
+		Data\Geometries\G_Target.xml = Data\Geometries\G_Target.xml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Debug|x64.ActiveCfg = Debug|x64
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Debug|x64.Build.0 = Debug|x64
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Debug|x86.ActiveCfg = Debug|Win32
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Debug|x86.Build.0 = Debug|Win32
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Release|x64.ActiveCfg = Release|x64
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Release|x64.Build.0 = Release|x64
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Release|x86.ActiveCfg = Release|Win32
+		{8B3C5D17-2B89-4C55-9754-BD143465D571}.Release|x86.Build.0 = Release|Win32
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Debug|x64.ActiveCfg = Debug|x64
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Debug|x64.Build.0 = Debug|x64
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Debug|x86.ActiveCfg = Debug|Win32
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Debug|x86.Build.0 = Debug|Win32
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Release|x64.ActiveCfg = Release|x64
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Release|x64.Build.0 = Release|x64
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Release|x86.ActiveCfg = Release|Win32
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}.Release|x86.Build.0 = Release|Win32
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Debug|x64.ActiveCfg = Debug|x64
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Debug|x64.Build.0 = Debug|x64
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Debug|x86.ActiveCfg = Debug|Win32
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Debug|x86.Build.0 = Debug|Win32
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Release|x64.ActiveCfg = Release|x64
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Release|x64.Build.0 = Release|x64
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Release|x86.ActiveCfg = Release|Win32
+		{FB149A49-AC54-46A1-8500-4376BEAC6869}.Release|x86.Build.0 = Release|Win32
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Debug|x64.ActiveCfg = Debug|x64
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Debug|x64.Build.0 = Debug|x64
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Debug|x86.ActiveCfg = Debug|Win32
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Debug|x86.Build.0 = Debug|Win32
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Release|x64.ActiveCfg = Release|x64
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Release|x64.Build.0 = Release|x64
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Release|x86.ActiveCfg = Release|Win32
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8B3C5D17-2B89-4C55-9754-BD143465D571} = {FCF84258-49CC-4956-84D1-FB725ADAF56B}
+		{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E} = {FCF84258-49CC-4956-84D1-FB725ADAF56B}
+		{FB149A49-AC54-46A1-8500-4376BEAC6869} = {FCF84258-49CC-4956-84D1-FB725ADAF56B}
+		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93} = {DB18164A-B89D-40CB-B800-BBA716B94C7D}
+		{59B0D4E3-65AC-425B-B244-497336D60143} = {D377A3E0-4D7E-47DD-996C-5A6F928D821B}
+		{24015754-EBEF-4C17-8258-5D1AE514713F} = {59B0D4E3-65AC-425B-B244-497336D60143}
+		{EFF1B1ED-9964-41E1-BE5D-3A2A7622D96F} = {59B0D4E3-65AC-425B-B244-497336D60143}
+	EndGlobalSection
+EndGlobal

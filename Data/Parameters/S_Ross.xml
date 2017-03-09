@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Code verification against Ross experimental data for electron scattering on thin foil:
+
+Ross, C. K.; McEwen, M. R.; McDonald, A. F.; Cojocaru, C. D.; Faddegon, B. A. (2008): 
+Measurement of multiple scattering of 13 and 20 MeV electrons by thin foils. 
+In Med. Phys. 35 (9), p. 4121. DOI: 10.1118/1.2968095
+
+Simulation parameters reproduce conditions from the paper:
+
+Faddegon, Bruce A.; Kawrakow, Iwan; Kubyshin, Yuri; Perl, Joseph; Sempau, Josep; Urban, Laszlo (2009): 
+The accuracy of EGSnrc, Geant4 and PENELOPE Monte Carlo systems for the simulation of electron scatter in external beam radiotherapy. 
+In Phys. Med. Biol. 54 (20), pp. 6151–6163. DOI: 10.1088/0031-9155/54/20/008.
+-->
+
+<input>
+  <simulation nhistories="10000000" nbanches="10">
+  </simulation>
+
+  <options>
+    <vrmlfile>Ross.wrl</vrmlfile>
+    <statfile>ross.dat</statfile>
+    <transCutoff_elec unit="MeV" ecat ="0.2"/>
+  </options>
+
+  <source name="Electron beam" module="1_Exit_window" trackparticles="false">
+    <radiation type="electron" energy="13.0" />
+    <shape direction="mono" shapetype="simple"/>
+    <position uint="cm" x="0" y="0" z="0" />
+    <direction x="0" y="0" z="1" />
+  </source>
+
+  <!--<source name="Electron beam" module="1_Exit_window" trackparticles="false">
+    <radiation type="electron" energy="13.0" />
+    <shape direction="conical_sigmar" size="0.1" angle="0.2"/>
+    <position uint="cm" x="0" y="0" z="0" />
+    <direction x="0" y="0" z="1" />
+  </source>-->
+
+  <!--Scoring for fluency-->
+  <!--<score type="e_fluence" module="13_Scoring_plane">
+    <size unit="cm" nr="40" rmax="20.0" pt="electron" />
+  </score>-->
+
+  <!--Scoring for dose-->
+  <score type="rz_conical" module="13_Scoring_plane">
+    <size unit="cm" nr="40" nz="1" rmax="20.0" zmin="0.0" zmax="0.5" ziso="0.25" sad="115.55"/>
+  </score>
+
+</input>

@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<accelerator>
+  <!--
+  Вольфрамовая мишень
+  -->
+  <module type="cylinder" name="Target" medium="W700ICRU" density="1">
+    <Color r="0" g="0.5" b="1" t="0.2" />
+    <position unit="cm" x="0" y="0" z="-80.14" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="0.95" height="0.14"/>
+  </module>
+
+  <!--
+  Splitter - внимательно, может быть не всегда нужен.
+  Здесь его роль увеличить радиационный выход из мишени с намерением детализировать 
+  транспорт в системе формирования, особенно в первичном коллиматоре.
+  -->
+  <module type="axial_splitter" name="Splitter" medium="W700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-80" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <nsplit particle="photon" value="100"/>
+  </module>
+
+  <!--Первая часть алюминиевой заглушки-->
+  <module type="cylinder" name="AL1" medium="AL700ICRU" density="1">
+    <Color r="1" g="1" b="1" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-78.6" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="0.635" height="0.1"/>
+  </module>
+
+  <!--Слой первичного коллиматора с алюминиевым фильтром-->
+  <module type="group" name="PRI_1">
+    <position unit="cm" x="0" y="0" z="-78.5" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <module type="ring" name="PRI_1W" medium="W700ICRU" density="1">
+      <Color r="0" g="0.5" b="0" t="0.5" />
+      <position unit="cm" x="0" y="0" z="0" />
+      <normal x="0" y="0" z="1" />
+      <xaxis x="1" y="0" z="0" />
+      <size unit="cm" r0="0.24" r1="8.25" height="3.1"/>
+    </module>
+    <module type="cylinder" name="PRI_1A" medium="AL700ICRU" density="1">
+      <Color r="1" g="1" b="1" t="0.5" />
+      <position unit="cm" x="0" y="0" z="0" />
+      <normal x="0" y="0" z="1" />
+      <xaxis x="1" y="0" z="0" />
+      <size unit="cm" radius="0.24" height="0.85"/>
+    </module>
+  </module>
+
+  <!--Коническая часть первичного коллиматора-->
+  <module type="conicalhole" name="PRI_3" medium="W700ICRU" density="1">
+    <Color r="0" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-68.6" />
+    <normal x="0" y="0" z="-1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="0.53" r1="8.25" height="6.8" focus="12.4"/>
+  </module>
+
+  <!--Свинцовый фильтр после первичного коллиматора-->
+  <module type="cylinder" name="Filter" medium="PB700ICRU" density="1">
+    <Color r="0.2" g="0.2" b="1.0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-68.6" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="5.0" height="0.4"/>
+  </module>
+
+  <!--Первая цилиндрическая труба-->
+  <module type="ring" name="Shield_1" medium="STEEL700ICRU" density="1">
+    <Color r=".5" g="0.5" b="0.5" t="0.8" />
+    <position unit="cm" x="0" y="0" z="-68.2" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="1.5" r1="2.5" height="7.0"/>
+  </module>
+
+  <!--Вторичный свинцовый коллиматор-->
+  <module type="conicalhole" name="Secondary collimator" medium="W700ICRU" density="1">
+    <Color r="0" g="1.0" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-59" />
+    <normal x="0" y="0" z="-1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="1.2" r1="7.0" height="2.2" focus="20"/>
+  </module>
+
+  <!--Вторая цилиндрическая труба-->
+  <module type="ring" name="Shield_2" medium="STEEL700ICRU" density="1">
+    <Color r=".5" g="0.5" b="0.5" t="0.8" />
+    <position unit="cm" x="0" y="0" z="-59.0" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="3.0" r1="4.0" height="10.0"/>
+  </module>
+
+  <!--
+  <module type="planefilter" name="PHSP detector" medium="AIR700ICRU" density="1">
+    <Color r="0" g="0.5" b="0.5" t="0.8" />
+    <position unit="cm" x="0" y="0" z="-49" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+  </module>
+  -->
+
+  <!--Размножитель частиц, родившихся в системе и достигших основного (индивидуального коллиматора)-->
+  <!--<module type="axial_splitter" name="Splitter" medium="W700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-49" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <nsplit particle="photon" value="100"/>
+  </module>-->
+
+  <!--
+  Основной коллиматор
+  -->
+  <module type="conicalhole" name="Collimator" medium="W700ICRU" density="1">
+    <Color r="0" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-40" />
+    <normal x="0" y="0" z="-1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="1.5" r1="5.0" height="9.0" focus="45.5"/>
+  </module>
+
+  <!--Размножитель частиц, родившихся в системе и достигших основного (индивидуального коллиматора)-->
+  <module type="axial_splitter" name="Splitter" medium="W700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-40" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <nsplit particle="photon" value="100"/>
+  </module>
+
+  <!--
+  Водяной фантом
+  -->
+  <module type="slab" name="Phantom" medium="H2O700ICRU" density="1">
+    <Color r="0" g="1.0" b="0" t="0.8" />
+    <position unit="cm" x="0" y="0" z="-10" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" height="40.0"/>
+  </module>
+
+</accelerator>

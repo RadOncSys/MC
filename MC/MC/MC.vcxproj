@@ -1,0 +1,305 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MC</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;MC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;MC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="mcDefs.h" />
+    <ClInclude Include="mcElement.h" />
+    <ClInclude Include="mcETransportSphere.h" />
+    <ClInclude Include="mcETransportTrap.h" />
+    <ClInclude Include="mcGeometry.h" />
+    <ClInclude Include="mcGeomRectSide.h" />
+    <ClInclude Include="mcGeomShape.h" />
+    <ClInclude Include="mcGeomSide.h" />
+    <ClInclude Include="mcGeomTriangleSide.h" />
+    <ClInclude Include="mcGeomWedgeTriangle.h" />
+    <ClInclude Include="mcHistogram.h" />
+    <ClInclude Include="mcHistogramSampler.h" />
+    <ClInclude Include="mcMedia.h" />
+    <ClInclude Include="mcMedium.h" />
+    <ClInclude Include="mcMediumXE.h" />
+    <ClInclude Include="mcObj.h" />
+    <ClInclude Include="mcParticle.h" />
+    <ClInclude Include="mcParticleStack.h" />
+    <ClInclude Include="mcPhaseSpaceIO.h" />
+    <ClInclude Include="mcPhysics.h" />
+    <ClInclude Include="mcPhysicsCharged.h" />
+    <ClInclude Include="mcPhysicsCommon.h" />
+    <ClInclude Include="mcPhysicsElectron.h" />
+    <ClInclude Include="mcPhysicsPhoton.h" />
+    <ClInclude Include="mcPhysicsPositron.h" />
+    <ClInclude Include="mcPTGrid3D.h" />
+    <ClInclude Include="mcPTLasVegas.h" />
+    <ClInclude Include="mcPTQc3.h" />
+    <ClInclude Include="mcRegionReference.h" />
+    <ClInclude Include="mcRng.h" />
+    <ClInclude Include="mcSamplers.h" />
+    <ClInclude Include="mcScore.h" />
+    <ClInclude Include="mcScoreAcceleratedBeam.h" />
+    <ClInclude Include="mcScoreBeamFluence.h" />
+    <ClInclude Include="mcScoreBeamFluence2.h" />
+    <ClInclude Include="mcScoreBeamFluenceSubsource.h" />
+    <ClInclude Include="mcScoreBeamFluenceXY.h" />
+    <ClInclude Include="mcScoreConicalRZ.h" />
+    <ClInclude Include="mcScoreEnergyFluence.h" />
+    <ClInclude Include="mcScoreEnergySpectrum.h" />
+    <ClInclude Include="mcScoreMatrix2D.h" />
+    <ClInclude Include="mcScoreMatrixRZ.h" />
+    <ClInclude Include="mcScoreMatrixXY.h" />
+    <ClInclude Include="mcScoreParticleContainer.h" />
+    <ClInclude Include="mcScorePHSP.h" />
+    <ClInclude Include="mcScoreSphereFluence.h" />
+    <ClInclude Include="mcScoreTrack.h" />
+    <ClInclude Include="mcSource.h" />
+    <ClInclude Include="mcSourceAccelerator.h" />
+    <ClInclude Include="mcSourceCylindricalC60.h" />
+    <ClInclude Include="mcSourceDistributed.h" />
+    <ClInclude Include="mcSourceLEBA.h" />
+    <ClInclude Include="mcSourceSimpleMono.h" />
+    <ClInclude Include="mcSourceSimpleParallel.h" />
+    <ClInclude Include="mcSourceSphereC60.h" />
+    <ClInclude Include="mcSourceXraySigmaR.h" />
+    <ClInclude Include="mcThread.h" />
+    <ClInclude Include="mcTransport.h" />
+    <ClInclude Include="mcTransportAxialSymmetricSplitter.h" />
+    <ClInclude Include="mcTransportCone.h" />
+    <ClInclude Include="mcTransportConicalHole.h" />
+    <ClInclude Include="mcTransportConicalRing.h" />
+    <ClInclude Include="mcTransportCylinder.h" />
+    <ClInclude Include="mcTransportCylinderStack.h" />
+    <ClInclude Include="mcTransportPlaneFilter.h" />
+    <ClInclude Include="mcTransportPolygon.h" />
+    <ClInclude Include="mcTransportPrimaryCollimator.h" />
+    <ClInclude Include="mcTransportPrism.h" />
+    <ClInclude Include="mcTransportRectanglePolygonSideHole.h" />
+    <ClInclude Include="mcTransportRectangleRing.h" />
+    <ClInclude Include="mcTransportRectangleTrap.h" />
+    <ClInclude Include="mcTransportRing.h" />
+    <ClInclude Include="mcTransportSimpleSplitter.h" />
+    <ClInclude Include="mcTransportSlab.h" />
+    <ClInclude Include="mcTransportTrap.h" />
+    <ClInclude Include="mcTransportWedge.h" />
+    <ClInclude Include="mcVRMLDumper.h" />
+    <ClInclude Include="ProfileProcessor.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="mcETransportSphere.cpp" />
+    <ClCompile Include="mcETransportTrap.cpp" />
+    <ClCompile Include="mcGeometry.cpp" />
+    <ClCompile Include="mcGeomRectSide.cpp" />
+    <ClCompile Include="mcGeomShape.cpp" />
+    <ClCompile Include="mcGeomTriangleSide.cpp" />
+    <ClCompile Include="mcGeomWedgeTriangle.cpp" />
+    <ClCompile Include="mcHistogram.cpp" />
+    <ClCompile Include="mcHistogramSampler.cpp" />
+    <ClCompile Include="mcMedia.cpp" />
+    <ClCompile Include="mcMedium.cpp" />
+    <ClCompile Include="mcMediumXE.cpp" />
+    <ClCompile Include="mcObj.cpp" />
+    <ClCompile Include="mcParticle.cpp" />
+    <ClCompile Include="mcParticleStack.cpp" />
+    <ClCompile Include="mcPhaseSpaceIO.cpp" />
+    <ClCompile Include="mcPhysics.cpp" />
+    <ClCompile Include="mcPhysicsCharged.cpp" />
+    <ClCompile Include="mcPhysicsCommon.cpp" />
+    <ClCompile Include="mcPhysicsElectron.cpp" />
+    <ClCompile Include="mcPhysicsPhoton.cpp" />
+    <ClCompile Include="mcPhysicsPositron.cpp" />
+    <ClCompile Include="mcPTGrid3D.cpp" />
+    <ClCompile Include="mcPTLasVegas.cpp" />
+    <ClCompile Include="mcPTQc3.cpp" />
+    <ClCompile Include="mcRegionReference.cpp" />
+    <ClCompile Include="mcRng.cpp" />
+    <ClCompile Include="mcSamplers.cpp" />
+    <ClCompile Include="mcScore.cpp" />
+    <ClCompile Include="mcScoreAcceleratedBeam.cpp" />
+    <ClCompile Include="mcScoreBeamFluence.cpp" />
+    <ClCompile Include="mcScoreBeamFluence2.cpp" />
+    <ClCompile Include="mcScoreBeamFluenceSubsource.cpp" />
+    <ClCompile Include="mcScoreBeamFluenceXY.cpp" />
+    <ClCompile Include="mcScoreConicalRZ.cpp" />
+    <ClCompile Include="mcScoreEnergyFluence.cpp" />
+    <ClCompile Include="mcScoreEnergySpectrum.cpp" />
+    <ClCompile Include="mcScoreMatrix2D.cpp" />
+    <ClCompile Include="mcScoreMatrixRZ.cpp" />
+    <ClCompile Include="mcScoreMatrixXY.cpp" />
+    <ClCompile Include="mcScoreParticleContainer.cpp" />
+    <ClCompile Include="mcScorePHSP.cpp" />
+    <ClCompile Include="mcScoreSphereFluence.cpp" />
+    <ClCompile Include="mcScoreTrack.cpp" />
+    <ClCompile Include="mcSource.cpp" />
+    <ClCompile Include="mcSourceAccelerator.cpp" />
+    <ClCompile Include="mcSourceCylindricalC60.cpp" />
+    <ClCompile Include="mcSourceDistributed.cpp" />
+    <ClCompile Include="mcSourceLEBA.cpp" />
+    <ClCompile Include="mcSourceSimpleMono.cpp" />
+    <ClCompile Include="mcSourceSimpleParallel.cpp" />
+    <ClCompile Include="mcSourceSphereC60.cpp" />
+    <ClCompile Include="mcSourceXraySigmaR.cpp" />
+    <ClCompile Include="mcThread.cpp" />
+    <ClCompile Include="mcTransport.cpp" />
+    <ClCompile Include="mcTransportAxialSymmetricSplitter.cpp" />
+    <ClCompile Include="mcTransportCone.cpp" />
+    <ClCompile Include="mcTransportConicalHole.cpp" />
+    <ClCompile Include="mcTransportConicalRing.cpp" />
+    <ClCompile Include="mcTransportCylinder.cpp" />
+    <ClCompile Include="mcTransportCylinderStack.cpp" />
+    <ClCompile Include="mcTransportPlaneFilter.cpp" />
+    <ClCompile Include="mcTransportPolygon.cpp" />
+    <ClCompile Include="mcTransportPrimaryCollimator.cpp" />
+    <ClCompile Include="mcTransportPrism.cpp" />
+    <ClCompile Include="mcTransportRectanglePolygonSideHole.cpp" />
+    <ClCompile Include="mcTransportRectangleRing.cpp" />
+    <ClCompile Include="mcTransportRectangleTrap.cpp" />
+    <ClCompile Include="mcTransportRing.cpp" />
+    <ClCompile Include="mcTransportSimpleSplitter.cpp" />
+    <ClCompile Include="mcTransportSlab.cpp" />
+    <ClCompile Include="mcTransportWedge.cpp" />
+    <ClCompile Include="mcVRMLDumper.cpp" />
+    <ClCompile Include="ProfileProcessor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Geometry\Geometry.vcxproj">
+      <Project>{8b3c5d17-2b89-4c55-9754-bd143465d571}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
