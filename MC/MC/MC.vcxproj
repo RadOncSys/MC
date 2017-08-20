@@ -194,6 +194,7 @@
     <ClInclude Include="mcSourceSimpleMono.h" />
     <ClInclude Include="mcSourceSimpleParallel.h" />
     <ClInclude Include="mcSourceSphereC60.h" />
+    <ClInclude Include="mcSourceXrayBeam.h" />
     <ClInclude Include="mcSourceXraySigmaR.h" />
     <ClInclude Include="mcThread.h" />
     <ClInclude Include="mcTransport.h" />
@@ -271,6 +272,7 @@
     <ClCompile Include="mcSourceSimpleMono.cpp" />
     <ClCompile Include="mcSourceSimpleParallel.cpp" />
     <ClCompile Include="mcSourceSphereC60.cpp" />
+    <ClCompile Include="mcSourceXrayBeam.cpp" />
     <ClCompile Include="mcSourceXraySigmaR.cpp" />
     <ClCompile Include="mcThread.cpp" />
     <ClCompile Include="mcTransport.cpp" />

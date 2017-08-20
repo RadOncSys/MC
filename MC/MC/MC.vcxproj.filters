@@ -274,6 +274,9 @@
     <ClInclude Include="mcPhaseSpaceIO.h">
       <Filter>Score</Filter>
     </ClInclude>
+    <ClInclude Include="mcSourceXrayBeam.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -497,6 +500,9 @@
     </ClCompile>
     <ClCompile Include="ProfileProcessor.cpp">
       <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceXrayBeam.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

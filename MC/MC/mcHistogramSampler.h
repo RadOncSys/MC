@@ -25,6 +25,10 @@ public:
 	void setFromDistribution(int np, int nbins, double par_min, double bin_size, const double* data);
 	void setFromDistribution(int np, double par_min, double bin_size, const std::vector<double>& data);
 
+	// Creating sampler from energy bins (by number of particles) with variable width.
+	// Source distribution contains number of particles between meddles with neighboring energies.
+	void setFromDistribution(int np, int nbins, const double* ebins, const double* data);
+	
 	/// <summary>
 	/// Восстановление данных из буфера памяти.
 	/// </summary>
