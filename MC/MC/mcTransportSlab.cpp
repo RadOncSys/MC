@@ -49,7 +49,7 @@ void mcTransportSlab::dump(ostream& os) const
 
 void mcTransportSlab::dumpVRML(ostream& os) const
 {
-	double a = 50;  // размера бокса
+	double a = 200;  // размера бокса
 	geomVector3D p = geomVector3D(0, 0, h_*0.5) * mttow_;
 
 	os << "# Slab: " << this->getName() << endl;

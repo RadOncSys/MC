@@ -6,9 +6,6 @@
 #include "../geometry/vec3d.h"
 
 // Spectra
-
-double enoms[] = { 6.0, 10.0, 18.0 };
-
 double ebins_06X[] = { 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4, 5 };
 double spec_06X[] = { 0.0186198, 0.0399641, 0.0405027, 0.0385809, 0.0362754, 0.050912, 0.058875, 0.0503812, 0.0634955, 0.0545269, 0.0264792 };
 
@@ -32,11 +29,11 @@ mcSourceXrayBeam::mcSourceXrayBeam(const char* name, int nThreads, double z, dou
 {
 	esampler_ = new mcHistogramSampler();
 
-	if (nom_energy_ != 6.0)
+	if (nom_energy_ == 6.0)
 		esampler_->setFromDistribution(100, sizeof(spec_06X) / sizeof(double), ebins_06X, spec_06X);
-	else if (nom_energy_ != 10.0)
+	else if (nom_energy_ == 10.0)
 		esampler_->setFromDistribution(100, sizeof(spec_10X) / sizeof(double), ebins_10X, spec_10X);
-	else if (nom_energy_ != 18.0)
+	else if (nom_energy_ == 18.0)
 		esampler_->setFromDistribution(100, sizeof(spec_18X) / sizeof(double), ebins_18X, spec_18X);
 	else 
 		throw std::exception("mcSourceXrayBeam: only 6, 10 and 18 MV theraputic photon beams supported");
@@ -55,7 +52,6 @@ void mcSourceXrayBeam::sample(mcParticle& p, mcThread* thread)
 
 	p.t = type_;
 	p.q = 0;
-	p.ke = nom_energy_;
 	p.ke = esampler_->sample(rng.rnd());
 
 	double x = fsx1_ + (fsx2_ - fsx1_) * rng.rnd();

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MC", "MC", "{FCF84258-49CC-4956-84D1-FB725ADAF56B}"
 EndProject
@@ -29,6 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Parameters", "Parameters", 
 		Data\Parameters\S_CK_6X.xml = Data\Parameters\S_CK_6X.xml
 		Data\Parameters\S_Ross.xml = Data\Parameters\S_Ross.xml
 		Data\Parameters\S_Target.xml = Data\Parameters\S_Target.xml
+		Data\Parameters\S_TBI_Cylinder.xml = Data\Parameters\S_TBI_Cylinder.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Geometries", "Geometries", "{EFF1B1ED-9964-41E1-BE5D-3A2A7622D96F}"
@@ -37,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Geometries", "Geometries", 
 		Data\Geometries\G_CyberKnife.xml = Data\Geometries\G_CyberKnife.xml
 		Data\Geometries\G_Ross.xml = Data\Geometries\G_Ross.xml
 		Data\Geometries\G_Target.xml = Data\Geometries\G_Target.xml
+		Data\Geometries\G_TBI_Cylinder.xml = Data\Geometries\G_TBI_Cylinder.xml
 	EndProjectSection
 EndProject
 Global

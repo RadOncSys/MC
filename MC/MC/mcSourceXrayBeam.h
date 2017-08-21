@@ -27,7 +27,7 @@ public:
 		os << (const mcSource&)s;
 		os << "TYPE = \t" << s.type_ << endl;
 		os << "ENOM = \t" << s.nom_energy_ << endl;
-		os << "sad_ = \t" << s.fsx1_ << endl;
+		os << "SAD = \t" << s.sad_ << endl;
 		os << "FSX1 = \t" << s.fsx1_ << endl;
 		os << "FSX2 = \t" << s.fsx2_ << endl;
 		os << "FSY1 = \t" << s.fsy1_ << endl;

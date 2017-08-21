@@ -24,6 +24,7 @@
 #include "../../mc/mc/mcScoreBeamFluence.h"
 #include "../../mc/mc/mcScoreBeamFluence2.h"
 #include "../../mc/mc/mcScoreMatrixRZ.h"
+#include "../../mc/mc/mcScoreMatrixCylinderAzimut.h"
 #include "../../mc/mc/mcScoreConicalRZ.h"
 #include "../../mc/mc/mcScoreBeamFluenceXY.h"
 #include "../../mc/mc/mcScoreMatrixXY.h"
@@ -39,6 +40,7 @@
 #include "../../mc/mc/mcSourceCylindricalC60.h"
 #include "../../mc/mc/mcSourceLEBA.h"
 #include "../../mc/mc/mcSourceSphereC60.h"
+#include "../../mc/mc/mcSourceXrayBeam.h"
 
 #include <io.h>
 #include <fcntl.h>
@@ -623,6 +625,11 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 		score = new mcScoreMatrixRZ(scoreModule.c_str(), nThreads, nr, nz, rmax, zmin, zmax);
 	}
 
+	else if (_wcsicmp(scoreType.c_str(), L"cylinder_azimut") == 0)
+	{
+		score = new mcScoreMatrixCylinderAzimut(scoreModule.c_str(), nThreads, nr, nz, rmax, zmin, zmax);
+	}
+
 	// 3D дозовое распределение в веерной RZ геометрии
 	else if (_wcsicmp(scoreType.c_str(), L"rz_conical") == 0)
 	{
@@ -713,6 +720,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	profile_distr_t prf_type = profile_distr_t::PROFILE_EXPONENT;
 	double x0 = 0, y0 = 0, z0 = 0;
 	double vx = 0, vy = 0, vz = 0;
+	double sad = 0, fsx1 = 0, fsx2 = 0, fsy1 = 0, fsy2 = 0;
 
 	// Специфичные для модуля параметры.
 	// Для простоты перечисляем все возможные варианты.
@@ -827,6 +835,26 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 			if (node.Nodes.size() > 0)
 				isShapeDefined = true;
 		}
+
+		// Beam geometry
+		else if (_wcsicmp(node.Name.c_str(), L"beam") == 0)
+		{
+			for (auto n1 : node.Nodes)
+			{
+				if (_wcsicmp(n1.Name.c_str(), L"sad") == 0)
+					sad = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"fsx1") == 0)
+					fsx1 = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"fsx2") == 0)
+					fsx2 = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"fsy1") == 0)
+					fsy1 = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"fsy2") == 0)
+					fsy2 = _wtof(n1.Text.c_str());
+			}
+			if (node.Nodes.size() > 0)
+				isShapeDefined = true;
+		}
 	}
 
 	if (sourceModule.empty())
@@ -852,6 +880,10 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		if (!isCoreSetDefined)
 			throw exception("Please, indicate radiation source dimensions");
 		source = new mcSourceSphereC60(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), radius);
+	}
+	else if (_wcsicmp(radTypeName.c_str(), L"xbeam") == 0)
+	{
+		source = new mcSourceXrayBeam(srcName.c_str(), nThreads, z0, energy, sad, fsx1, fsx2, fsy1, fsy2);
 	}
 	else
 	{

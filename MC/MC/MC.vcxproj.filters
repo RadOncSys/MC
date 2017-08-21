@@ -277,6 +277,9 @@
     <ClInclude Include="mcSourceXrayBeam.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="mcScoreMatrixCylinderAzimut.h">
+      <Filter>Score</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -503,6 +506,9 @@
     </ClCompile>
     <ClCompile Include="mcSourceXrayBeam.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreMatrixCylinderAzimut.cpp">
+      <Filter>Score</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

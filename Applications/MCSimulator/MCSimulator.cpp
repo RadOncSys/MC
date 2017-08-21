@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	int i;
-	int nThreads = concurrency::GetProcessorCount();
-	//int nThreads = 1;
+	//int nThreads = concurrency::GetProcessorCount();
+	int nThreads = 1;
 
 	double simStartTime = TIME;
 
@@ -66,6 +66,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		media.addName("BE700ICRU");
 		media.addName("TA700ICRU");
 		media.addName("AU700ICRU");
+		media.addName("PMMA700ICRU");
 
 		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
 
