@@ -80,49 +80,55 @@ void mcScoreMatrixCylinderAzimut::ScoreLine(double edep
 	// Нужно определить длины треков в каждой ячейке, определяемой кругами и радиусами.
 
 	// Поворачиваем направление движения против часовой стрелке (увеличение угла).
-	doChange = (vz1 ^ vz2).z() > 0;
+	doChange = (vz2 ^ vz1).z() > 0;
 	if (doChange)
 	{
 		geomVector3D vtmp(vz1);
 		vz1 = vz2;
 		vz2 = vtmp;
+		v *= -1;
 	}
 
 	// Рассчитываем длины треков в ячейках просто двигаясь вдоль траетории
 	// и определяя точки пересечения с границами ячеек.
-	int ir, ia;
-	getVoxelAtPoint(vz1, ir, ia);
 	while (true)
 	{
+		int ir, ia;
 		getVoxelAtPoint(vz1, ir, ia);
-		bool isMoveInside = (vz1.x() * v.x() + vz1.y() * v.y()) > 0;
-		if (ir < 0 && !isMoveInside) return;
+		bool isMoveInside = (vz1.x() * v.x() + vz1.y() * v.y()) < 0;
+		if (ir < 0 && !isMoveInside) break;
 
 		// Если снаружи, то сначала определяем точку входа в скоринг.
 		if (ir < 0)
 		{
 			double d = mcGeometry::getDistanceToInfiniteCylinderOutside(vz1, v, m_rmax);
-			if (d == DBL_MAX) return;	// вообще пролетели мимо скоринга
+			if (d == DBL_MAX) break;	// вообще пролетели мимо скоринга
 			d += FLT_EPSILON;			// гарантируем пересечение границы
-			if (d >= (vz2 - vz1).length()) return;
+			if (d >= (vz2 - vz1).length()) break;
 			vz1 += v * d;
 			continue;					// обрезали внешнюю часть трека и повторяем движение уже реально по вокселам 
 		}
 		
 		// Теперь вопрос что пересечем раньше, окружность или радиус.
 		double dr = isMoveInside ? 
-			mcGeometry::getDistanceToInfiniteCylinderOutside(vz1, v, sqrt(ia*m_r2step)) :
-			mcGeometry::getDistanceToInfiniteCylinderInside(vz1, v, sqrt((ia + 1)*m_r2step));
+			mcGeometry::getDistanceToInfiniteCylinderOutside(vz1, v, sqrt(ir*m_r2step)) :
+			mcGeometry::getDistanceToInfiniteCylinderInside(vz1, v, sqrt((ir + 1)*m_r2step));
 		
 		// Нормаль к радиальной плоскости
 		double a = (ia + 1) * m_astep;
 		geomVector3D n(-sin(a), cos(a), 0);
-		n.normalize();
-		double h = vz1 * n;
+		double h = -(vz1 * n);
 		double f = v * n;	// косинус между нормалью и направление трека
-		double da = fabs(f) < FLT_EPSILON ? DBL_MAX : h / f;
+		double da = f < FLT_EPSILON ? DBL_MAX : h / f;	// отрицательное f означает вылетание из конуса без пересечения его границ
 		double d = MIN(da, dr) + FLT_EPSILON;
+		double dmax = (vz2 - vz1).length();
 
+		if (d >= dmax)
+		{
+			// Трек заканчивается в данном вокселе
+			scoreEnergyInVoxel(iThread, ir, ia, dmax * eddens);
+			break;
+		}
 		scoreEnergyInVoxel(iThread, ir, ia, d * eddens);
 		vz1 += v * d;
 	}
@@ -179,7 +185,7 @@ void mcScoreMatrixCylinderAzimut::getVoxelAtPoint(const geomVector3D& p, int& ir
 {
 	ir = -1; ia = -1;
 	double r2 = p.sqLengthXY();
-	if (r2 <= m_rm2) return;
+	if (r2 >= m_rm2) return;
 	double r = sqrt(r2);
 
 	double x = p.x(), y = p.y();

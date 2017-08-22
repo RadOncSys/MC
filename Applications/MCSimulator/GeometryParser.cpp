@@ -627,7 +627,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 
 	else if (_wcsicmp(scoreType.c_str(), L"cylinder_azimut") == 0)
 	{
-		score = new mcScoreMatrixCylinderAzimut(scoreModule.c_str(), nThreads, nr, nz, rmax, zmin, zmax);
+		score = new mcScoreMatrixCylinderAzimut(scoreModule.c_str(), nThreads, nr, na, rmax, zmin, zmax);
 	}
 
 	// 3D дозовое распределение в веерной RZ геометрии

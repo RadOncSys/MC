@@ -5,7 +5,7 @@ Total body irradiation simulation.
 -->
 
 <input>
-  <simulation nhistories="1000000" nbanches="10">
+  <simulation nhistories="10000000" nbanches="100">
   </simulation>
 
   <options>
@@ -22,7 +22,7 @@ Total body irradiation simulation.
   </source>
 
   <score type="cylinder_azimut" module="Phantom">
-    <size unit="cm" nr="10" nz="20" rmax="15.0" zmin="50.0" zmax="150.0"/>
+    <size unit="cm" nr="50" na="24" rmax="15.0" zmin="50.0" zmax="150.0"/>
   </score>
 
 </input>
