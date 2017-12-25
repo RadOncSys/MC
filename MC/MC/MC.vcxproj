@@ -185,6 +185,7 @@
     <ClInclude Include="mcScoreMatrixXY.h" />
     <ClInclude Include="mcScoreParticleContainer.h" />
     <ClInclude Include="mcScorePHSP.h" />
+    <ClInclude Include="mcScoreSpectraFluence.h" />
     <ClInclude Include="mcScoreSphereFluence.h" />
     <ClInclude Include="mcScoreTrack.h" />
     <ClInclude Include="mcSource.h" />
@@ -264,6 +265,7 @@
     <ClCompile Include="mcScoreMatrixXY.cpp" />
     <ClCompile Include="mcScoreParticleContainer.cpp" />
     <ClCompile Include="mcScorePHSP.cpp" />
+    <ClCompile Include="mcScoreSpectraFluence.cpp" />
     <ClCompile Include="mcScoreSphereFluence.cpp" />
     <ClCompile Include="mcScoreTrack.cpp" />
     <ClCompile Include="mcSource.cpp" />

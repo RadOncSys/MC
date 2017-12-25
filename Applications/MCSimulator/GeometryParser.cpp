@@ -31,6 +31,7 @@
 #include "../../mc/mc/mcScoreMatrix2D.h"
 #include "../../mc/mc/mcScoreEnergySpectrum.h"
 #include "../../mc/mc/mcScoreEnergyFluence.h"
+#include "../../mc/mc/mcScoreSpectraFluence.h"
 #include "../../mc/mc/mcScoreParticleContainer.h"
 #include "../../mc/mc/mcScoreSphereFluence.h"
 
@@ -450,6 +451,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	double rmax = 0, zmin = 0, zmax = 0;
 	double ziso = 0, sad = 0;
 	double emax = 0;
+	double ecut = 0;
 	int nr_s = 0;
 	double rmax_s = 0, tmax = 0;
 	double H = 0;
@@ -561,6 +563,8 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 					nebins = _wtoi(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"emax") == 0)
 					emax = _wtoi(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"ecut") == 0)
+					ecut = _wtoi(n1.Text.c_str());
 			}
 			if (node.Nodes.size() > 0)
 				isSpecParsDefined = true;
@@ -646,6 +650,12 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	else if (_wcsicmp(scoreType.c_str(), L"e_fluence") == 0)
 	{
 		score = new mcScoreEnergyFluence(scoreModule.c_str(), nThreads, pt, nr, rmax);
+	}
+
+	// Распределение потока энергии в плоскости через кольца
+	else if (_wcsicmp(scoreType.c_str(), L"spectra_fluence") == 0)
+	{
+		score = new mcScoreSpectraFluence(scoreModule.c_str(), nThreads, pt, ecut, nr, nebins, rmax, emax);
 	}
 
 	// Поток излучения в RZ геометрии
