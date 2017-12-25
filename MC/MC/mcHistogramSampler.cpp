@@ -17,10 +17,13 @@ double mcHistogramSampler::sample(double f) const
 		throw std::exception("mcHistogramSampler::sample supports sumpling from 0 to 1 inclusive only");
 
 	int idx = int(f / step_), idx2 = idx + 1;
-	if (idx2 >= np_)
+	if (idx2 >= np_) {
 		idx2 = np_ - 1;
+		idx = idx2 - 1;
+	}
 
-	return data_[idx] + (data_[idx2] - data_[idx]) * (f / step_ - idx);
+	double e = data_[idx] + (data_[idx2] - data_[idx]) * (f / step_ - idx);
+	return e;
 }
 
 void mcHistogramSampler::init(int np)
@@ -123,6 +126,30 @@ void mcHistogramSampler::setFromDistribution(int np, double par_min, double bin_
 	vector<double> c;
 	make_comulative(c, data);
 	set_from_comulative(np, par_min, bin_size, c);
+}
+
+void mcHistogramSampler::setFromDistribution(int np, int nbins, const double* ebins, const double* data)
+{
+	vector<double> c;
+	make_comulative(c, nbins, data);
+	init(np + 1);
+
+	// Energies argument contains energies in the medle of bin.
+	// Calculate energy bins boundaries.
+	vector<double> e(nbins + 1);
+	e[0] = 0;
+	int i;
+	for (i = 0; i < nbins; i++)
+		e[i + 1] = ebins[i];
+
+	int k = 1, nk = (int)c.size();
+	data_[0] = 0;
+	for (i = 1; i <= np; i++)
+	{
+		double f = i * step_;
+		while (c[k] < f && k < nk) { k++; }
+		data_[i] = e[k-1] + (e[k] - e[k - 1]) * (f - c[k - 1]) / (c[k] - c[k-1]);
+	}
 }
 
 ostream& operator << (ostream& os, const mcHistogramSampler& h)

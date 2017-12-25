@@ -1,4 +1,4 @@
-#include "mcScoreMatrixRZ.h"
+#include "mcScore.h"
 
 mcScore::mcScore(const char* module_name, int nThreads)
 	:mcObj()

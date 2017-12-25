@@ -47,19 +47,24 @@ double mcTransportCone::getDistanceInside(mcParticle& p)	const
 	// Решение может отсутствовать только за пределами конуса,
 	// что практически возможно в окрестности его поверхности.
 	// Поэтому, возвращаем нулевое расстояние.
-	if (det <= 0)
+	if (det < 0) // при нулевом детерминанте попадаем точтно в вершину конуса
 		return 0;
 
 	// В этом месте b не может быть нулевым, так как это означало бы 
 	// нулевой детерминант, обработанный выше
 	if (a == 0)
-		return -a / (2 * b);
-
-	// При нахождении частицы внутри правильным пересечением будет большее
-	// решение, так как второе вообще должно быть отрицательным
-	double d1 = (-b - sqrt(det)) / a, d2 = (-b + sqrt(det)) / a;
-	if (d1 > 0 && d1 < d2) return d1;
-	else return d2;
+	{
+		if (b == 0) return 0;
+		double d = -0.5 * c / b;
+		if (d <= 0) return 0;
+		else return d;
+	}
+	else
+	{
+		double d1 = (-b - sqrt(det)) / a, d2 = (-b + sqrt(det)) / a;
+		if (d1 > 0 && d1 < d2) return d1;
+		else return d2 < 0 ? 0 : d2;
+	}
 }
 
 double mcTransportCone::getDistanceOutside(mcParticle& p) const
@@ -81,13 +86,13 @@ double mcTransportCone::getDistanceOutside(mcParticle& p) const
 	double det = b*b - a*c;
 
 	// Нет пересечения с конусом
-	if (det <= 0)
+	if (det < 0)
 		return DBL_MAX;
 
 	double d1 = DBL_MAX, d2 = d1;
 
 	if (a == 0)
-		d1 = -a / (2 * b);
+		d1 = -c / (2 * b);
 	else {
 		if (a < 0) {
 			d1 = (-b + sqrt(det)) / a;

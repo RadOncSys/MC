@@ -70,6 +70,7 @@ double mcGeometry::getDistanceToCylinderOutside(const geomVector3D& p, const geo
 		if (cd == DBL_MAX) return DBL_MAX;
 
 		if (z <= 0) {
+			if (fabs(vz) <= DBL_EPSILON) return DBL_MAX;
 			double pd = -z / vz;
 			geomVector3D pp = p + (v * pd);
 			if (pp.sqLengthXY() < R2)
@@ -77,6 +78,7 @@ double mcGeometry::getDistanceToCylinderOutside(const geomVector3D& p, const geo
 		}
 		else if (z >= h)
 		{
+			if (fabs(vz) <= DBL_EPSILON) return DBL_MAX;
 			double pd = (h - z) / vz;
 			geomVector3D pp = p + (v * pd);
 			if (pp.sqLengthXY() < R2)
@@ -212,7 +214,7 @@ double mcGeometry::getDistanceToConeOutside(const geomVector3D& p, const geomVec
 
 	double cd;
 	if (fabs(a) <= FLT_EPSILON)
-		cd = -c / b;
+		cd = -0.5 * c / b;
 	else
 	{
 		double sd = sqrt(det);

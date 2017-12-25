@@ -18,10 +18,14 @@ public:
 	// Начало транспорта переписано, так как не нужно запускать симуляцию частиц.
 	// Их просто нужно зарегистрировать и пропустить дальше.
 	void beginTransport(mcParticle& p) override;
+	void beginTransportInside(mcParticle& p) override;
 
 	void dumpVRML(ostream& os)const override;
 
 protected:
+	double getDistanceInside(mcParticle& p) const override;
+	double getDistanceOutside(mcParticle& p) const override;
+
 	enum mc_particle_t ptype_;
 	int nsplit_;
 };

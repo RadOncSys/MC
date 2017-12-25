@@ -274,6 +274,15 @@
     <ClInclude Include="mcPhaseSpaceIO.h">
       <Filter>Score</Filter>
     </ClInclude>
+    <ClInclude Include="mcSourceXrayBeam.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreMatrixCylinderAzimut.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreSpectraFluence.h">
+      <Filter>Score</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -497,6 +506,15 @@
     </ClCompile>
     <ClCompile Include="ProfileProcessor.cpp">
       <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceXrayBeam.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreMatrixCylinderAzimut.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreSpectraFluence.cpp">
+      <Filter>Score</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

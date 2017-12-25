@@ -180,10 +180,12 @@
     <ClInclude Include="mcScoreEnergyFluence.h" />
     <ClInclude Include="mcScoreEnergySpectrum.h" />
     <ClInclude Include="mcScoreMatrix2D.h" />
+    <ClInclude Include="mcScoreMatrixCylinderAzimut.h" />
     <ClInclude Include="mcScoreMatrixRZ.h" />
     <ClInclude Include="mcScoreMatrixXY.h" />
     <ClInclude Include="mcScoreParticleContainer.h" />
     <ClInclude Include="mcScorePHSP.h" />
+    <ClInclude Include="mcScoreSpectraFluence.h" />
     <ClInclude Include="mcScoreSphereFluence.h" />
     <ClInclude Include="mcScoreTrack.h" />
     <ClInclude Include="mcSource.h" />
@@ -194,6 +196,7 @@
     <ClInclude Include="mcSourceSimpleMono.h" />
     <ClInclude Include="mcSourceSimpleParallel.h" />
     <ClInclude Include="mcSourceSphereC60.h" />
+    <ClInclude Include="mcSourceXrayBeam.h" />
     <ClInclude Include="mcSourceXraySigmaR.h" />
     <ClInclude Include="mcThread.h" />
     <ClInclude Include="mcTransport.h" />
@@ -257,10 +260,12 @@
     <ClCompile Include="mcScoreEnergyFluence.cpp" />
     <ClCompile Include="mcScoreEnergySpectrum.cpp" />
     <ClCompile Include="mcScoreMatrix2D.cpp" />
+    <ClCompile Include="mcScoreMatrixCylinderAzimut.cpp" />
     <ClCompile Include="mcScoreMatrixRZ.cpp" />
     <ClCompile Include="mcScoreMatrixXY.cpp" />
     <ClCompile Include="mcScoreParticleContainer.cpp" />
     <ClCompile Include="mcScorePHSP.cpp" />
+    <ClCompile Include="mcScoreSpectraFluence.cpp" />
     <ClCompile Include="mcScoreSphereFluence.cpp" />
     <ClCompile Include="mcScoreTrack.cpp" />
     <ClCompile Include="mcSource.cpp" />
@@ -271,6 +276,7 @@
     <ClCompile Include="mcSourceSimpleMono.cpp" />
     <ClCompile Include="mcSourceSimpleParallel.cpp" />
     <ClCompile Include="mcSourceSphereC60.cpp" />
+    <ClCompile Include="mcSourceXrayBeam.cpp" />
     <ClCompile Include="mcSourceXraySigmaR.cpp" />
     <ClCompile Include="mcThread.cpp" />
     <ClCompile Include="mcTransport.cpp" />

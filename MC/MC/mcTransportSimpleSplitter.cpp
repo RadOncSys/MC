@@ -12,6 +12,18 @@ mcTransportSimpleSplitter::~mcTransportSimpleSplitter(void)
 {
 }
 
+double mcTransportSimpleSplitter::getDistanceInside(mcParticle& p) const
+{
+	p.exitSurface_ = mcParticle::temb_shit_t::External;
+	return 0;
+}
+
+double mcTransportSimpleSplitter::getDistanceOutside(mcParticle& p) const
+{
+	p.exitSurface_ = mcParticle::temb_shit_t::External;
+	return DBL_MAX;
+}
+
 void mcTransportSimpleSplitter::beginTransport(mcParticle& p)
 {
 	// Не трогаем стэк.
@@ -24,6 +36,21 @@ void mcTransportSimpleSplitter::beginTransport(mcParticle& p)
 		p.weight /= nsplit_;
 		for (int i = 0; i < nsplit_; i++)
 			nextTransport_->beginTransport(p);
+	}
+}
+
+void mcTransportSimpleSplitter::beginTransportInside(mcParticle& p)
+{
+	if (externalTransport_ != nullptr)
+	{
+		p.weight /= nsplit_;
+
+		p.region.idx_ = 1;
+		p.region.medidx_ = defmedidx_;
+		p.regDensityRatio = defdensity_;
+
+		for (int i = 0; i < nsplit_; i++)
+			externalTransport_->beginTransportInside(p);
 	}
 }
 

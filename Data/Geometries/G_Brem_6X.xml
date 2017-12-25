@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<accelerator>
+
+  <!--Вольфрамовая мишень-->
+  <module type="cylinder" name="Target" medium="W700ICRU" density="1">
+    <Color r="1" g="1" b="1" t="0" />
+    <position unit="cm" x="0" y="0" z="0" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="1.0" height="0.01"/>
+  </module>
+
+  <!--Фантом для снятия профиля дозы-->
+  <module type="slab" name="Scoring_plane" medium="H2O700ICRU" density="1">
+    <Color r="0" g="0.5" b="0.5" t="0.8" />
+    <position unit="cm" x="0" y="0" z="100" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" height="0.5"/>
+  </module>
+</accelerator>

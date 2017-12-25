@@ -24,7 +24,7 @@ CK_6X_Full.xml CyberKnife.xml      - полная симуляция дозов�
     <!--Типы спектров spectrum="gauss/triangle/prism"-->
     <radiation type="electron" energy="6.5" ewidth="1.0" spectrum="gauss" />
     <shape direction="conical_sigmar" size="0.20" angle="0"/>
-    <shape direction="src_leba" size="0.05" />
+    <!--<shape direction="src_leba" size="0.05" />-->
     <position unit="cm" x="0" y="0" z="-80.14" />
     <direction x="0" y="0" z="1" />
   </source>
