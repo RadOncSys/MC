@@ -19,12 +19,13 @@ public:
 	double getRadius() const { return r_; }
 	double getHeight() const { return h_; }
 
+	double getDistanceInside(mcParticle& p) const override;
+	double getDistanceOutside(mcParticle& p) const override;
+
 	void dump(ostream& os) const override;
 	void dumpVRML(ostream& os)const override;
 
 protected:
-	double getDistanceInside(mcParticle& p) const override;
-	double getDistanceOutside(mcParticle& p) const override;
 	double getDNearInside(const geomVector3D& p) const override;
 
 protected:

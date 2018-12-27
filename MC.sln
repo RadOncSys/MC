@@ -41,6 +41,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Geometries", "Geometries", 
 		Data\Geometries\G_TBI_Cylinder.xml = Data\Geometries\G_TBI_Cylinder.xml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{3DE2745D-82FD-4FE2-B767-8EB9A3F29A09}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RO.Dicom", "Lib\RO.Dicom\RO.Dicom.vcxproj", "{512A924C-E2FE-4217-8B82-999B00C0F146}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -81,6 +85,14 @@ Global
 		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Release|x64.Build.0 = Release|x64
 		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Release|x86.ActiveCfg = Release|Win32
 		{A9B76BC6-1D81-4D17-815C-5D01CBE4EC93}.Release|x86.Build.0 = Release|Win32
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Debug|x64.ActiveCfg = Debug|x64
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Debug|x64.Build.0 = Debug|x64
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Debug|x86.ActiveCfg = Debug|Win32
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Debug|x86.Build.0 = Debug|Win32
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Release|x64.ActiveCfg = Release|x64
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Release|x64.Build.0 = Release|x64
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Release|x86.ActiveCfg = Release|Win32
+		{512A924C-E2FE-4217-8B82-999B00C0F146}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -93,5 +105,9 @@ Global
 		{59B0D4E3-65AC-425B-B244-497336D60143} = {D377A3E0-4D7E-47DD-996C-5A6F928D821B}
 		{24015754-EBEF-4C17-8258-5D1AE514713F} = {59B0D4E3-65AC-425B-B244-497336D60143}
 		{EFF1B1ED-9964-41E1-BE5D-3A2A7622D96F} = {59B0D4E3-65AC-425B-B244-497336D60143}
+		{512A924C-E2FE-4217-8B82-999B00C0F146} = {3DE2745D-82FD-4FE2-B767-8EB9A3F29A09}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {343D58A1-79D5-4195-8895-53896E08DE68}
 	EndGlobalSection
 EndGlobal

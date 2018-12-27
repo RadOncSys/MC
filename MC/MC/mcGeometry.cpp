@@ -231,6 +231,76 @@ double mcGeometry::getDistanceToConeOutside(const geomVector3D& p, const geomVec
 		return DBL_MAX;
 }
 
+double mcGeometry::getDistanceToConeSlabInside(const geomVector3D& p, const geomVector3D& v, double z1, double z2, double r1, double r2)
+{
+	double dd = 0;
+	if(r2 == r1) 
+		dd = mcGeometry::getDistanceToInfiniteCylinderInside(p, v, r1);
+	else
+	{
+		double x = p.x(), y = p.y(), z = p.z();
+		double vx = v.x(), vy = v.y(), vz = v.z();
+		double f = (r2 - r1) / (z2 - z1);
+		double rfz = r1 - f * z1 + f*z;
+		double a = 1 - (1 + f * f) * vz * vz;
+		double b = x * vx + y * vy - rfz * f * vz ;
+		double c = x * x + y * y - rfz * rfz;
+
+		double det = b * b - a * c;
+		if (det <= 0) return DBL_MAX;
+
+		if (fabs(a) <= FLT_EPSILON)
+			dd = -0.5 * c / b;
+		else
+		{
+			double sd = sqrt(det);
+			double d1, d2;
+			if (a > 0) { d1 = (-b - sd) / a; d2 = (-b + sd) / a; }
+			else { d2 = (-b - sd) / a; d1 = (-b + sd) / a; }
+			dd = (d2 <= 0) ? DBL_MAX : (d1 > 0) ? d1 : d2;
+		}
+	}
+	if(dd == DBL_MAX) return DBL_MAX;
+	double z = p.z() + v.z() * dd;
+	if (z <= z2 && z >= z1) return dd;
+	else return DBL_MAX;
+}
+
+double mcGeometry::getDistanceToConeSlabOutside(const geomVector3D& p, const geomVector3D& v, double z1, double z2, double r1, double r2)
+{
+	double dd = 0;
+	if(r2 == r1) 
+		dd = mcGeometry::getDistanceToInfiniteCylinderOutside(p, v, r1);
+	else
+	{
+		double x = p.x(), y = p.y(), z = p.z();
+		double vx = v.x(), vy = v.y(), vz = v.z();
+		double f = (r2 - r1) / (z2 - z1);
+		double rfz = r1 - f * z1 + f*z;
+		double a = 1 - (1 + f * f) * vz * vz;
+		double b = x * vx + y * vy - rfz * f * vz;
+		double c = x * x + y * y - rfz * rfz;
+
+		double det = b * b - a * c;
+		if (det <= 0) return DBL_MAX;
+
+		if (fabs(a) <= FLT_EPSILON)
+			dd = -0.5 * c / b;
+		else
+		{
+			double sd = sqrt(det);
+			double d1, d2;
+			if (a > 0) { d1 = (-b - sd) / a; d2 = (-b + sd) / a; }
+			else { d2 = (-b - sd) / a; d1 = (-b + sd) / a; }
+			dd = (d2 <= 0) ? DBL_MAX : (d1 > 0) ? d1 : d2;
+		}
+	}
+	if (dd == DBL_MAX) return DBL_MAX;
+	double z = p.z() + v.z() * dd;
+	if (z <= z2 && z >= z1) return dd;
+	else return DBL_MAX;
+}
+
 double mcGeometry::getDistanceToRectanglePipeInside(const geomVector3D& p, const geomVector3D& v,
 	double x1, double x2, double y1, double y2)
 {
@@ -437,4 +507,197 @@ double mcGeometry::getDistanceToSphereOutside(const geomVector3D& p, const geomV
 	// If it is negative, then we move out of sphere.
 	double dist = -b - sqrt(det);
 	return dist >= 0 ? dist : -dist;
+}
+
+double mcGeometry::getDistanceToConvexPolygonCircleInside(const geomVector3D& p, const geomVector3D& v, const std::vector<double>& pz, const std::vector<double>& pr)
+{
+	// Идем по слоям Z.
+	// Если пересечение в пределах радиуса очередного слоя, то накапливаем и двигаемся дальше.
+	// Если нет, то очередное пересечение будет с конусом.
+
+	unsigned i;
+	double dcount = 0;
+	geomVector3D pcurrent(p);
+	double z = p.z();
+	for (i = 1; i < pz.size(); i++) if (z <= pz[i] + DBL_EPSILON) break;
+	double z1 = pz[i - 1], z2 = pz[i];
+	double r1 = pr[i - 1], r2 = pr[i];
+
+	double vz = v.z();
+	// Движение параллельно плоскости XY
+	if (vz == 0)
+	{
+		double r = r1 + (r2 - r1) * (z - z1) / (z2 - z1);
+		double b = (p.x()*v.x() + p.y()*v.y());
+		double c = (p.sqLengthXY() - r*r);
+		double det = b*b - c;
+		double cd = 0;
+		if (det > 0)
+			cd = -b + sqrt(det);  // when points is inside, only one positive solution exists
+		return (cd < 0 ? 0 : cd);
+	}
+
+	while (true)
+	{
+		if (vz < 0)
+		{
+			double dd = (z1-z) / vz;
+			geomVector3D pc = pcurrent + (v * dd);
+			double rr = pc.lengthXY();
+			if (rr <= r1)
+			{
+				dcount += dd;
+				if (i <= 1)
+					break;
+				i--;
+				pcurrent = pc;
+				z = z1;
+				z2 = z1;
+				r2 = r1;
+				z1 = pz[i - 1];
+				r1 = pr[i - 1];
+				continue;
+			}
+		}
+		else
+		{
+			double dd = (z2 - z) / vz;
+			geomVector3D pc = pcurrent + (v * dd);
+			double rr = pc.lengthXY();
+			if (rr <= r2)
+			{
+				dcount += dd;
+				if (i >= pr.size() - 1)
+					break;
+				i++;
+				pcurrent = pc;
+				z = z2;
+				z1 = z2;
+				r1 = r2;
+				z2 = pz[i];
+				r2 = pr[i];
+				continue;
+			}
+		}
+
+		// К этому моменту остается только конус
+		double dd = getDistanceToConeSlabInside(pcurrent, v, z1, z2, r1, r2);
+		// Hack!!! Нельзя возвращать бесконечность внутри.
+		// Вероятно причина в поверхностных эффектах.
+		if (dd != DBL_MAX) 
+			dcount += dd;
+		break;
+	}
+
+	return dcount;
+}
+
+double mcGeometry::getDistanceToConvexPolygonCircleOutside(const geomVector3D & p, const geomVector3D & v, const std::vector<double>& pz, const std::vector<double>& pr)
+{
+	// Аналогично идем по слоям Z.
+	// В зависимости от места пересечения определяем пересечение с боковой поверхностью
+	// или движемся дальше.
+
+	int i = -1;
+	double dcount = 0;
+	geomVector3D pcurrent(p);
+	double z = p.z();
+	double vz = v.z();
+	double z1 = pz[0], z2 = pz.back();
+	double r1 = pr[0], r2 = pr.back();
+
+	if (z <= z1 + DBL_EPSILON)
+	{
+		if (vz <= 0)
+			return DBL_MAX;
+
+		double dd = (z1 - z) / vz;
+		geomVector3D pc = pcurrent + (v * dd);
+		if (pc.lengthXY() <= r1)
+			return dd;
+		else
+		{
+			dcount += dd;
+			i = 1;
+			pcurrent = pc;
+			z2 = pz[i];
+			r2 = pr[i];
+		}
+	}
+	else if (z >= z2 - DBL_EPSILON)
+	{
+		if (vz >= 0)
+			return DBL_MAX;
+
+		double dd = (z2 - z) / vz;
+		geomVector3D pc = pcurrent + (v * dd);
+		if (pc.lengthXY() <= r2)
+			return dd;
+		else
+		{
+			dcount += dd;
+			i = int(pz.size() - 1);
+			pcurrent = pc;
+			z1 = pz[i-1];
+			r1 = pr[i-1];
+		}
+	}
+
+	// Теперь находимся точно между крайними слоями.
+	// При необходимости определяемся между какими.
+	if (i == -1)
+	{
+		for (i = 1; i < pz.size(); i++) if (z <= pz[i] + DBL_EPSILON) break;
+		z1 = pz[i - 1]; z2 = pz[i];
+		r1 = pr[i - 1]; r2 = pr[i];
+	}
+
+	// Движение параллельно плоскости XY
+	if (vz == 0)
+	{
+		double r = r1 + (r2 - r1) * (z - z1) / (z2 - z1);
+		double b = (p.x()*v.x() + p.y()*v.y());
+		double c = (p.sqLengthXY() - r*r);
+		double det = b*b - c;
+		if (det <= 0) return DBL_MAX;
+		double cd = (-b - sqrt(det));
+		return (cd < 0) ? DBL_MAX : cd;
+	}
+
+	while (true)
+	{
+		double dd = getDistanceToConeSlabOutside(pcurrent, v, z1, z2, r1, r2);
+		if (dd == DBL_MAX)
+		{
+			if (vz < 0)
+			{
+				i--;
+				if (i <= 0) return DBL_MAX;
+				dd = (z1 - z) / vz;
+				pcurrent += (v * dd);
+				z = z1;
+				z2 = z1; r2 = r1;
+				z1 = pz[i - 1];
+				r1 = pr[i - 1];
+				dcount += dd;
+			}
+			else
+			{
+				i++;
+				if (i >= pz.size()) return DBL_MAX;
+				dd = (z2 - z) / vz;
+				pcurrent += (v * dd);
+				z = z2;
+				z1 = z2; r1 = r2;
+				z2 = pz[i];
+				r2 = pr[i];
+				dcount += dd;
+			}
+		}
+		else {
+			dcount += dd; break;
+		}
+	}
+
+	return dcount;
 }

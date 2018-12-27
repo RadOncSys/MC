@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<accelerator>
+
+  <!--
+  1. Exit window (Ti / 0.00412 / 0 / 4.42 / 90% Ti, 6% Al, 4% V)
+  -->
+  <module type="cylinder" name="1_Exit_window" medium="TI700ICRU" density="0.974">
+    <Color r="1" g="0" b="0" t="0.2" />
+    <position unit="cm" x="0" y="0" z="0" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="0.00412"/>
+  </module>
+
+  <!--
+  2. Air (Air / 0.264588 / 0.00412 / 0.001205 / )
+  -->
+  <module type="cylinder" name="2_Air" medium="AIR700ICRU" density="1">
+    <Color r="0" g="0.0" b="1.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="0.00412" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="0.264588"/>
+  </module>
+
+  <!--
+  3. Scattering foil (FFF / t / 2.65 / FFF / FFF)
+  CU 174.5 mg/cm^2 / 8.9333 -> t = 0.019534
+  -->
+  <module type="cylinder" name="3_Scattering_foil" medium="CU700ICRU" density="1">
+    <Color r="1" g="1" b="0" t="0.6" />
+    <position unit="cm" x="0" y="0" z="2.65" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="0.019534"/>
+  </module>
+
+  <!--
+  4. Air (Air / 2.35 - t / 2.65 + t / 0.001205 / )
+  -->
+  <module type="cylinder" name="4_Air" medium="AIR700ICRU" density="1">
+    <Color r="0" g="0.0" b="1.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="2.330466" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="2.669534"/>
+  </module>
+
+  <!--
+  5. Monitor chamber (Mylar / 0.01127 / 5 / 1.4 / )
+  -->
+  <module type="cylinder" name="7_Mylar_bag" medium="MYLAR700ICRU" density="1">
+    <Color r="0" g="1" b="1.0" t="0.6" />
+    <position unit="cm" x="0" y="0" z="5" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="0.01127"/>
+  </module>
+
+  <!--
+  6. Air (Air / 1.48623 / 5.01127 / 0.001205 / )
+  -->
+  <module type="cylinder" name="6_Air" medium="AIR700ICRU" density="1">
+    <Color r="0" g="0.0" b="1.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="5.01127" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="1.48623"/>
+  </module>
+
+  <!--
+  7. Mylar bag (Mylar / 0.0025 / 6.4975 / 1.4 / )
+  -->
+  <module type="cylinder" name="7_Mylar_bag" medium="MYLAR700ICRU" density="1">
+    <Color r="0" g="1" b="1.0" t="0.6" />
+    <position unit="cm" x="0" y="0" z="6.4975" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="0.0025"/>
+  </module>
+
+  <!--
+  8. Aluminium ring (Al / 1.4 / 6.5 / 2.7 / 20 - 23.3)
+  -->
+  <module type="ring" name="8_Aluminium_ring" medium="AL700ICRU" density="1">
+    <Color r="0" g="1" b="1.0" t="0.6" />
+    <position unit="cm" x="0" y="0" z="6.5" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="20" r1="23.3" height="1.4"/>
+  </module>
+
+  <!--
+  9. Helium (He / 107.2 / 7.9 / 0.000166 / )
+  -->
+  <module type="cylinder" name="9_Helium" medium="HE700ICRU" density="1">
+    <Color r="0" g="1.0" b="0.5" t="0.3" />
+    <position unit="cm" x="0" y="0" z="7.9" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="107.2"/>
+  </module>
+
+  <!--
+  10. Aluminium ring (Al / 1.4 / 115.1 / 2.7 / 20 - 23.3)
+  -->
+  <module type="ring" name="10_Aluminium_ring" medium="AL700ICRU" density="1">
+    <Color r="0" g="1" b="1.0" t="0.6" />
+    <position unit="cm" x="0" y="0" z="115.1" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="20" r1="23.3" height="1.4"/>
+  </module>
+
+  <!--
+  11. Mylar bag (Mylar / 0.0025 / 116.5 / 1.4 / )
+  -->
+  <module type="cylinder" name="7_Mylar_bag" medium="MYLAR700ICRU" density="1">
+    <Color r="0" g="1" b="1.0" t="0.6" />
+    <position unit="cm" x="0" y="0" z="116.5" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="0.0025"/>
+  </module>
+
+  <!--
+  12. Air (Air / 1.6975 / 116.5025 / 0.001205 / )
+  -->
+  <module type="cylinder" name="12_Air" medium="AIR700ICRU" density="1">
+    <Color r="0" g="0.0" b="1.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="116.5025" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="23.3" height="1.6975"/>
+  </module>
+
+  <!--
+  13. Scoring plane (NA / NA / 118.2 / NA / )
+  -->
+
+  <!--Scoring plane для снятия профиля потока-->
+  <!--<module type="planefilter" name="13_Scoring_plane" medium="AIR700ICRU" density="1">
+    <Color r="0" g="0.5" b="0.5" t="0.8" />
+    <position unit="cm" x="0" y="0" z="118.2" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+  </module>-->
+
+  <!--Фантом для снятия профиля дозы-->
+  <module type="slab" name="13_Scoring_plane" medium="H2O700ICRU" density="1">
+    <Color r="0" g="0.5" b="0.5" t="0.8" />
+    <position unit="cm" x="0" y="0" z="118.2" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" height="0.5"/>
+  </module>
+
+</accelerator>

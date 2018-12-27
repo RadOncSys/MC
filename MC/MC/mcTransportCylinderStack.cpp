@@ -38,11 +38,40 @@ double mcTransportCylinderStack::getDistanceInside(mcParticle& p) const
 	// Плоскости
 	double vz = p.u.z();
 	double pd = (vz < 0) ? -p.p.z() / vz : (vz > 0) ? (h_ - p.p.z()) / vz : DBL_MAX;
-	return MIN(MIN(cd1, cd2), fabs(pd));
+	double dist = MIN(MIN(cd1, cd2), fabs(pd));
+
+	if (internalTransport_ != nullptr)
+	{
+		// К сожалению частицу нужно переводить в систему координат объекта
+		mcParticle pp(p);
+		pp.p = pp.p * mtoe_;
+		pp.u = p.u.transformDirection(mtoe_);
+		double dist2 = internalTransport_->getDistanceOutside(pp);
+		if (dist2 < dist)
+		{
+			p.transportNearest_ = pp.transportNearest_;
+			p.exitSurface_ = mcParticle::temb_shit_t::Internal;
+			return dist2;
+		}
+		else
+		{
+			p.exitSurface_ = mcParticle::temb_shit_t::External;
+			return dist;
+		}
+	}
+	else
+	{
+		p.exitSurface_ = mcParticle::temb_shit_t::External;
+		return dist;
+	}
+
+	return dist;
 }
 
 double mcTransportCylinderStack::getDistanceOutside(mcParticle& p) const
 {
+	p.exitSurface_ = mcParticle::temb_shit_t::External;
+
 	// Удаление от секущих плоскостей
 	double z = p.p.z(), vz = p.u.z();
 	if (z <= 0 && vz <= 0) return DBL_MAX;

@@ -25,11 +25,37 @@ void mcTransportCylinder::setGeometry(double r, double h)
 
 double mcTransportCylinder::getDistanceInside(mcParticle& p) const
 {
-	return mcGeometry::getDistanceToCylinderInside(p.p, p.u, r_, h_);
+	double dist = mcGeometry::getDistanceToCylinderInside(p.p, p.u, r_, h_);
+
+	if (internalTransport_ != nullptr)
+	{
+		// К сожалению частицу нужно переводить в систему координат объекта
+		mcParticle pp(p);
+		pp.p = pp.p * mtoe_;
+		pp.u = p.u.transformDirection(mtoe_);
+		double dist2 = internalTransport_->getDistanceOutside(pp);
+		if (dist2 < dist)
+		{
+			p.transportNearest_ = pp.transportNearest_;
+			p.exitSurface_ = mcParticle::temb_shit_t::Internal;
+			return dist2;
+		}
+		else
+		{
+			p.exitSurface_ = mcParticle::temb_shit_t::External;
+			return dist;
+		}
+	}
+	else
+	{
+		p.exitSurface_ = mcParticle::temb_shit_t::External;
+		return dist;
+	}
 }
 
 double mcTransportCylinder::getDistanceOutside(mcParticle& p) const
 {
+	p.exitSurface_ = mcParticle::temb_shit_t::External;
 	return mcGeometry::getDistanceToCylinderOutside(p.p, p.u, r_, h_);
 }
 

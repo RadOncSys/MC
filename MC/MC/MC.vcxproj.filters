@@ -283,6 +283,36 @@
     <ClInclude Include="mcScoreSpectraFluence.h">
       <Filter>Score</Filter>
     </ClInclude>
+    <ClInclude Include="mcETransportConvexPolygonCircle.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScorePhaseSpaceConcentrator.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreSphereMatrix.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceAcceleratedBeam.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceModelRadialPhsp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportEmbeddedGroup.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportJawPairRounded.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportLinearChain.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportMLC.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcClinicalElectronBeam.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -515,6 +545,36 @@
     </ClCompile>
     <ClCompile Include="mcScoreSpectraFluence.cpp">
       <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcETransportConvexPolygonCircle.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScorePhaseSpaceConcentrator.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreSphereMatrix.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceAcceleratedBeam.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceModelRadialPhsp.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportEmbeddedGroup.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportJawPairRounded.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportLinearChain.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportMLC.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcClinicalElectronBeam.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -22,6 +22,8 @@ public:
 
 	void setScoreTrack(double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons);
 	bool IsGamma() const { return isGamma_; };
+	bool IsStartInside() const { return isStartInside_; };
+	void SetIsStartInside(bool b) { isStartInside_ = b; };
 
 	void setModuleName(const char* s);
 	const char* getModuleName() const { return attached_module_; }
@@ -50,4 +52,6 @@ protected:
 	// На основании этого флага принимается решение транспортировать частицы
 	// изнутри связанного объекта, или снаружи.
 	bool isGamma_;
+	
+	bool isStartInside_;
 };

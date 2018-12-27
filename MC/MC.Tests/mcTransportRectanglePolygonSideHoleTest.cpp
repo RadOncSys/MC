@@ -1,3 +1,7 @@
+// Radiation Oncology Monte Carlo open source project
+//
+// Author: [2015-2017] Gennady Gorlachev (ggorlachev@roiss.ru) 
+//---------------------------------------------------------------------------
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "../MC/mcTransportRectanglePolygonSideHole.h"

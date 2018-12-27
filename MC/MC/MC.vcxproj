@@ -23,7 +23,7 @@
     <ProjectGuid>{0800044D-F62C-45A5-9F5C-A1BD1CCBAD7E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MC</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -139,8 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="mcClinicalElectronBeam.h" />
     <ClInclude Include="mcDefs.h" />
     <ClInclude Include="mcElement.h" />
+    <ClInclude Include="mcETransportConvexPolygonCircle.h" />
     <ClInclude Include="mcETransportSphere.h" />
     <ClInclude Include="mcETransportTrap.h" />
     <ClInclude Include="mcGeometry.h" />
@@ -184,15 +186,19 @@
     <ClInclude Include="mcScoreMatrixRZ.h" />
     <ClInclude Include="mcScoreMatrixXY.h" />
     <ClInclude Include="mcScoreParticleContainer.h" />
+    <ClInclude Include="mcScorePhaseSpaceConcentrator.h" />
     <ClInclude Include="mcScorePHSP.h" />
     <ClInclude Include="mcScoreSpectraFluence.h" />
     <ClInclude Include="mcScoreSphereFluence.h" />
+    <ClInclude Include="mcScoreSphereMatrix.h" />
     <ClInclude Include="mcScoreTrack.h" />
     <ClInclude Include="mcSource.h" />
+    <ClInclude Include="mcSourceAcceleratedBeam.h" />
     <ClInclude Include="mcSourceAccelerator.h" />
     <ClInclude Include="mcSourceCylindricalC60.h" />
     <ClInclude Include="mcSourceDistributed.h" />
     <ClInclude Include="mcSourceLEBA.h" />
+    <ClInclude Include="mcSourceModelRadialPhsp.h" />
     <ClInclude Include="mcSourceSimpleMono.h" />
     <ClInclude Include="mcSourceSimpleParallel.h" />
     <ClInclude Include="mcSourceSphereC60.h" />
@@ -206,6 +212,10 @@
     <ClInclude Include="mcTransportConicalRing.h" />
     <ClInclude Include="mcTransportCylinder.h" />
     <ClInclude Include="mcTransportCylinderStack.h" />
+    <ClInclude Include="mcTransportEmbeddedGroup.h" />
+    <ClInclude Include="mcTransportJawPairRounded.h" />
+    <ClInclude Include="mcTransportLinearChain.h" />
+    <ClInclude Include="mcTransportMLC.h" />
     <ClInclude Include="mcTransportPlaneFilter.h" />
     <ClInclude Include="mcTransportPolygon.h" />
     <ClInclude Include="mcTransportPrimaryCollimator.h" />
@@ -222,6 +232,8 @@
     <ClInclude Include="ProfileProcessor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mcClinicalElectronBeam.cpp" />
+    <ClCompile Include="mcETransportConvexPolygonCircle.cpp" />
     <ClCompile Include="mcETransportSphere.cpp" />
     <ClCompile Include="mcETransportTrap.cpp" />
     <ClCompile Include="mcGeometry.cpp" />
@@ -264,15 +276,19 @@
     <ClCompile Include="mcScoreMatrixRZ.cpp" />
     <ClCompile Include="mcScoreMatrixXY.cpp" />
     <ClCompile Include="mcScoreParticleContainer.cpp" />
+    <ClCompile Include="mcScorePhaseSpaceConcentrator.cpp" />
     <ClCompile Include="mcScorePHSP.cpp" />
     <ClCompile Include="mcScoreSpectraFluence.cpp" />
     <ClCompile Include="mcScoreSphereFluence.cpp" />
+    <ClCompile Include="mcScoreSphereMatrix.cpp" />
     <ClCompile Include="mcScoreTrack.cpp" />
     <ClCompile Include="mcSource.cpp" />
+    <ClCompile Include="mcSourceAcceleratedBeam.cpp" />
     <ClCompile Include="mcSourceAccelerator.cpp" />
     <ClCompile Include="mcSourceCylindricalC60.cpp" />
     <ClCompile Include="mcSourceDistributed.cpp" />
     <ClCompile Include="mcSourceLEBA.cpp" />
+    <ClCompile Include="mcSourceModelRadialPhsp.cpp" />
     <ClCompile Include="mcSourceSimpleMono.cpp" />
     <ClCompile Include="mcSourceSimpleParallel.cpp" />
     <ClCompile Include="mcSourceSphereC60.cpp" />
@@ -286,6 +302,10 @@
     <ClCompile Include="mcTransportConicalRing.cpp" />
     <ClCompile Include="mcTransportCylinder.cpp" />
     <ClCompile Include="mcTransportCylinderStack.cpp" />
+    <ClCompile Include="mcTransportEmbeddedGroup.cpp" />
+    <ClCompile Include="mcTransportJawPairRounded.cpp" />
+    <ClCompile Include="mcTransportLinearChain.cpp" />
+    <ClCompile Include="mcTransportMLC.cpp" />
     <ClCompile Include="mcTransportPlaneFilter.cpp" />
     <ClCompile Include="mcTransportPolygon.cpp" />
     <ClCompile Include="mcTransportPrimaryCollimator.cpp" />

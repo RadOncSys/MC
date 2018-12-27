@@ -1,6 +1,6 @@
 // Radiation Oncology Monte Carlo open source project
 //
-// Author: [2005-2017] Gennady Gorlachev (ggorlachev@roiss.ru) 
+// Author: [2005-2018] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 #pragma once
 #include <ole2.h>
@@ -8,7 +8,7 @@
 #include <vector>
 
 // Аналог узла XML документа.
-// В отличие от последнего атрибуты превращаются в узлы, не имеющие детей.
+// В отличие от последнего аттрибуты превращаются в узлы, не имеющие детей.
 class XPRNode
 {
 public:

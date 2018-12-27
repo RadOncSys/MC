@@ -26,6 +26,7 @@ double mcETransportSphere::getDistanceInside(mcParticle& p) const
 		double dist2 = internalTransport_->getDistanceOutside(pp);
 		if (dist2 < dist)
 		{
+			p.transportNearest_ = pp.transportNearest_;
 			p.exitSurface_ = mcParticle::temb_shit_t::Internal;
 			return dist2;
 		}
