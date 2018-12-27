@@ -29,6 +29,7 @@ void mcTransportSimpleSplitter::beginTransport(mcParticle& p)
 	// Не трогаем стэк.
 	// Частицы можно вообще транспортировать начиная с какого-то объекта.
 	// Нюанс только в контроле за потоками.
+
 	if (p.u.z() < 0 && previousTransport_ != nullptr)
 		previousTransport_->beginTransport(p);
 	else if (p.u.z() > 0 && nextTransport_ != nullptr)

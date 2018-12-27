@@ -173,7 +173,7 @@ public:
 	// Вспомогательные методы
 	//
 	void setPreviousTransport(mcTransport* t) { previousTransport_ = t; }
-	void setNextTransport(mcTransport* t) { nextTransport_ = t; t->setPreviousTransport(this); }
+	void setNextTransport(mcTransport* t) { nextTransport_ = t; if (t != nullptr) t->setPreviousTransport(this); }
 	const mcTransport* getPreviousTransport() const { return previousTransport_; }
 	const mcTransport* getNextTransport() const { return nextTransport_; }
 
@@ -181,6 +181,9 @@ public:
 	void setExternalTransport(mcTransport* t);
 	mcTransport* getInternalTransport() const { return internalTransport_; }
 	mcTransport* getExternalTransport() const { return externalTransport_; }
+
+	// Запрос вложенного транспорта по имени
+	virtual mcTransport* getInternalTransportByName(const char* name);
 
 	void setStamp(int stamp) { stamp_ = stamp; }
 
@@ -199,7 +202,9 @@ public:
 	virtual void dumpVRML(ostream& os) const;
 
 	void dumpVRMLRing(ostream& os, double r1, double r2, double z, bool normPositive, double x0 = 0, double y0 = 0) const;
+	void dumpVRMLSemiCircle(ostream& os, double r, double z, bool normPositive, const geomMatrix3D& M) const;
 	void dumpVRMLCylinderSide(ostream& os, double r, double z1, double z2, bool normPositive, double x0 = 0, double y0 = 0) const;
+	void dumpVRMLCylinderSemiSide(ostream& os, double r, double h, const geomMatrix3D& M) const;
 	void dumpVRMLConicalCylinderSide(ostream& os, double r, double z1, double z2, double f, bool normPositive, double x0 = 0, double y0 = 0) const;
 	void dumpVRMLCylinderRing(ostream& os, double r1, double r2, double z1, double z2) const;
 	void dumpVRMLConicalRing(ostream& os, double r1, double r2, double z1, double z2, double f) const;
@@ -207,6 +212,7 @@ public:
 	void dumpVRMLRectangleRing(ostream& os, double x1, double x2, double y1, double y2, double d, double h) const;
 	void dumpVRMLCylinder(ostream& os, double r, double z1, double z2, double x0 = 0, double y0 = 0) const;
 	void dumpVRMLPrism(ostream& os, double ax, double ay, double az) const;
+	void dumpVRMLPolygonCircle(ostream& os, const std::vector<double>& pz, const std::vector<double>& pr) const;
 
 	//
 	// Геометрия (методы нужны для поддержки стандартной функции moveParticle)

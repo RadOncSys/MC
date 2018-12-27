@@ -20,7 +20,7 @@ using namespace std;
 #define TIME ((double) clock()/CLOCKS_PER_SEC)
 #define TIMESINCE(t) ((double) (TIME - (t)))
 
-int _tmain(int argc, _TCHAR* argv[])
+int _tmain(int argc, _TCHAR* argv [])
 {
 	if (argc != 3)
 	{
@@ -66,7 +66,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		media.addName("BE700ICRU");
 		media.addName("TA700ICRU");
 		media.addName("AU700ICRU");
-		media.addName("PMMA700ICRU");
 
 		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
 
@@ -215,7 +214,7 @@ int _tmain(int argc, _TCHAR* argv[])
 						t->setScore(score);
 						break;
 					}
-					t = (mcTransport*)t->getNextTransport();
+					t = (mcTransport*) t->getNextTransport();
 				}
 				if (t == nullptr)
 					throw exception("Geometry module for score not found");
@@ -232,9 +231,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		if (ecut > 0)
 		{
 			vector<mcMedium*> mm = media.Media();
-			for (i = 0; i < (int)mm.size(); i++)
+			for (i = 0; i < (int) mm.size(); i++)
 			{
-				mcMediumXE* m = (mcMediumXE*)mm[i];
+				mcMediumXE* m = (mcMediumXE*) mm[i];
 				m->transCutoff_elec = ecut;
 
 				// Test: ручное отключение транспорта электронов в коллиматоре
@@ -250,77 +249,13 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 
 		if (source == nullptr)
-			throw exception("Particles source must be provided");
-		bool startinside = source->IsGamma();
+			throw exception("Particles ource must be provided");
+		bool startinside = source->IsGamma() || source->IsStartInside();
 		if (doTrack)
 			source->setScoreTrack(trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons);
 
-		//
-		// Симуляция
-		//
-		mcTransport* tstart = tfirst;
-		if (startinside)
-		{
-			mcTransport* t = tfirst;
-			while (t)
-			{
-				if (strcmp(t->getName(), source->getModuleName()) == 0)
-					break;
-
-				// Проверяем вложения
-				mcTransport *tfound = nullptr;
-				mcTransport* ti = t;
-				while (ti)
-				{
-					if (strcmp(ti->getName(), source->getModuleName()) == 0)
-					{
-						tfound = ti;
-						break;
-					}
-					ti = ti->getInternalTransport();
-				}
-				if (tfound != nullptr)
-				{
-					t = tfound;
-					break;
-				}
-				t = (mcTransport*)t->getNextTransport();
-			}
-			if (t == nullptr)
-				throw exception("Gamma source should be related to the object");
-			tstart = t;
-		}
-
-		double* energySource = new double[nThreads];  // счетчик энергии источника
-		for (i = 0; i < nThreads; i++) energySource[i] = 0;
-
-		for (int ib = 0; ib < nBanches; ib++)
-		{
-			wcout << L"Time:" << TIMESINCE(simStartTime) << L" sec" << L"       Start bunch " << ib + 1 << L" of " << nBanches << endl;
-
-			concurrency::parallel_for(0u, (unsigned)nThreads, [threads, source, tstart, nParticles, energySource, startinside](unsigned it)
-			{
-				mcParticle particle;
-
-				for (int ii = 0; ii < nParticles; ii++)
-				{
-					source->sample(particle, &threads[it]);
-					energySource[it] += particle.ke;
-
-					if (startinside)
-						tstart->beginTransportInside(particle);
-					else
-						tstart->beginTransport(particle);
-				}
-			});
-		}
-
-		delete[] threads;
-
-		wcout << L"Simulation time =  " << TIMESINCE(simStartTime) << L" sec" << endl;
-		wcout << L"Writing results ..." << endl;
-
-		// Запись геометрии в VRML
+		// Запись геометрии в VRML (до симуляции на случай если таковая сломается; 
+		// можно бкдет посмотреть простую причину)
 		if (!vrmlFile.empty())
 		{
 			ofstream wfs(vrmlFile.c_str());
@@ -356,6 +291,73 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		else
 			wcout << L"VRML dump skipped" << endl;
+
+		//
+		// Симуляция
+		//
+		mcTransport* tstart = tfirst;
+		if (startinside)
+		{
+			mcTransport* t = tfirst;
+			while (t)
+			{
+				auto tfound = t->getInternalTransportByName(source->getModuleName());
+				if (tfound != nullptr)
+				{
+					t = tfound;
+					break;
+				}
+				t = (mcTransport*) t->getNextTransport();
+			}
+			if (t == nullptr)
+				throw exception("Gamma source should be related to the object");
+			tstart = t;
+		}
+
+		double* energySource = new double[nThreads];  // счетчик энергии источника
+		for (i = 0; i < nThreads; i++) energySource[i] = 0;
+
+		for (int ib = 0; ib < nBanches; ib++)
+		{
+			wcout << L"Time:" << TIMESINCE(simStartTime) << L" sec" << L"       Start bunch " << ib + 1 << L" of " << nBanches << endl;
+
+			if (nThreads == 1)
+			{
+				mcParticle particle;
+				for (int ii = 0; ii < nParticles; ii++)
+				{
+					source->sample(particle, &threads[0]);
+					energySource[0] += particle.ke * particle.weight;
+
+					if (startinside)
+						tstart->beginTransportInside(particle);
+					else
+						tstart->beginTransport(particle);
+				}
+			}
+			else
+			{
+				concurrency::parallel_for(0u, (unsigned)nThreads, [threads, source, tstart, nParticles, energySource, startinside](unsigned it)
+				{
+					mcParticle particle;
+					for (int ii = 0; ii < nParticles; ii++)
+					{
+						source->sample(particle, &threads[it]);
+						energySource[it] += particle.ke * particle.weight;
+
+						if (startinside)
+							tstart->beginTransportInside(particle);
+						else
+							tstart->beginTransport(particle);
+					}
+				});
+			}
+		}
+
+		delete [] threads;
+
+		wcout << L"Simulation time =  " << TIMESINCE(simStartTime) << L" sec" << endl;
+		wcout << L"Writing results ..." << endl;
 
 		// Сохранение статистики
 		double energyDeposited = 0;
@@ -393,7 +395,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					ti = ti->getInternalTransport();
 				}
 
-				t = (mcTransport*)t->getNextTransport();
+				t = (mcTransport*) t->getNextTransport();
 			}
 
 			wcout << L"Statistic has been dumped to " << statFile << endl;
@@ -408,7 +410,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		while (t)
 		{
 			mcTransport* tt = t;
-			t = (mcTransport *)tt->getNextTransport();
+			t = (mcTransport *) tt->getNextTransport();
 
 			// Проверяем вложения
 			mcTransport* ti = tt;
@@ -423,7 +425,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			delete tt;
 		}
 
-		wcout << L"Simulation completed successfully..." << endl;
+		wcout << L"Simulation completed successfuly..." << endl;
 	}
 	catch (std::exception& e)
 	{

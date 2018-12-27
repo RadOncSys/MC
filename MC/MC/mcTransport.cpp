@@ -49,9 +49,7 @@ mcTransport::~mcTransport(void)
 		delete regions_[i];
 }
 
-//
-// Инициализация
-//
+#pragma region Initialization
 
 void mcTransport::setPosition(const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x)
 {
@@ -90,9 +88,10 @@ void mcTransport::addRegion(mcTransport* region)
 	isMultiRegions_ = true;
 }
 
-//
-// Транспорт
-//
+#pragma endregion
+
+#pragma region Transport
+
 void mcTransport::beginTransport(mcParticle& p)
 {
 	if (this->media_ == nullptr)
@@ -182,7 +181,7 @@ void mcTransport::endTransport(mcParticle* particle)
 	{
 		if (pp.u.z() < 0 && previousTransport_ != nullptr)
 			previousTransport_->beginTransport(pp);
-		else if (pp.u.z() > 0 && nextTransport_ != nullptr)
+		else if (pp.u.z() >= 0 && nextTransport_ != nullptr)
 			nextTransport_->beginTransport(pp);
 		else if (pp.trackScore_)
 			pp.trackScore_->score(particle->thread_->id(), pp.t, pp.p, pp.p + (pp.u * 100), pp.ke);
@@ -197,6 +196,10 @@ void mcTransport::endTransport(mcParticle* particle)
 			pp.trackScore_->score(particle->thread_->id(), pp.t, pp.p, pp.p + (pp.u * 100), pp.ke);
 	}
 }
+
+#pragma endregion
+
+#pragma region Standard simulation
 
 void mcTransport::simulate(mcThread* thread)
 {
@@ -355,6 +358,16 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	if (phys->Discarge(particle, *med, edep))
 		return MCMR_DISCARGE;
 
+	// Hack!!! GG 20171030
+	if (_isnan(particle->ke) != 0)
+	{
+		cout << "Non number energy: " << this->getName() << endl;
+		cout << "Position: " << particle->p;
+		cout << "Direction: " << particle->u;
+		particle->thread_->RemoveParticle();
+		return MCMR_DISCARGE;
+	}
+
 	double freepath = phys->MeanFreePath(particle->ke, *med, defdensity_);
 	step = freepath * particle->mfps;
 
@@ -380,7 +393,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	double dist;
 	if (isMultiRegions_)
 	{
-		dist = regions_[particle->region.idx_ - 1]->getDistanceInside(*particle) + DBL_EPSILON;
+		dist = regions_[particle->region.idx_ - 1]->getDistanceInside(*particle);
 	}
 	else
 	{
@@ -443,16 +456,21 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	}
 }
 
-void mcTransport::MoveToCoordinateSystem(const geomMatrix3D& m)
+double mcTransport::HowManyMFPs(mcRng& rng)
 {
-	mttow_ = mttow_ * m;
-	mwtot_ = mttow_;
-	mwtot_.makeInverse();
+	double howMany = -log(1.0 - rng.rnd());
+	return MAX(howMany, DBL_EPSILON);
 }
 
-//
-// Scoring
-//
+double mcTransport::etotal() const
+{
+	return score_ != nullptr ? score_->etotal() : 0;
+}
+
+#pragma endregion
+
+#pragma region Scoring
+
 void mcTransport::setScore(mcScore* score)
 {
 	if (score_ != nullptr) delete score_;
@@ -483,24 +501,26 @@ void mcTransport::setExternalTransport(mcTransport* t)
 	t->setInternalTransport(this);
 }
 
-//
-// Вспомогательные методы
-//
-
-double mcTransport::HowManyMFPs(mcRng& rng)
+mcTransport* mcTransport::getInternalTransportByName(const char* name)
 {
-	double howMany = -log(1.0 - rng.rnd());
-	return MAX(howMany, DBL_EPSILON);
+	if (strcmp(this->getName(), name) == 0)
+		return this;
+
+	auto ti = this->getInternalTransport();
+	if (ti != nullptr)
+	{
+		// Рекурсивный поиск транспорта
+		auto t = ti->getInternalTransportByName(name);
+		if (t != nullptr)
+			return t;
+	}
+	return nullptr;
 }
 
-double mcTransport::etotal() const
-{
-	return score_ != nullptr ? score_->etotal() : 0;
-}
+#pragma endregion
 
-//
-// Геометрия (методы нужны для поддержки стандартной функции moveParticle)
-//
+#pragma region Геометрия (методы нужны для поддержки стандартной функции moveParticle)
+
 double mcTransport::getDistanceInside(mcParticle& p) const
 {
 	implementException();
@@ -509,8 +529,18 @@ double mcTransport::getDistanceInside(mcParticle& p) const
 
 double mcTransport::getDistanceOutside(mcParticle& p) const
 {
-	implementException();
-	return 0;
+	double dist = DBL_MAX;
+	if (isMultiRegions_)	// Поддержка вложений в группрвром транспорте
+	{
+		for (unsigned i = 0; i < regions_.size(); i++)
+		{
+			double f = regions_[i]->getDistanceOutside(p) + DBL_EPSILON;
+			if (f < dist) dist = f;
+		}
+	}
+	else
+		implementException();
+	return dist;
 }
 
 double mcTransport::getDNearInside(const geomVector3D& p) const
@@ -526,9 +556,17 @@ void mcTransport::implementException()
 	throw std::exception("Please implement or do not use default geometry");
 }
 
-//
-// Auxilary
-//
+#pragma endregion
+
+#pragma region Auxilary
+
+void mcTransport::MoveToCoordinateSystem(const geomMatrix3D& m)
+{
+	mttow_ = mttow_ * m;
+	mwtot_ = mttow_;
+	mwtot_.makeInverse();
+}
+
 mcMediumXE* mcTransport::getParticleMedium()
 {
 	throw std::exception("mcTransport::getParticleMedium: method should be implemented in each transport class");
@@ -573,6 +611,10 @@ void mcTransport::dump(ostream& os) const
 	}
 }
 
+#pragma endregion
+
+#pragma region VRML utilities
+
 void mcTransport::dumpVRMLRing(ostream& os, double r1, double r2, double z, bool normPositive, double x0, double y0) const
 {
 	int i, na = 24;
@@ -612,6 +654,54 @@ void mcTransport::dumpVRMLRing(ostream& os, double r1, double r2, double z, bool
 	for (i = 0; i < na; i++) {
 		os << "                " << 2 * i << ", " << 2 * i + 1 << ", " << 2 * ((i + 1) % na) + 1 << ", " << 2 * ((i + 1) % na);
 		if (i < na - 1) os << ", -1,";
+		os << endl;
+	}
+
+	os << "            ]" << endl;
+	os << "        }" << endl;
+	os << "      }" << endl;
+	os << "    }" << endl;
+}
+
+void mcTransport::dumpVRMLSemiCircle(ostream& os, double r, double z, bool normPositive, const geomMatrix3D& M) const
+{
+	int i, na = 24;
+	double da = PI / na;
+
+	os << "    Transform {" << endl;
+	os << "      children Shape {" << endl;
+	os << "        appearance Appearance {" << endl;
+	os << "          material Material {" << endl;
+	os << "            diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+	os << "            transparency " << transparancy_ << endl;
+	os << "          }" << endl;
+	os << "        }" << endl;
+	os << "        geometry IndexedFaceSet {" << endl;
+	os << "            coord Coordinate {" << endl;
+	os << "                point [" << endl;
+
+	geomVector3D p = geomVector3D(0, 0, z) * M;
+	os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z() << ", " << endl;
+
+	for (i = 0; i <= na; i++) 
+	{
+		double a = i*da + PI * 0.5;
+		geomVector3D p = geomVector3D(r*cos(a), r*sin(a), z) * M;
+		os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z();
+		if (i < na) os << ", ";
+		os << endl;
+	}
+
+	os << "                ]" << endl;
+	os << "            }" << endl;
+	os << "            coordIndex [" << endl;
+
+	for (i = 0; i < na; i++) {
+		if (normPositive)
+			os << "                " << i + 1 << ", " << i + 2 << ", " << 0;
+		else
+			os << "                " << i + 2 << ", " << i + 1 << ", " << 0;
+		if (i < na) os << ", -1,";
 		os << endl;
 	}
 
@@ -673,6 +763,49 @@ void mcTransport::dumpVRMLConicalCylinderSide(ostream& os, double r, double z1, 
 
 	for (i = 0; i < na; i++) {
 		os << "                " << 2 * i << ", " << 2 * i + 1 << ", " << 2 * ((i + 1) % na) + 1 << ", " << 2 * ((i + 1) % na);
+		if (i < na - 1) os << ", -1,";
+		os << endl;
+	}
+
+	os << "            ]" << endl;
+	os << "        }" << endl;
+	os << "      }" << endl;
+	os << "    }" << endl;
+}
+
+void mcTransport::dumpVRMLCylinderSemiSide(ostream& os, double r, double h, const geomMatrix3D& M) const
+{
+	int i, na = 24;
+	double da = PI / na;
+
+	os << "    Transform {" << endl;
+	os << "      children Shape {" << endl;
+	os << "        appearance Appearance {" << endl;
+	os << "          material Material {" << endl;
+	os << "            diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+	os << "            transparency " << transparancy_ << endl;
+	os << "          }" << endl;
+	os << "        }" << endl;
+	os << "        geometry IndexedFaceSet {" << endl;
+	os << "            coord Coordinate {" << endl;
+	os << "                point [" << endl;
+
+	for (i = 0; i <= na; i++) {
+		double a = i*da + PI * 0.5;
+		geomVector3D p = geomVector3D(r*cos(a), r*sin(a), h) * M;
+		os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z() << ", " << endl;
+		p = geomVector3D(r*cos(a), r*sin(a), 0) * M;
+		os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z();
+		if (i < na) os << ", ";
+		os << endl;
+	}
+
+	os << "                ]" << endl;
+	os << "            }" << endl;
+	os << "            coordIndex [" << endl;
+
+	for (i = 0; i < na; i++) {
+		os << "                " << 2 * i << ", " << 2 * i + 1 << ", " << 2 * (i + 1) + 1 << ", " << 2 * (i + 1);
 		if (i < na - 1) os << ", -1,";
 		os << endl;
 	}
@@ -837,3 +970,35 @@ void mcTransport::dumpVRMLPrism(ostream& os, double ax, double ay, double az) co
 	os << "    }" << endl;
 
 }
+
+void mcTransport::dumpVRMLPolygonCircle(ostream& os, const std::vector<double>& pz, const std::vector<double>& pr) const
+{
+	if(pz.size() < 2)
+		throw std::exception("dumpVRMLPolygonCircle: less thet 2 polygon points");
+
+	for (unsigned i = 1; i < pz.size(); i++)
+	{
+		bool normPositive = false;
+		double r1 = pr[i - 1], r2 = pr[i];
+		double z1 = pz[i - 1], z2 = pz[i];
+		if(z1 >= z2)
+			throw std::exception("dumpVRMLPolygonCircle: Z step must be positive and not zero");
+
+		double f = r1 == r2 ? 1e6 : r1 * (z2 - z1) / (r1 - r2);
+		if (f < 0)
+		{
+			double r = r1; r1 = r2; r2 = r;
+			double z = z1; z1 = z2; z2 = z;
+			f = r1 * (z2 - z1) / (r1 - r2);
+			normPositive = true;
+		}
+		dumpVRMLConicalCylinderSide(os, r1, z1, z2, f, normPositive);
+	}
+
+	// Торцы
+	dumpVRMLRing(os, 0, pr.front(), pz.front(), false);
+	dumpVRMLRing(os, 0, pr.back(), pz.back(), true);
+
+}
+
+#pragma endregion

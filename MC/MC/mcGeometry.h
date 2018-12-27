@@ -3,6 +3,7 @@
 // Author: [2005-2017] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 #pragma once
+#include <vector>
 
 class geomVector3D;
 
@@ -39,6 +40,13 @@ public:
 	static double getDistanceToConeOutside(const geomVector3D& p, const geomVector3D& v, double r, double f);
 
 	/// <summary>
+	/// ѕересечение с конусообразной боковой поверхностью между z1 b z2 и r1 и r2.
+	/// ¬ажно: должно выполн€тьс€ условие z1 < p.z < z2.
+	/// </summary>
+	static double getDistanceToConeSlabInside(const geomVector3D& p, const geomVector3D& v, double z1, double z2, double r1, double r2);
+	static double getDistanceToConeSlabOutside(const geomVector3D& p, const geomVector3D& v, double z1, double z2, double r1, double r2);
+
+	/// <summary>
 	/// ѕересечение с ассиметричной бесконечной плоскопараллельной трубой
 	/// </summary>
 	static double getDistanceToRectanglePipeInside(const geomVector3D& p, const geomVector3D& v,
@@ -70,6 +78,12 @@ public:
 	/// </summary>
 	static double getDistanceToSphereInside(const geomVector3D& p, const geomVector3D& v, double r);
 	static double getDistanceToSphereOutside(const geomVector3D& p, const geomVector3D& v, double r);
+
+	/// <summary>
+	/// –ассто€ние до выпуклого объекта образованном вращением полигона
+	/// </summary>
+	static double getDistanceToConvexPolygonCircleInside(const geomVector3D& p, const geomVector3D& v, const std::vector<double>& pz, const std::vector<double>& pr);
+	static double getDistanceToConvexPolygonCircleOutside(const geomVector3D& p, const geomVector3D& v, const std::vector<double>& pz, const std::vector<double>& pr);
 };
 
 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Параметры прямой симуляции потока излучения на уровне портального детектора (Со-60 / Рокус)
+Аргументы симуляции, например: RR_portal_sim_artur.xml RokusR_artur.xml
+-->
+
+<input>
+  <simulation nhistories="100000" nbanches="10">
+  </simulation>
+
+  <options>
+    <vrmlfile>RTS_Portal.wrl</vrmlfile>
+    <statfile>statistic.dat</statfile>
+    <transCutoff_elec unit="MeV" ecat ="0.2"/>
+  </options>
+
+  <!-- 
+  Источник может быть только один.
+  Врианты типов: simple, conical.
+  -->
+  <source name="RTS RF source" module="Target" trackparticles="false">
+    <!--Типы спектров spectrum="gauss/triangle/prism"-->
+    <radiation type="electron" energy="6.0" ewidth="0.0" spectrum="gauss" />
+    <!--В узле shape параметр size указывает характенрный размер пятна источника
+    (в случае экспоненты это радиус в см, на котором интенсивность падает в e раз-->
+    <shape direction="src_leba" size="0.0" />
+    <position unit="cm" x="0" y="0" z="-100.25" />
+    <direction x="0" y="0" z="1" />
+  </source>
+
+  <!--
+  Скоринг.
+  Рассчитываем исходя из размера пиксела 0.4 мм и матрицы 1024 х 1024
+  -->
+  <score type="xy" module="Phantom">
+    <size unit="cm" nx="1024" ny="1024"
+          psx="0.04" psy="0.04" psz="0.06"
+          z0="0.0" />
+    <!--<image outdcm="RTS_Cu_MTF.dcm" calibrdcm="RTS_Cu_calibr.dcm" />-->
+    <image outdcm="RTS_Cu_calibr.dcm" />
+  </score>
+
+</input>

@@ -3,7 +3,7 @@
 
 mcSource::mcSource()
 	:mcObj()
-	, trackScore_(nullptr), nThreads_(0), etotal_(nullptr), isGamma_(false)
+	, trackScore_(nullptr), nThreads_(0), etotal_(nullptr), isGamma_(false), isStartInside_(false)
 {
 	red_ = 1.0; green_ = 0; blue_ = 0; transparancy_ = 0.2;
 }
@@ -12,6 +12,7 @@ mcSource::mcSource(const char* name, int nThreads)
 	:mcObj()
 	, trackScore_(nullptr)
 	, isGamma_(false)
+	, isStartInside_(false)
 {
 	red_ = 1.0; green_ = 0; blue_ = 0; transparancy_ = 0.2;
 	setName(name);

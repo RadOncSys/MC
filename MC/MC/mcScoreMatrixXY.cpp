@@ -2,7 +2,7 @@
 #include "mcGeometry.h"
 #include "mctransport.h"
 #include "ProfileProcessor.h"
-//#include "../../Include/SimpleImage.h"
+#include "../../lib/RO.Dicom/SimpleImage.h"
 
 mcScoreMatrixXY::mcScoreMatrixXY(const char* module_name, int nThreads, int nx, int ny, double psx, double psy, double psz, double z0)
 	:mcScore(module_name, nThreads), nx_(nx), ny_(ny), z0_(z0), psx_(psx), psy_(psy), psz_(psz)
@@ -40,6 +40,13 @@ void mcScoreMatrixXY::ScorePoint(double edep
 	int iy = int((p.y() - miny_) / psy_);
 	if (ix >= nx_ || iy >= ny_)
 		return;
+
+	if (edep > 20.0)
+	{
+		cout << "Unexpected energy deposition at point x = " << p.x()
+			<< ",  y = " << p.y() << ",  z = " << p.z() << ",  edep = " << edep << endl;
+		return;
+	}
 
 	M_[iThread][iy*nx_ + ix] += edep;
 	etotal_[iThread] += edep;
@@ -87,6 +94,13 @@ void mcScoreMatrixXY::ScoreLine(double edep
 	if (ix1 > ix2) { i = ix1; ix1 = ix2; ix2 = i; }
 	if (iy1 > iy2) { i = iy1; iy1 = iy2; iy2 = i; }
 
+	if (edep > 20.0)
+	{
+		cout << "Unexpected energy deposition at line begin x = " << x1
+			<< ",  y = " << y1 << ",  z = " << z1 << ",  edep = " << edep << endl;
+		return;
+	}
+
 	// Energy lose per unit path.
 	double f = edep / (p1 - p0).length();
 
@@ -125,6 +139,9 @@ double mcScoreMatrixXY::Dose(int ix, int iy) const
 	}
 	return f;
 }
+
+void mcScoreMatrixXY::SetImageFile(const char* fname) { image_file_ = fname; }
+void mcScoreMatrixXY::SetCalibrationFile(const char* fname) { calibration_file_ = fname; }
 
 void mcScoreMatrixXY::dumpStatistic(ostream& os) const
 {
@@ -170,6 +187,67 @@ void mcScoreMatrixXY::dumpStatistic(ostream& os) const
 				os << '\t' << Dose(i, j);
 			os << endl;
 		}
+	}		
+
+	// Ёкспорт изображени€ 
+	if (!image_file_.empty())
+	{
+		bool useCalibration = !calibration_file_.empty();
+
+		RO::Dicom::SimpleImage calibrimage;
+		unsigned short* calibr = nullptr;
+
+		if (useCalibration)
+		{
+			calibrimage.ReadFromFile(calibration_file_.c_str());
+			calibr = calibrimage.GetPixelData();
+		}
+
+		RO::Dicom::SimpleImage image;
+
+		image.SetModality("RTIMAGE");
+		image.SetResolution(nx_, ny_);
+		image.SetPixelSize(psx_, psy_);
+		image.SetImageCorner(minx_, miny_);
+		image.SetPosition(z0_);
+
+		double dmax = 0;
+		double cmax = 0;
+		for (j = 0; j < ny_; j++)
+		{
+			for (i = 0; i < nx_; i++)
+			{
+				double d = Dose(i, j);
+				if (dmax < d) dmax = d;
+				if (useCalibration)
+				{
+					unsigned short c = calibr[j*nx_ + i];
+					if (cmax < c) cmax = c;
+				}
+			}
+		}
+		double scale = dmax > 0 ? double(0x7fff) / dmax : 0;
+
+		unsigned short* data = new unsigned short[nx_ * ny_];
+		for (j = 0; j < ny_; j++)
+		{
+			for (i = 0; i < nx_; i++)
+			{
+				if (useCalibration && cmax > 0)
+				{
+					unsigned short c = calibr[j*nx_ + i];
+					if (c <= 0) c = (unsigned short)cmax;
+					data[j*nx_ + i] = (unsigned short) ((Dose(i, j) * scale * cmax) / c);
+				}
+				else
+					data[j*nx_ + i] = (unsigned short) (Dose(i, j) * scale);
+			}
+		}
+
+		image.SetPixelData(data);
+		delete [] data;
+
+		image.WtiteToFile(image_file_.c_str());
 	}
 }
 

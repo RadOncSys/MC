@@ -8,7 +8,9 @@
 #include "../../mc/mc/mcTransportConicalRing.h"
 #include "../../mc/mc/mcTransportConicalHole.h"
 #include "../../mc/mc/mcTransportRectangleRing.h"
+#include "../../mc/mc/mcTransportJawPairRounded.h"
 #include "../../mc/mc/mcTransportRectanglePolygonSideHole.h"
+#include "../../mc/mc/mcTransportMLC.h"
 #include "../../mc/mc/mcTransportCylinderStack.h"
 #include "../../mc/mc/mcTransportSlab.h"
 #include "../../mc/mc/mcTransportPlaneFilter.h"
@@ -19,14 +21,17 @@
 #include "../../mc/mc/mcPTLasVegas.h"
 #include "../../mc/mc/mcETransportSphere.h"
 #include "../../mc/mc/mcETransportTrap.h"
+#include "../../mc/mc/mcETransportConvexPolygonCircle.h"
+#include "../../mc/mc/mcTransportEmbeddedGroup.h"
+#include "../../mc/mc/mcTransportLinearChain.h"
 
 #include "../../mc/mc/mcScorePHSP.h"
 #include "../../mc/mc/mcScoreBeamFluence.h"
 #include "../../mc/mc/mcScoreBeamFluence2.h"
 #include "../../mc/mc/mcScoreMatrixRZ.h"
-#include "../../mc/mc/mcScoreMatrixCylinderAzimut.h"
 #include "../../mc/mc/mcScoreConicalRZ.h"
 #include "../../mc/mc/mcScoreBeamFluenceXY.h"
+#include "../../mc/mc/mcScorePhaseSpaceConcentrator.h"
 #include "../../mc/mc/mcScoreMatrixXY.h"
 #include "../../mc/mc/mcScoreMatrix2D.h"
 #include "../../mc/mc/mcScoreEnergySpectrum.h"
@@ -34,18 +39,22 @@
 #include "../../mc/mc/mcScoreSpectraFluence.h"
 #include "../../mc/mc/mcScoreParticleContainer.h"
 #include "../../mc/mc/mcScoreSphereFluence.h"
+#include "../../mc/mc/mcScoreSphereMatrix.h"
 
 #include "../../mc/mc/mcSourceSimpleMono.h"
 #include "../../mc/mc/mcSourceAccelerator.h"
 #include "../../mc/mc/mcSourceXraySigmaR.h"
 #include "../../mc/mc/mcSourceCylindricalC60.h"
+#include "../../mc/mc/mcSourceModelRadialPhsp.h"
 #include "../../mc/mc/mcSourceLEBA.h"
 #include "../../mc/mc/mcSourceSphereC60.h"
-#include "../../mc/mc/mcSourceXrayBeam.h"
+#include "../../mc/mc/mcSourceAcceleratedBeam.h"
+#include "../../mc/mc/mcClinicalElectronBeam.h"
 
 #include <io.h>
 #include <fcntl.h>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -87,8 +96,8 @@ enum profile_distr_t GeometryParser::convert_profile_distr_type(const wchar_t* s
 
 mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMedia* media, int nThreads)
 {
-	// Используется для обработки ситуации, когда модуль является оболочкой группы а не реальным модулем.
-	// В этом случае логика организована так, что функцию группового модуля выполняет один,
+	// Используется для обработки ситуации, когда модуль является оболочкой группы а не реальным модулем. 
+	// В этом случае логика организована так, что функцию группового модуля выполняет один, 
 	// который иницилизируется в своем цикле парсинга.
 	bool skipInit = false;
 
@@ -122,7 +131,7 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	int nc = 0;
 	int nsplit = 0;
 	mc_particle_t ptype = mc_particle_t::MCP_PHOTON;
-
+	
 	std::vector<double> poly_z;
 	std::vector<double> poly_x;
 	std::vector<double> poly_y;
@@ -290,37 +299,48 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	//
 	// Создание объектов
 	//
+	geomVector3D origin(x0, y0, z0);
+	geomVector3D normal(vx, vy, vz);
+	geomVector3D xaxis(xx, xy, xz);
+	normal.normalize();
+	xaxis.normalize();
+
 	if (_wcsicmp(geomType.c_str(), L"cylinder") == 0)
 	{
-		t = new mcTransportCylinder(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), radius, height);
+		t = new mcTransportCylinder(origin, normal, xaxis, radius, height);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"cone") == 0)
 	{
-		t = new mcTransportCone(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), radius, height);
+		t = new mcTransportCone(origin, normal, xaxis, radius, height);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"prism") == 0)
 	{
-		t = new mcTransportPrism(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), ax, ay, az);
+		t = new mcTransportPrism(origin, normal, xaxis, ax, ay, az);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"wedge") == 0)
 	{
-		t = new mcTransportWedge(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), ax, ay, az);
+		t = new mcTransportWedge(origin, normal, xaxis, ax, ay, az);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"ring") == 0)
 	{
-		t = new mcTransportRing(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), r0, r1, height);
+		t = new mcTransportRing(origin, normal, xaxis, r0, r1, height);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"conicalring") == 0)
 	{
-		t = new mcTransportConicalRing(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), r0, r1, height, focus);
+		t = new mcTransportConicalRing(origin, normal, xaxis, r0, r1, height, focus);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"conicalhole") == 0)
 	{
-		t = new mcTransportConicalHole(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), r0, r1, height, focus);
+		t = new mcTransportConicalHole(origin, normal, xaxis, r0, r1, height, focus);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"rectanglering") == 0)
 	{
-		t = new mcTransportRectangleRing(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), x1, x2, y1, y2, d, h);
+		t = new mcTransportRectangleRing(origin, normal, xaxis, x1, x2, y1, y2, d, h);
+	}
+	else if (_wcsicmp(geomType.c_str(), L"jaw_pair") == 0)
+	{
+		t = new mcTransportJawPairRounded(origin, normal, xaxis, radius, height, width);
+		((mcTransportJawPairRounded*)t)->setFS(x1, x2);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"rectanglepolygonsidehole") == 0)
 	{
@@ -328,42 +348,45 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 		{
 			x += sx0;
 		});
-		//std::for_each(poly_y.begin(), poly_y.end(), [sy0](vector<double>::iterator y) { *y += sy0; });
 		std::for_each(poly_y.begin(), poly_y.end(), [sy0](double& y) { y += sy0; });
-		t = new mcTransportRectanglePolygonSideHole(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz),
+		t = new mcTransportRectanglePolygonSideHole(origin, normal, xaxis,
 			d + sx0, d + sy0, poly_z, poly_x, poly_y);
+	}
+	else if (_wcsicmp(geomType.c_str(), L"mlc") == 0)
+	{
+		t = new mcTransportMLC(origin, normal, xaxis, focus, radius, height, width, length, x1, x2, y1, y2);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"gridcylinder") == 0)
 	{
-		t = new mcTransportCylinderStack(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), nc, dr, ds, height);
+		t = new mcTransportCylinderStack(origin, normal, xaxis, nc, dr, ds, height);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"planefilter") == 0)
 	{
-		t = new mcTransportPlaneFilter(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz));
+		t = new mcTransportPlaneFilter(origin, normal, xaxis);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"etrap") == 0)
 	{
-		t = new mcETransportTrap(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz));
+		t = new mcETransportTrap(origin, normal, xaxis);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"rectangletrap") == 0)
 	{
-		t = new mcTransportRectangleTrap(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), width, length);
+		t = new mcTransportRectangleTrap(origin, normal, xaxis, width, length);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"axial_splitter") == 0)
 	{
-		t = new mcTransportAxialSymmetricSplitter(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), ptype, nsplit);
+		t = new mcTransportAxialSymmetricSplitter(origin, normal, xaxis, ptype, nsplit);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"simple_splitter") == 0)
 	{
-		t = new mcTransportSimpleSplitter(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), ptype, nsplit);
+		t = new mcTransportSimpleSplitter(origin, normal, xaxis, ptype, nsplit);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"slab") == 0)
 	{
-		t = new mcTransportSlab(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), height);
+		t = new mcTransportSlab(origin, normal, xaxis, height);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"group") == 0)
 	{
-		t = new mcTransport(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz));
+		t = new mcTransport(origin, normal, xaxis);
 
 		// Ищем и парсим вложенные модули
 		for (auto node : geometry.Nodes)
@@ -379,7 +402,7 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	else if (_wcsicmp(geomType.c_str(), L"embedding") == 0)
 	{
 		// Временный транспорт нужен для системы координат группы.
-		mcTransport ttmp(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz));
+		mcTransport ttmp(origin, normal, xaxis);
 		mcTransport* eprev = nullptr;
 
 		// Ищем и парсим вложенные модули
@@ -406,18 +429,62 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 		t = eprev;
 		skipInit = true;
 	}
+	else if (_wcsicmp(geomType.c_str(), L"embedded_group") == 0)
+	{
+		t = new mcTransportEmbeddedGroup(origin, normal, xaxis);
+
+		// Ищем и парсим вложенные модули
+		for (auto node : geometry.Nodes)
+		{
+			if (_wcsicmp(node.Name.c_str(), L"module") == 0)
+			{
+				mcTransport* eobj = GeometryParser::ParseTransport(node, media, nThreads);
+				if (eobj == nullptr)
+					throw exception("Embedding group internal module parse error");
+
+				// Корректируем систему координат из группы в сцену.
+				eobj->MoveToCoordinateSystem(t->MT2W());
+				((mcTransportEmbeddedGroup*)t)->addTransport(eobj);
+			}
+		}
+	}
+	else if (_wcsicmp(geomType.c_str(), L"linear_chain") == 0)
+	{
+		t = new mcTransportLinearChain(origin, normal, xaxis);
+
+		// Ищем и парсим вложенные модули
+		for (auto node : geometry.Nodes)
+		{
+			if (_wcsicmp(node.Name.c_str(), L"module") == 0)
+			{
+				mcTransport* eobj = GeometryParser::ParseTransport(node, media, nThreads);
+				if (eobj == nullptr)
+					throw exception("Embedding group should contain only embedding objects");
+
+				// Корректируем систему координат из группы в сцену.
+				eobj->MoveToCoordinateSystem(t->MT2W());
+
+				((mcTransportLinearChain*)t)->addTransport(eobj);
+			}
+		}
+		((mcTransportLinearChain*)t)->completeInit();
+	}
 	else if (_wcsicmp(geomType.c_str(), L"ptlasvegas") == 0)
 	{
-		t = new mcPTLasVegas(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz));
+		t = new mcPTLasVegas(origin, normal, xaxis);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"esphere") == 0)
 	{
-		t = new mcETransportSphere(geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), geomVector3D(xx, xy, xz), radius);
+		t = new mcETransportSphere(origin, normal, xaxis, radius);
+	}
+	else if (_wcsicmp(geomType.c_str(), L"e_convex_polygon_circle") == 0)
+	{
+		t = new mcETransportConvexPolygonCircle(origin, normal, xaxis, poly_z, poly_x);
 	}
 
 	if (t == nullptr)
-		//throw exception("Unsupported geometry type: " + geomType);
-		throw exception("Unsupported geometry type: ");
+		throw exception(XmlParseReaderBase::copyWStringToStlString(
+			(wstring(L"Unsupported geometry type: ") + geomType).c_str()).c_str());
 
 	if (!skipInit)
 	{
@@ -448,7 +515,9 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	string outfile;
 	int nr = 0, nx = 0, ny = 0, nz = 0;
 	int ne = 0, nebins = 0, nt = 0, na = 0;
+	int np = 0, nm = 0;
 	double rmax = 0, zmin = 0, zmax = 0;
+	double r0 = 0, r1 = 0;
 	double ziso = 0, sad = 0;
 	double emax = 0;
 	double ecut = 0;
@@ -507,6 +576,14 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 					nt = _wtoi(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"na") == 0)
 					na = _wtoi(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"np") == 0)
+					np = _wtoi(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"nm") == 0)
+					nm = _wtoi(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"r0") == 0)
+					r0 = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"r1") == 0)
+					r1 = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"rmax") == 0)
 					rmax = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"zmin") == 0)
@@ -607,7 +684,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 		else if (_wcsicmp(node.Name.c_str(), L"pt") == 0)
 			pt = GeometryParser::convert_S2T_ptype(node.Text.c_str());
 		else if (_wcsicmp(node.Name.c_str(), L"particles") == 0)
-			pt = (mc_particle_t)_wtoi(node.Text.c_str());
+			pt = (mc_particle_t) _wtoi(node.Text.c_str());
 		else if (_wcsicmp(node.Name.c_str(), L"focus") == 0)
 			focus = _wtof(node.Text.c_str());
 	}
@@ -627,11 +704,6 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	else if (_wcsicmp(scoreType.c_str(), L"rz") == 0)
 	{
 		score = new mcScoreMatrixRZ(scoreModule.c_str(), nThreads, nr, nz, rmax, zmin, zmax);
-	}
-
-	else if (_wcsicmp(scoreType.c_str(), L"cylinder_azimut") == 0)
-	{
-		score = new mcScoreMatrixCylinderAzimut(scoreModule.c_str(), nThreads, nr, na, rmax, zmin, zmax);
 	}
 
 	// 3D дозовое распределение в веерной RZ геометрии
@@ -661,10 +733,10 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	// Поток излучения в RZ геометрии
 	else if (_wcsicmp(scoreType.c_str(), L"fluence") == 0)
 	{
-		score = new mcScoreBeamFluence(scoreModule.c_str(), nThreads, nr, rmax);
+		score = new mcScoreBeamFluence(scoreModule.c_str(),	nThreads, nr, rmax);
 		for (auto ss : subsources)
 		{
-			((mcScoreBeamFluence*)score)->addSubsource(new mcScoreBeamFluenceSubsource(
+			((mcScoreBeamFluence*) score)->addSubsource(new mcScoreBeamFluenceSubsource(
 				ss.ssname.c_str(), nThreads, ss.pt, ss.zmin, ss.zmax, ss.focus, nr, rmax, ne, emax, ss.na, ss.amax));
 		}
 	}
@@ -677,6 +749,12 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	else if (_wcsicmp(scoreType.c_str(), L"xy") == 0)
 	{
 		mcScoreMatrixXY* scorexy = new mcScoreMatrixXY(scoreModule.c_str(), nThreads, nx, ny, psx, psy, psz, z0);
+
+		// Файлы изображений DICOM
+		if (!outdcm.empty())
+			scorexy->SetImageFile(XmlParseReaderBase::copyWStringToStlString(outdcm.c_str()).c_str());
+		if (!calibrdcm.empty())
+			scorexy->SetCalibrationFile(XmlParseReaderBase::copyWStringToStlString(calibrdcm.c_str()).c_str());
 		score = scorexy;
 	}
 
@@ -693,6 +771,15 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 		score = new mcScoreBeamFluenceXY(scoreModule.c_str(), nThreads, nx, ny, psx, psy, nebins, emax);
 	}
 
+	// 4-x мерное (энергия / радиус / отклонение / азимут) распределение частиц в плоскости
+	else if (_wcsicmp(scoreType.c_str(), L"phsp_concentrator") == 0)
+	{
+		if (outfile.empty())
+			throw exception("Please, specify file name for scoring");
+		score = new mcScorePhaseSpaceConcentrator(scoreModule.c_str(), nThreads,
+			pt, isxray, focus, ne, nr, nt, na, emax, rmax, tmax, outfile.c_str());
+	}
+
 	else if (_wcsicmp(scoreType.c_str(), L"fluence_plane") == 0)
 	{
 		auto sc = new mcScoreParticleContainer(scoreModule.c_str(), nThreads);
@@ -701,17 +788,22 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	}
 
 	// простейший накопитель частиц вылетающих из сферы
-	// (на самом деле может использоваться как dump всех фотонов вылетающих
+	// (на самом деле может использоваться как dump всех фотонов вылетающих 
 	// из последнего объекта перед ловушкой и зарегистрированных в момент вылета)
 	else if (_wcsicmp(scoreType.c_str(), L"fluence_sphere") == 0)
 	{
 		score = new mcScoreSphereFluence(scoreModule.c_str(), nThreads);
 	}
 
+	else if (_wcsicmp(scoreType.c_str(), L"matrix_sphere") == 0)
+	{
+		score = new mcScoreSphereMatrix(scoreModule.c_str(), nThreads, np, nm, r0, r1);
+	}
+
 	else
 		throw exception(XmlParseReaderBase::copyWStringToStlString((L"Unsupported score type: " + scoreType).c_str()).c_str());
 
-	score->setColor(0.0, 1.0, 0.0);
+	score->setColor(0.0, 0.2, 0.0);
 	score->setName(XmlParseReaderBase::copyWStringToStlString(scoreType.c_str()).c_str());
 
 	return score;
@@ -725,17 +817,18 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	string srcName;
 	string sourceModule;
 	wstring radTypeName;
-	double energy = 0, ewidth = 0;
+	double energy = 0, ewidth = 0, awidth = 0;
 	spectrum_distr_t sptype = spectrum_distr_t::SPECTRUM_GAUSS;
 	profile_distr_t prf_type = profile_distr_t::PROFILE_EXPONENT;
 	double x0 = 0, y0 = 0, z0 = 0;
 	double vx = 0, vy = 0, vz = 0;
-	double sad = 0, fsx1 = 0, fsx2 = 0, fsy1 = 0, fsy2 = 0;
+	bool isStartInside = false;
 
 	// Специфичные для модуля параметры.
 	// Для простоты перечисляем все возможные варианты.
 	wstring fileName;
 	double d = 0, h = 0, radius = 0, size = 0, angle = 0;
+	double fsx = 0, fsy = 0;
 	wstring srcType;
 	wstring shapeType;
 
@@ -752,6 +845,8 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 			srcName = XmlParseReaderBase::copyWStringToStlString(node.Text.c_str());
 		else if (_wcsicmp(node.Name.c_str(), L"module") == 0)
 			sourceModule = XmlParseReaderBase::copyWStringToStlString(node.Text.c_str());
+		else if (_wcsicmp(node.Name.c_str(), L"IsStartInside") == 0)
+			isStartInside = _wcsicmp(node.Text.c_str(), L"true") == 0;
 
 		// Radiation
 		else if (_wcsicmp(node.Name.c_str(), L"radiation") == 0)
@@ -766,6 +861,8 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 					sptype = GeometryParser::convert_spec_type(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"ewidth") == 0)
 					ewidth = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"awidth") == 0)
+					awidth = _wtof(n1.Text.c_str());
 			}
 			if (node.Nodes.size() > 0)
 				isRadiationDefined = true;
@@ -841,26 +938,10 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 					angle = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"profile") == 0)
 					prf_type = GeometryParser::convert_profile_distr_type(n1.Text.c_str());
-			}
-			if (node.Nodes.size() > 0)
-				isShapeDefined = true;
-		}
-
-		// Beam geometry
-		else if (_wcsicmp(node.Name.c_str(), L"beam") == 0)
-		{
-			for (auto n1 : node.Nodes)
-			{
-				if (_wcsicmp(n1.Name.c_str(), L"sad") == 0)
-					sad = _wtof(n1.Text.c_str());
-				else if (_wcsicmp(n1.Name.c_str(), L"fsx1") == 0)
-					fsx1 = _wtof(n1.Text.c_str());
-				else if (_wcsicmp(n1.Name.c_str(), L"fsx2") == 0)
-					fsx2 = _wtof(n1.Text.c_str());
-				else if (_wcsicmp(n1.Name.c_str(), L"fsy1") == 0)
-					fsy1 = _wtof(n1.Text.c_str());
-				else if (_wcsicmp(n1.Name.c_str(), L"fsy2") == 0)
-					fsy2 = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"fsx") == 0)
+					fsx = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"fsy") == 0)
+					fsy = _wtof(n1.Text.c_str());
 			}
 			if (node.Nodes.size() > 0)
 				isShapeDefined = true;
@@ -879,7 +960,49 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	if (!isDirectionDefined)
 		throw exception("Please, indicate radiation source direction");
 
-	if (_wcsicmp(radTypeName.c_str(), L"c60") == 0)
+	if (_wcsicmp(radTypeName.c_str(), L"phsp_photon") == 0)
+	{
+		// Источник на основе модели фазового пространства (гистограм распределений частиц)
+		if (!isRadiationDefined)
+			throw exception("Please, indicate phase space data");
+
+		if (fileName.empty())
+			throw exception("Please, indicate phase space model file name");
+
+		// Read model data file
+		int ifile;
+		if (_sopen_s(&ifile, XmlParseReaderBase::copyWStringToStlString(fileName.c_str()).c_str(),
+			_O_RDONLY | _O_SEQUENTIAL | _O_BINARY, _SH_DENYWR, _O_RDONLY) != 0)
+			throw std::exception("mcScorePhaseSpaceConcentrator:: Cannot open model file to load");
+		long buflen = _filelength(ifile);
+		void* buf = malloc(buflen);
+		if (!buf)
+			throw std::exception("can't allocate memory for source model");
+		long rlen = _read(ifile, buf, buflen);
+		_close(ifile);
+		if (rlen != buflen)
+			throw std::exception("error in reading source data file");
+
+		source = new mcSourceModelRadialPhsp(srcName.c_str(), nThreads, z0);
+		((mcSourceModelRadialPhsp*) source)->readFromMemory(buf);
+
+		free(buf);
+	}
+	// electron beam from accelerator
+	else if (_wcsicmp(radTypeName.c_str(), L"ea_beam") == 0)
+	{
+		if (fileName.empty())
+			throw exception("Please, specify beam particles file name");
+
+		ifstream ibms(XmlParseReaderBase::copyWStringToStlString(fileName.c_str()).c_str());
+		if(ibms.fail())
+			throw exception("Can not open particles file");
+		
+		auto src = new mcSourceAcceleratedBeam(srcName.c_str(), nThreads, z0);
+		src->loadData(ibms);
+		source = src;
+	}
+	else if (_wcsicmp(radTypeName.c_str(), L"c60") == 0)
 	{
 		if (!isCoreSetDefined)
 			throw exception("Please, indicate radiation source dimensions");
@@ -891,15 +1014,16 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 			throw exception("Please, indicate radiation source dimensions");
 		source = new mcSourceSphereC60(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), radius);
 	}
-	else if (_wcsicmp(radTypeName.c_str(), L"xbeam") == 0)
+	else if (_wcsicmp(radTypeName.c_str(), L"clinical_electron_beam") == 0)
 	{
-		source = new mcSourceXrayBeam(srcName.c_str(), nThreads, z0, energy, sad, fsx1, fsx2, fsy1, fsy2);
+		source = new mcClinicalElectronBeam(srcName.c_str(), nThreads, energy, z0,
+			ewidth, awidth, fsx, fsy);
 	}
 	else
 	{
 		if (!isShapeDefined)
 			throw exception("Please, indicate radiation source shape");
-
+		
 		mc_particle_t particleType = GeometryParser::convert_S2T_ptype(radTypeName.c_str());
 
 		if (_wcsicmp(srcType.c_str(), L"mono") == 0)
@@ -934,6 +1058,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	if (source != nullptr)
 	{
 		source->setModuleName(sourceModule.c_str());
+		source->SetIsStartInside(isStartInside);
 	}
 
 	return source;

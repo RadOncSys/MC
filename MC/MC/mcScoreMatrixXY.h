@@ -48,6 +48,9 @@ public:
 	double	Dose(int iThread, int ix, int iy) const;
 	double	Dose(int ix, int iy) const;
 
+	void SetImageFile(const char* fname);
+	void SetCalibrationFile(const char* fname);
+
 protected:
 	int    nx_, ny_;
 	double z0_;
@@ -60,4 +63,8 @@ protected:
 	// Служебные переменные
 	double z1_;
 	double minx_, miny_;
+
+	// Имя калибровочного файла и файла экспортированного изображения
+	string calibration_file_;
+	string image_file_;
 };

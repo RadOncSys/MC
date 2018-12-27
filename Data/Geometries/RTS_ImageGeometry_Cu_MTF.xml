@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Геометрический модуль, описывающий портальную систему.
+В качестве источника используется электронный пучок на мишени.
+Для реалистичности используется основной прямоугольный коллиматор, раствор которого соответствует размеру детектора.
+В детектор включен фильтр. Сами детектирующие элементы симулируются слоем воды 
+-->
+
+<accelerator>
+
+  <!--
+  Вольфрамовая мишень
+  -->
+  <module type="cylinder" name="Target" medium="W700ICRU" density="1">
+    <Color r="1" g="1" b="1" t="0" />
+    <position unit="cm" x="0" y="0" z="-100" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="0.3" height="0.15"/>
+  </module>
+  
+  <module type="cylinder" name="TargetCooler" medium="CU700ICRU" density="1">
+    <Color r="1" g="1" b="1" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-99.85" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="0.8" height="0.25"/>
+  </module>
+
+  <module type="ring" name="ExitWin" medium="STEEL700ICRU" density="1">
+    <Color r="1" g="1" b="1" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-99.4" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="0.3" r1="1.5" height="0.15"/>
+  </module>
+  
+  <module type="cylinder" name="AcceleratorProtector" medium="STEEL700ICRU" density="1">
+    <Color r="1" g="1" b="1" t="0.8" />
+    <position unit="cm" x="0" y="0" z="-99.1" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="2.0" height="0.2"/>
+  </module>
+
+  <!--
+  Splitter - внимательно, может быть не всегда нужен.
+  Здесь его роль увеличить радиационный выход из мишени с намерением детализировать 
+  транспорт в системе формирования, особенно в первичном коллиматоре.
+  При более внимательном рассмотрении стало понятно, что сплиттер здесь крайне вреден,
+  так в открытой части создает полосы, заставляя редкие фотоны симулироваться многократно.
+  -->
+  <!--<module type="axial_splitter" name="Splitter" medium="W700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-80" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <nsplit particle="photon" value="10"/>
+  </module>-->
+
+  <!--Первичный коллиматор-->
+  <module type="conicalhole" name="PRI" medium="W700ICRU" density="1">
+    <Color r="0" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-88.5" />
+    <normal x="0" y="0" z="-1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="2.65" r1="8.0" height="10" focus="10.8"/>
+  </module>
+
+  <!--
+  Размножитель частиц, прошежших коллимацию, предназначенный для улучшения статистики транспорта в фантоме
+  -->
+  <!--<module type="axial_splitter" name="Splitter" medium="W700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-90" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <nsplit particle="photon" value="10"/>
+  </module>-->
+  
+  <!--
+  Специальный фильтр, который пропускает частицы только внутри заданного прямоугольника.
+  Для цели симуляции радиотерапевтического аппарата ширину и длину отверстия нужно устанавливать на 2 см больше коллиматора
+  Для симуляции ассиметричных полей необходимо использовать положение центра (координаты x/y параметра position).
+  -->
+  <module type="rectangletrap" name="Rectangle trap" medium="W700ICRU" density="1">
+    <Color r="0.2" g="0.2" b="1.0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-64.05" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" width="21" length="21"/>
+  </module>
+
+  <!--Основной коллиматор состоит из трех слоев различного профиля
+    x0 и y0 - это что-то типа положения шторок (размер отверстия на входной поверхности)
+    d - ширина камней, измеряемая на входной поверхности
+    Полигоны края коллиматора здесь задаются как смещения относительно x0 и y0
+  -->
+  <!--<module type="rectanglepolygonsidehole" name="Main collimator" medium="W700ICRU" density="1">
+    <transCutoff unit="MeV" electron ="6.0" photon ="0.0"/>
+    <Color r="0.8" g="0.8" b="0.8" t="0.0" />
+    <position unit="cm" x="0" y="0" z="-64" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" d="15.5" x0="9.36" y0="9.36"/>
+    <polygon>
+      <point x="0" z="0"/>
+      <point x="1.3" z="10.0"/>
+    </polygon>
+  </module>-->
+  
+  <module type="conicalhole" name="Collimator" medium="W700ICRU" density="1">
+    <Color r="0" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="-54" />
+    <normal x="0" y="0" z="-1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="6.34" r1="15.0" height="10.0" focus="46.0"/>
+  </module>
+
+  <!--
+  Просвечиваемый объект (Вольфрамовая пластина для MTF)
+  -->
+  <!--<module type="prism" name="ImageFilter" medium="W700ICRU" density="1">
+    <transCutoff unit="MeV" electron ="6.0" photon ="0.0"/>
+    <Color r="0.5" g="0.5" b="0.5" t="0.5" />
+    <position unit="cm" x="-20" y="0" z="-1.00" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" ax="40" ay="40" az="2.00"/>
+  </module>-->
+
+  <!--Размножитель частиц, падающих на детектор, с целью повышения эффективности регистрации-->
+  <module type="simple_splitter" name="Splitter" medium="W700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0" t="0.5" />
+    <position unit="cm" x="0" y="0" z="45" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <nsplit particle="photon" value="10"/>
+  </module>
+
+  <!--
+  Фильтр излучения и обеспечения электронного равновесия
+  GG 20171029 Исключено, так как сбивает с толку при привязке к количеству частиц,
+  или надо будет сичтать истинное количество частиц умноженнымм на коэффициент размножения.
+  -->
+  <module type="prism" name="ImageFilter" medium="CU700ICRU" density="1">
+    <Color r="0" g="0.0" b="1.0" t="0.8" />
+    <position unit="cm" x="0" y="0" z="45" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" ax="41" ay="41" az="0.10"/>
+  </module>
+
+  <!--
+  Сцинтилятор, одновременно детектор. Литературный поиск показал, что в основном используется CsI.
+  У него плотность 4.51 г/см^3. В PEGSICRU такого материала нет.
+  Временно используем NaI с плотностью 3.67.
+  Толщина в зависимости от применения может быть разной.
+  Поскольку мы стартуем с того, что серийно и доступна, т.е. рентгена, 
+  то типичная толщина для этих детекторов 0.6 мм.
+  Именно слой детектора будет еще и фантомом, в котором происходит скоринг.
+  -->
+  <module type="prism" name="Phantom" medium="NAI700ICRU" density="1">
+    <Color r="1.0" g="0.0" b="0.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="45.10" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" ax="41" ay="41" az="0.06"/>
+  </module>
+
+  <!--
+  Вероятно важно учитывать отраженные электроны. Они будут отражаться от платы электроники.
+  Симулируем ее 1 мм кремния.
+  -->
+  <module type="prism" name="BackPlane" medium="SI700ICRU" density="1">
+    <Color r="0.4" g="0.4" b="0.4" t="0.8" />
+    <position unit="cm" x="0" y="0" z="45.16" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" ax="41" ay="41" az="0.1"/>
+  </module>
+
+</accelerator>
