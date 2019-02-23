@@ -368,7 +368,11 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	}
 	else if (_wcsicmp(geomType.c_str(), L"rectangletrap") == 0)
 	{
-		t = new mcTransportRectangleTrap(origin, normal, xaxis, width, length);
+		if (x1 == x2) { x1 = -width / 2; x2 = width / 2; }
+		if (y1 == y2) { y1 = -length / 2; y2 = length / 2; }
+		auto trt = new mcTransportRectangleTrap(origin, normal, xaxis);
+		trt->SetFieldSize(x1, x2, y1, y2);
+		t = trt;
 	}
 	else if (_wcsicmp(geomType.c_str(), L"axial_splitter") == 0)
 	{

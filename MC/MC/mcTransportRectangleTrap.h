@@ -10,7 +10,7 @@
 class mcTransportRectangleTrap : public mcTransport
 {
 public:
-	mcTransportRectangleTrap(const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x, double width, double length);
+	mcTransportRectangleTrap(const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x);
 	~mcTransportRectangleTrap(void);
 
 	// Начало транспорта переписано, так как не нужно запускать симуляцию частиц.
@@ -19,7 +19,11 @@ public:
 
 	void dumpVRML(ostream& os)const override;
 
+	void SetFieldSize(double x1, double x2, double y1, double y2);
+
 protected:
-	double swidth_;
-	double slength_;
+	double fsx1_;
+	double fsx2_;
+	double fsy1_;
+	double fsy2_;
 };
