@@ -58,9 +58,11 @@ public:
 	/// Пересечение с конусом с прямоугольным симметричным сечением
 	/// </summary>
 	static double getDistanceToRectangleConeInside(const geomVector3D& p, const geomVector3D& v,
-		double x, double cosx, double sinx, double y, double cosy, double siny, double z);
+		double x1, double x2, double cosx, double sinx, 
+		double y1, double y2, double cosy, double siny, double z);
 	static double getDistanceToRectangleConeOutside(const geomVector3D& p, const geomVector3D& v,
-		double x, double cosx, double sinx, double y, double cosy, double siny, double z);
+		double x1, double x2, double cosx, double sinx,
+		double y1, double y2, double cosy, double siny, double z);
 
 	/// <summary>
 	/// Расчет длины трека в вокселе.

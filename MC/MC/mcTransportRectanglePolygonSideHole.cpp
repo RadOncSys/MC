@@ -3,8 +3,8 @@
 #include <float.h>
 
 mcTransportRectanglePolygonSideHole::mcTransportRectanglePolygonSideHole(const geomVector3D& orgn, const geomVector3D& vz, const geomVector3D& vx,
-	double dx, double dy, std::vector<double>& z, std::vector<double>& x, std::vector<double>& y)
-	:mcTransport(orgn, vz, vx), dx_(dx), dy_(dy), z_(z), x_(x), y_(y)
+	double dx, double dy, const std::vector<double>& z, const std::vector<double>& x, const std::vector<double>& y)
+	:mcTransport(orgn, vz, vx), dx_(dx), dy_(dy), z_(z), x_(x), y_(y), fsx1_(0), fsx2_(0), fsy1_(0), fsy2_(0)
 {
 	nlayers_ = (int)z_.size() - 1;
 	xmax_ = x_[0];
@@ -42,7 +42,10 @@ double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) con
 	// так как она внутри и, если пересечение существует, то оно ближайшее
 	for (int i = 0; i < nlayers_; i++)
 	{
-		double cd = mcGeometry::getDistanceToRectangleConeOutside(p.p, p.u, x_[i], cosx_[i], sinx_[i], y_[i], cosy_[i], siny_[i], z_[i]);
+		double cd = mcGeometry::getDistanceToRectangleConeOutside(p.p, p.u, 
+			-x_[i] + fsx1_, x_[i] + fsx2_, cosx_[i], sinx_[i],
+			-y_[i] + fsy1_, y_[i] + fsy2_, cosy_[i], siny_[i], z_[i]);
+
 		if (cd == DBL_MAX) continue;
 		geomVector3D c = p.p + (p.u * cd);
 		if (c.z() >= z_[i] && c.z() <= z_[i + 1])	// Пересечение внутри слоя
@@ -57,21 +60,23 @@ double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) con
 	{
 		double cd = -z / vz;
 		geomVector3D c = p.p + (p.u * cd);
-		double xx = fabs(c.x()), yy = fabs(c.y());
-		if (xx <= dx_ && yy <= dy_ && (xx >= x_[0] || yy >= y_[0]))
+		double x = c.x(), y = c.y();
+		if (x >= (-dx_ + fsx1_) && x <= (dx_ + fsx2_) && y >= (-dy_ + fsy1_) && y <= (dy_ + fsy2_) &&
+			(x <= (-x_.front() + fsx1_) || x >= (x_.front() + fsx2_) || y <= (-y_.front() + fsy1_) || y >= (y_.front() + fsy2_)))
 			return cd;
 	}
 	else if (vz > 0)
 	{
 		double cd = (zmax_ - z) / vz;
 		geomVector3D c = p.p + (p.u * cd);
-		double xx = fabs(c.x()), yy = fabs(c.y());
-		if (xx <= dx_ && yy <= dy_ && (xx >= x_.back() || yy >= y_.back()))
+		double x = c.x(), y = c.y();
+		if (x >= (-dx_ + fsx1_) && x <= (dx_ + fsx2_) && y >= (-dy_ + fsy1_) && y <= (dy_ + fsy2_) &&
+			(x <= (-x_.back() + fsx1_) || x >= (x_.back() + fsx2_) || y <= (-y_.back() + fsy1_) || y >= (y_.back() + fsy2_)))
 			return cd;
 	}
 
 	// Проверяем пересечение с внешними боковыми гранями
-	double cd = mcGeometry::getDistanceToRectanglePipeInside(p.p, p.u, -dx_, dx_, -dy_, dy_);
+	double cd = mcGeometry::getDistanceToRectanglePipeInside(p.p, p.u, -dx_ + fsx1_, dx_ + fsx2_, -dy_ + fsy1_, dy_ + fsy2_);
 	if (cd != DBL_MAX)
 	{
 		geomVector3D c = p.p + (p.u * cd);
@@ -103,11 +108,18 @@ double mcTransportRectanglePolygonSideHole::getDistanceOutside(mcParticle& p) co
 		// Доводим частицу до ближайшей плоскости объекта
 		double cd = fabs(z / vz); // fabs - борьба с погрешностями расчетов, когда частица на поверхности, но не точно
 		c = p.p + (p.u * cd);
+		double x = c.x(), y = c.y();
 
 		// Если частица окажется на поверхности объекта, то это уже пересечение
-		double xx = fabs(c.x()), yy = fabs(c.y());
-		if (xx <= dx_ && yy <= dy_ && (xx >= x_[0] || yy >= y_[0]))
+		if (x >= -dx_ + fsx1_ && x <= dx_ + fsx2_ && y >= -dy_ + fsy1_ && y <= dy_ + fsy2_ &&
+			!(x > -x_.front() + fsx1_ && x < x_.front() + fsx2_ &&
+			y > -y_.front() + fsx1_ && y < y_.front() + fsy2_))
 			return cd;
+		else
+		{
+			double sideDistance = getDistanceOutsideWithinLayer(c, p.u);
+			return sideDistance == DBL_MAX ? sideDistance : cd + sideDistance;
+		}
 	}
 
 	// Частица за объектом
@@ -116,40 +128,58 @@ double mcTransportRectanglePolygonSideHole::getDistanceOutside(mcParticle& p) co
 		if (vz >= 0) return DBL_MAX;
 		double cd = fabs((zmax_ - z) / vz);
 		c = p.p + (p.u * cd);
-		double xx = fabs(c.x()), yy = fabs(c.y());
-		if (xx <= dx_ && yy <= dy_ && (xx >= x_.back() || yy >= y_.back()))
+		double x = c.x(), y = c.y();
+
+		// Если частица окажется на поверхности объекта, то это уже пересечение
+		if (x >= -dx_ + fsx1_ && x <= dx_ + fsx2_ && y >= -dy_ + fsy1_ && y <= dy_ + fsy2_ &&
+			!(x > -x_.back() + fsx1_ && x < x_.back() + fsx2_ &&
+			y > -y_.back() + fsx1_ && y < y_.back() + fsy2_))
 			return cd;
+		else
+		{
+			double sideDistance = getDistanceOutsideWithinLayer(c, p.u);
+			return sideDistance == DBL_MAX ? sideDistance : cd + sideDistance;
+		}
 	}
 
-	// Если частица дотянула до этого места, то она на уровне объекта.
+	else
+		return getDistanceOutsideWithinLayer(c, p.u);
+}
+
+double mcTransportRectanglePolygonSideHole::getDistanceOutsideWithinLayer(const geomVector3D& p, const geomVector3D& v) const
+{
 	// Если частица за пределами периметра, то пересечение возможно только с внешней вертикальной гранью.
 	// В дырке тащим ее по слоям.
+	double x = p.x(), y = p.y();
 
-	if (fabs(c.x()) >= dx_ || fabs(c.y()) >= dy_)
+	if (x <= -dx_ + fsx1_ || x >= dx_ + fsx2_ || y <= -dy_ + fsy1_ || y >= dy_ + fsy2_)
 	{
-		double cd = mcGeometry::getDistanceToRectanglePipeOutside(p.p, p.u, -dx_, dx_, -dy_, dy_);
+		double cd = mcGeometry::getDistanceToRectanglePipeOutside(p, v, -dx_ + fsx1_, dx_ + fsx2_, -dy_ + fsy1_, dy_ + fsy2_);
 		if (cd == DBL_MAX)
 			return DBL_MAX;
 
 		// Точка пересечения с прямоугольным цилиндром, определяющим внешние грани
-		c = p.p + (p.u * cd);
+		auto c = p + (v * cd);
 		if (c.z() <= 0 || c.z() >= zmax_)
 			return DBL_MAX;
 		else
 			return cd;
 	}
-
-	// Оставшиеся частицы могут быть только в дырке. Проверяем все грани.
-	for (int i = 0; i < nlayers_; i++)
+	else
 	{
-		double cd = mcGeometry::getDistanceToRectangleConeInside(p.p, p.u, x_[i], cosx_[i], sinx_[i], y_[i], cosy_[i], siny_[i], z_[i]);
-		if (cd == DBL_MAX) continue;
-		c = p.p + (p.u * cd);
-		if (c.z() >= z_[i] && c.z() <= z_[i + 1])
-			return cd;	// Пересечение внутри слоя
+		// Оставшиеся частицы могут быть только в дырке. Проверяем все грани.
+		for (int i = 0; i < nlayers_; i++)
+		{
+			double cd = mcGeometry::getDistanceToRectangleConeInside(p, v, 
+				-x_[i] + fsx1_, x_[i] + fsx2_, cosx_[i], sinx_[i], 
+				-y_[i] + fsy1_, y_[i] + fsy2_, cosy_[i], siny_[i], z_[i]);
+			if (cd == DBL_MAX) continue;
+			auto c = p + (v * cd);
+			if (c.z() >= z_[i] && c.z() <= z_[i + 1])
+				return cd;	// Пересечение внутри слоя
+		}
+		return DBL_MAX;
 	}
-
-	return DBL_MAX;
 }
 
 double mcTransportRectanglePolygonSideHole::getDNearInside(const geomVector3D& p) const
@@ -161,23 +191,51 @@ double mcTransportRectanglePolygonSideHole::getDNearInside(const geomVector3D& p
 	// Поэтому берем только максимальное вписанное прямоугольное кольцо.
 	// В остальных частях считаем расстояние до границы нулевым.
 
-	double x = fabs(p.x()), y = fabs(p.y()), z = p.z();
-	if (x <= xmax_ && y <= ymax_)
+	double x = p.x(), y = p.y(), z = p.z();
+	if (x <= (xmax_ + fsx2_) && x >= (-xmax_ + fsx1_) && y <= (ymax_ + fsy2_) && y >= (-ymax_ + fsy1_))
 		return 0;
 
-	double dd = MIN(ZORP(dx_ - x), ZORP(dy_ - y));
+	double dd = MIN(MIN(ZORP(x + dx_ - fsx1_), ZORP(dx_ + fsx2_ - x)), MIN(ZORP(y + dy_ - fsy1_), ZORP(dy_ + fsy2_ - y)));
 	dd = MIN(dd, ZORP(z));
 	dd = MIN(dd, ZORP(zmax_ - z));
 
-	double dx = ZORP(x - xmax_);
-	double dy = ZORP(y - ymax_);
+	double dx1 = (fsx1_ - xmax_) - x, dx2 = x - (fsx2_ + xmax_);
+	double dy1 = (fsy1_ - ymax_) - x, dy2 = x - (fsy2_ + ymax_);
 
-	if (x < xmax_)
-		return MIN(dd, dy);
-	else if (y < ymax_)
-		return MIN(dd, dx);
+
+	if (dx1 > 0)
+	{
+		if (dy1 > 0)
+			return MIN(dd, sqrt(dx1*dx1 + dy1 * dy1));
+		else if (dy2 > 0)
+			return MIN(dd, sqrt(dx1*dx1 + dy2 * dy2));
+		else
+			return MIN(dd, dx1);
+	}
+	else if (dx2 > 0)
+	{
+		if (dy1 > 0)
+			return MIN(dd, sqrt(dx2*dx2 + dy1 * dy1));
+		else if (dy2 > 0)
+			return MIN(dd, sqrt(dx2*dx2 + dy2 * dy2));
+		else
+			return MIN(dd, dx2);
+	}
 	else
-		return MIN(dd, sqrt(dx*dx + dy*dy));
+	{
+		if (dy1 > 0)
+			return MIN(dd, dy1);
+		else
+			return MIN(dd, dy2);
+	}
+}
+
+void mcTransportRectanglePolygonSideHole::SetFieldSize(double x1, double x2, double y1, double y2)
+{
+	fsx1_ = x1;
+	fsx2_ = x2;
+	fsy1_ = y1;
+	fsy2_ = y2;
 }
 
 void mcTransportRectanglePolygonSideHole::dump(ostream& os) const
@@ -189,6 +247,10 @@ void mcTransportRectanglePolygonSideHole::dump(ostream& os) const
 	os << "XMax:\t" << xmax_ << endl;
 	os << "YMax:\t" << ymax_ << endl;
 	os << "ZMax:\t" << zmax_ << endl;
+	os << "FsX1:\t" << fsx1_ << endl;
+	os << "FsX2:\t" << fsx2_ << endl;
+	os << "FsY1:\t" << fsy1_ << endl;
+	os << "FsY2:\t" << fsy2_ << endl;
 
 	unsigned i;
 	os << "Polygon:" << endl;
@@ -237,32 +299,32 @@ void mcTransportRectanglePolygonSideHole::dumpVRMLPolygonSideHole(ostream& os) c
 	vector<geomVector3D> p(np);
 
 	// Передняя поверхность
-	p[i++] = geomVector3D(-dx_, -dy_, 0) * mttow_;
-	p[i++] = geomVector3D(-dx_, dy_, 0) * mttow_;
-	p[i++] = geomVector3D(dx_, dy_, 0) * mttow_;
-	p[i++] = geomVector3D(dx_, -dy_, 0) * mttow_;
-	p[i++] = geomVector3D(-x_[0], -y_[0], 0) * mttow_;
-	p[i++] = geomVector3D(-x_[0], y_[0], 0) * mttow_;
-	p[i++] = geomVector3D(x_[0], y_[0], 0) * mttow_;
-	p[i++] = geomVector3D(x_[0], -y_[0], 0) * mttow_;
+	p[i++] = geomVector3D(-dx_ + fsx1_, -dy_ + fsy1_, 0) * mttow_;
+	p[i++] = geomVector3D(-dx_ + fsx1_, dy_ + fsy2_, 0) * mttow_;
+	p[i++] = geomVector3D(dx_ + fsx2_, dy_ + fsy2_, 0) * mttow_;
+	p[i++] = geomVector3D(dx_ + fsx2_, -dy_ + fsy1_, 0) * mttow_;
+	p[i++] = geomVector3D(-x_[0] + fsx1_, -y_[0] + fsy1_, 0) * mttow_;
+	p[i++] = geomVector3D(-x_[0] + fsx1_, y_[0] + fsy2_, 0) * mttow_;
+	p[i++] = geomVector3D(x_[0] + fsx2_, y_[0] + fsy2_, 0) * mttow_;
+	p[i++] = geomVector3D(x_[0] + fsx2_, -y_[0] + fsy1_, 0) * mttow_;
 
 	// Задняя поверхность
-	p[i++] = geomVector3D(-dx_, -dy_, zmax_) * mttow_;
-	p[i++] = geomVector3D(-dx_, dy_, zmax_) * mttow_;
-	p[i++] = geomVector3D(dx_, dy_, zmax_) * mttow_;
-	p[i++] = geomVector3D(dx_, -dy_, zmax_) * mttow_;
-	p[i++] = geomVector3D(-x_.back(), -y_.back(), zmax_) * mttow_;
-	p[i++] = geomVector3D(-x_.back(), y_.back(), zmax_) * mttow_;
-	p[i++] = geomVector3D(x_.back(), y_.back(), zmax_) * mttow_;
-	p[i++] = geomVector3D(x_.back(), -y_.back(), zmax_) * mttow_;
+	p[i++] = geomVector3D(-dx_ + fsx1_, -dy_ + fsy1_, zmax_) * mttow_;
+	p[i++] = geomVector3D(-dx_ + fsx1_, dy_ + fsy2_, zmax_) * mttow_;
+	p[i++] = geomVector3D(dx_ + fsx2_, dy_ + fsy2_, zmax_) * mttow_;
+	p[i++] = geomVector3D(dx_ + fsx2_, -dy_ + fsy1_, zmax_) * mttow_;
+	p[i++] = geomVector3D(-x_.back() + fsx1_, -y_.back() + fsy1_, zmax_) * mttow_;
+	p[i++] = geomVector3D(-x_.back() + fsx1_, y_.back() + fsy2_, zmax_) * mttow_;
+	p[i++] = geomVector3D(x_.back() + fsx2_, y_.back() + fsy2_, zmax_) * mttow_;
+	p[i++] = geomVector3D(x_.back() + fsx2_, -y_.back() + fsy1_, zmax_) * mttow_;
 
 	// Дырка
 	for (k = 0; k < z_.size(); k++)
 	{
-		p[i++] = geomVector3D(-x_[k], -y_[k], z_[k]) * mttow_;
-		p[i++] = geomVector3D(-x_[k], y_[k], z_[k]) * mttow_;
-		p[i++] = geomVector3D(x_[k], y_[k], z_[k]) * mttow_;
-		p[i++] = geomVector3D(x_[k], -y_[k], z_[k]) * mttow_;
+		p[i++] = geomVector3D(-x_[k] + fsx1_, -y_[k] + fsy1_, z_[k]) * mttow_;
+		p[i++] = geomVector3D(-x_[k] + fsx1_, y_[k] + fsy2_, z_[k]) * mttow_;
+		p[i++] = geomVector3D(x_[k] + fsx2_, y_[k] + fsy2_, z_[k]) * mttow_;
+		p[i++] = geomVector3D(x_[k] + fsx2_, -y_[k] + fsy1_, z_[k]) * mttow_;
 	}
 
 	// Поверхность дырки (точки на основаниях повторяются для прозрачности)

@@ -1,6 +1,6 @@
 // Radiation Oncology Monte Carlo open source project
 //
-// Author: [2005-2017] Gennady Gorlachev (ggorlachev@roiss.ru) 
+// Author: [2005-2019] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 #pragma once
 #include "mcTransport.h"
@@ -16,7 +16,7 @@ class mcTransportRectanglePolygonSideHole : public mcTransport
 {
 public:
 	mcTransportRectanglePolygonSideHole(const geomVector3D& orgn, const geomVector3D& vz, const geomVector3D& vx,
-		double dx, double dy, std::vector<double>& z, std::vector<double>& x, std::vector<double>& y);
+		double dx, double dy, const std::vector<double>& z, const std::vector<double>& x, const std::vector<double>& y);
 	virtual ~mcTransportRectanglePolygonSideHole(void);
 
 	void dump(ostream& os) const override;
@@ -26,17 +26,32 @@ public:
 	double getDistanceOutside(mcParticle& p) const override;
 	double getDNearInside(const geomVector3D& p) const override;
 
+	void SetFieldSize(double x1, double x2, double y1, double y2);
+
 protected:
 	void dumpVRMLPolygonSideHole(ostream& os) const;
 
+	// Расчет расстояний в направлении движения, когда частица находится внутри слоя объекта
+	double getDistanceOutsideWithinLayer(const geomVector3D& p, const geomVector3D& v) const;
+
 protected:
-	double dx_; // положение внешних граней шторок X относительно центра координат объекта
-	double dy_; // положение внешних граней шторок Y относительно центра координат объекта
+	// Толщины камней (расстояние от внутренней грани до внешней), коллимирующих поле.
+	double dx_;
+	double dy_;
 
 	// Координаты полигона грани шторок
 	std::vector<double> z_;		// Положения точек полигона по оси Z
 	std::vector<double> x_;		// Положения точек полигона шторок X
 	std::vector<double> y_;		// Положения точек полигона шторок Y
+
+	// Раскрытие шторок для обеспечения ассиметричного поля.
+	// Это физические смешения полигонов внутренней части коллиматора.
+	// Положение задается извне в физических см 
+	// (сам коллиматор ничего не знает о поле на уровне изоцентра)
+	double fsx1_;
+	double fsx2_;
+	double fsy1_;
+	double fsy2_;
 
 	// Служебные переменые
 	int nlayers_;				// количество слоев объекта

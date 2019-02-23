@@ -103,7 +103,7 @@
     <position unit="cm" x="0" y="0" z="-64" />
     <normal x="0" y="0" z="1" />
     <xaxis x="1" y="0" z="0" />
-    <size unit="cm" d="15.5" x0="9.36" y0="9.36"/>
+    <size unit="cm" d="15.5" x1="-4.68" x2="4.68" y1="-4.68" y2="4.68" />
     <polygon>
       <point x="0" z="0"/>
       <point x="1.3" z="10.0"/>
