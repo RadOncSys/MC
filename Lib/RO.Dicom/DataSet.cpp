@@ -5,6 +5,7 @@
 #include "ElementFactory.h"
 #include "Tag.h"
 #include <algorithm>
+#include <istream>
 
 using namespace RO::Dicom;
 
