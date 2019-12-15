@@ -352,62 +352,53 @@ double mcGeometry::getDistanceToRectanglePipeOutside(const geomVector3D& p, cons
 }
 
 double mcGeometry::getDistanceToRectangleConeInside(const geomVector3D& p, const geomVector3D& v,
-	double x, double cosx, double sinx,
-	double y, double cosy, double siny, double z)
+	double x1, double x2, double cosx, double sinx,
+	double y1, double y2, double cosy, double siny, double z)
 {
 	double px = p.x(), py = p.y(), pz = p.z();
 	double vx = v.x(), vy = v.y(), vz = v.z();
 
-	// »спользуем симметричность и позиционируем частицу в левый нижний квадрант плоскости XY
-	if (vx < 0) { px = -px; vx = -vx; }
-	if (vy < 0) { py = -py; vy = -vy; }
-
 	// —кал€рное произведение вектора скорости и нормали к грани
 	double vn = vx * cosx + vz * sinx;
-	double cx1 = vn >= 0 ? DBL_MAX : (-(px + x) * cosx - (pz - z) * sinx) / vn;
+	double cx1 = vn >= 0 ? DBL_MAX : ((-px + x1) * cosx - (pz - z) * sinx) / vn;
+	if (cx1 < 0) cx1 = DBL_MAX;
 	vn = -vx * cosx + vz * sinx;
-	double cx2 = vn >= 0 ? DBL_MAX : ((px - x) * cosx - (pz - z) * sinx) / vn;
+	double cx2 = vn >= 0 ? DBL_MAX : ((px - x2) * cosx - (pz - z) * sinx) / vn;
+	if (cx2 < 0) cx2 = DBL_MAX;
 
 	vn = vy * cosy + vz * siny;
-	double cy1 = vn >= 0 ? DBL_MAX : (-(py + y) * cosy - (pz - z) * siny) / vn;
+	double cy1 = vn >= 0 ? DBL_MAX : ((-py + y1) * cosy - (pz - z) * siny) / vn;
+	if (cy1 < 0) cy1 = DBL_MAX;
 	vn = -vy * cosy + vz * siny;
-	double cy2 = vn >= 0 ? DBL_MAX : ((py - y) * cosy - (pz - z) * siny) / vn;
+	double cy2 = vn >= 0 ? DBL_MAX : ((py - y2) * cosy - (pz - z) * siny) / vn;
+	if (cy2 < 0) cy2 = DBL_MAX;
 
 	return MIN(MIN(cx1, cy1), MIN(cx2, cy2));
 }
 
 double mcGeometry::getDistanceToRectangleConeOutside(const geomVector3D& p, const geomVector3D& v,
-	double x, double cosx, double sinx,
-	double y, double cosy, double siny, double z)
+	double x1, double x2, double cosx, double sinx,
+	double y1, double y2, double cosy, double siny, double z)
 {
 	double px = p.x(), py = p.y(), pz = p.z();
 	double vx = v.x(), vy = v.y(), vz = v.z();
 
-	// »спользуем симметричность и позиционируем частицу в левый нижний квадрант плоскости XY
-	if (px > 0) { px = -px; vx = -vx; }
-	if (py > 0) { py = -py; vy = -vy; }
+	// —кал€рное произведение вектора скорости и нормали к грани
+	double vn = vx * cosx + vz * sinx;
+	double cx1 = vn <= 0 ? DBL_MAX : ((-px + x1) * cosx - (pz - z) * sinx) / vn;
+	if (cx1 < 0) cx1 = DBL_MAX;
+	vn = -vx * cosx + vz * sinx;
+	double cx2 = vn < 0 ? DBL_MAX : ((px - x2) * cosx - (pz - z) * sinx) / vn;
+	if (cx2 < 0) cx2 = DBL_MAX;
 
-	double vn = -vx * cosx - vz * sinx;
-	double cx = vn >= 0 ? -1 : ((px + x) * cosx + (pz - z) * sinx) / vn;
+	vn = vy * cosy + vz * siny;
+	double cy1 = vn < 0 ? DBL_MAX : ((-py + y1) * cosy - (pz - z) * siny) / vn;
+	if (cy1 < 0) cy1 = DBL_MAX;
+	vn = -vy * cosy + vz * siny;
+	double cy2 = vn < 0 ? DBL_MAX : ((py - y2) * cosy - (pz - z) * siny) / vn;
+	if (cy2 < 0) cy2 = DBL_MAX;
 
-	vn = -vy * cosy - vz * siny;
-	double cy = vn >= 0 ? -1 : ((py + y) * cosy + (pz - z) * siny) / vn;
-
-	if (cx >= 0)
-	{
-		double dz = pz + vz * cx - z;
-		if (fabs(py + vy * cx) <= (y + dz * siny / cosy))
-			return cx;
-	}
-
-	if (cy >= 0)
-	{
-		double dz = pz + vz * cy - z;
-		if (fabs(px + vx * cy) <= (x + dz * sinx / cosx))
-			return cy;
-	}
-
-	return DBL_MAX;
+	return MIN(MIN(cx1, cy1), MIN(cx2, cy2));
 }
 
 double mcGeometry::TrLenInVoxel(double x1, double y1, double z1

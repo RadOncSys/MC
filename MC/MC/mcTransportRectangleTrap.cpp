@@ -1,10 +1,8 @@
 #include "mcTransportRectangleTrap.h"
 
 mcTransportRectangleTrap::mcTransportRectangleTrap(
-	const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x, double width, double length)
-	:mcTransport(orgn, z, x)
-	, swidth_(width / 2)
-	, slength_(length / 2)
+	const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x)
+	: mcTransport(orgn, z, x), fsx1_(0), fsx2_(0), fsy1_(0), fsy2_(0)
 {
 }
 
@@ -23,14 +21,22 @@ void mcTransportRectangleTrap::beginTransport(mcParticle& p)
 	uu = uu - pp;
 	double f = -pp.z() / uu.z();
 	double x = pp.x() + uu.x() * f;
-	if (fabs(x) > swidth_)
+	if (x < fsx1_ || x > fsx2_)
 		return;
 	double y = pp.y() + uu.y() * f;
-	if (fabs(y) > slength_)
+	if (y < fsy1_ || y > fsy2_)
 		return;
 
 	if (nextTransport_ != nullptr)
 		nextTransport_->beginTransport(p);
+}
+
+void mcTransportRectangleTrap::SetFieldSize(double x1, double x2, double y1, double y2)
+{
+	fsx1_ = x1;
+	fsx2_ = x2;
+	fsy1_ = y1;
+	fsy2_ = y2;
 }
 
 void mcTransportRectangleTrap::dumpVRML(ostream& os) const
@@ -43,10 +49,10 @@ void mcTransportRectangleTrap::dumpVRML(ostream& os) const
 	p[i++] = geomVector3D(-r, r, 0) * mttow_;
 	p[i++] = geomVector3D(r, r, 0) * mttow_;
 	p[i++] = geomVector3D(r, -r, 0) * mttow_;
-	p[i++] = geomVector3D(-swidth_, -slength_, 0) * mttow_;
-	p[i++] = geomVector3D(-swidth_, slength_, 0) * mttow_;
-	p[i++] = geomVector3D(swidth_, slength_, 0) * mttow_;
-	p[i++] = geomVector3D(swidth_, -slength_, 0) * mttow_;
+	p[i++] = geomVector3D(fsx1_, fsy1_, 0) * mttow_;
+	p[i++] = geomVector3D(fsx1_, fsy2_, 0) * mttow_;
+	p[i++] = geomVector3D(fsx2_, fsy2_, 0) * mttow_;
+	p[i++] = geomVector3D(fsx2_, fsy1_, 0) * mttow_;
 
 	os << "    Transform {" << endl;
 	os << "      children Shape {" << endl;
