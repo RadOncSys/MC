@@ -2,6 +2,7 @@
 #include "Element.h"
 #include "Tag.h"
 #include <algorithm>
+#include <istream>
 #include <locale>
 //#include "../../RO.Util/Text.h"
 

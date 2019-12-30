@@ -6,6 +6,7 @@
 #include "Tag.h"
 #include "TransferSyntax.h"
 #include "Uid.h"
+#include <istream>
 #include <exception>
 
 using namespace RO::Dicom;

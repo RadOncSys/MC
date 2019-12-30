@@ -293,7 +293,7 @@ double mcPhysicsElectron::BremsPhotonEnergy(mcRng& rng, const mcMediumXE* pMediu
 			// Sample from the (1-r)/r part of the distribution,
 			// choosing a subdistribution at random from the set
 			// (0,1,2,...,NBREMS-1) (eqs. (2.7.76-77) of SLAC-265)
-			double p = pow(0.5, n_brems * rng.rnd());
+			double p = pow(0.5, double(int(n_brems * rng.rnd())));
 
 			// All subdistributions are sampled by first sampling from:
 			//    1.0/log(2.0)                   if 0.0 <= r <  0.5

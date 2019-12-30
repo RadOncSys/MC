@@ -2,6 +2,7 @@
 #include "mcDefs.h"
 #include "../geometry/text.h"
 #include <math.h>
+#include <istream>
 
 mcMediumXE::mcMediumXE(void)
 	: iLogKE0_phot(0), iLogKE1_phot(0), eventCutoff_phot(0)

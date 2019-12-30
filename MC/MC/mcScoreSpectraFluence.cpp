@@ -125,7 +125,7 @@ void mcScoreSpectraFluence::dumpStatistic(ostream& os) const
 
 	os << endl << "Радиальные спектры по количеству частиц";
 	os << endl << "---------------------------------------" << endl;
-	for (ie = 0; ie < ne_; ie++) os << "\t" << (ie - 0.5) * estep_;
+	for (ie = 0; ie < ne_; ie++) os << "\t" << (ie + 0.5) * estep_;
 	os << endl;
 	for (ir = 0; ir < nr_; ir++)
 	{
@@ -136,7 +136,7 @@ void mcScoreSpectraFluence::dumpStatistic(ostream& os) const
 
 	os << endl << "Радиальные спектры по энергии частиц";
 	os << endl << "------------------------------------" << endl;
-	for (ie = 0; ie < ne_; ie++) os << "\t" << (ie - 0.5) * estep_;
+	for (ie = 0; ie < ne_; ie++) os << "\t" << (ie + 0.5) * estep_;
 	os << endl;
 	for (ir = 0; ir < nr_; ir++)
 	{
