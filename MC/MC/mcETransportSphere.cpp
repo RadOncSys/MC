@@ -61,7 +61,7 @@ void mcETransportSphere::dumpVRML(ostream& os) const
 
 	geomVector3D p = geomVector3D(0, 0, 0) * mttow_;
 
-	os << "# Source: " << name_ << endl;
+	os << "# Transport: " << name_ << endl;
 	os << "Transform {" << endl;
 	os << "  translation " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
 	os << "  children [" << endl;

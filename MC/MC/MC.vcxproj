@@ -189,6 +189,7 @@
     <ClInclude Include="mcScorePhaseSpaceConcentrator.h" />
     <ClInclude Include="mcScorePHSP.h" />
     <ClInclude Include="mcScoreSpectraFluence.h" />
+    <ClInclude Include="mcScoreSpectraFluenceSphere.h" />
     <ClInclude Include="mcScoreSphereFluence.h" />
     <ClInclude Include="mcScoreSphereMatrix.h" />
     <ClInclude Include="mcScoreTrack.h" />
@@ -226,6 +227,7 @@
     <ClInclude Include="mcTransportRing.h" />
     <ClInclude Include="mcTransportSimpleSplitter.h" />
     <ClInclude Include="mcTransportSlab.h" />
+    <ClInclude Include="mcTransportSphereTrap.h" />
     <ClInclude Include="mcTransportTrap.h" />
     <ClInclude Include="mcTransportWedge.h" />
     <ClInclude Include="mcVRMLDumper.h" />
@@ -279,6 +281,7 @@
     <ClCompile Include="mcScorePhaseSpaceConcentrator.cpp" />
     <ClCompile Include="mcScorePHSP.cpp" />
     <ClCompile Include="mcScoreSpectraFluence.cpp" />
+    <ClCompile Include="mcScoreSpectraFluenceSphere.cpp" />
     <ClCompile Include="mcScoreSphereFluence.cpp" />
     <ClCompile Include="mcScoreSphereMatrix.cpp" />
     <ClCompile Include="mcScoreTrack.cpp" />
@@ -316,6 +319,7 @@
     <ClCompile Include="mcTransportRing.cpp" />
     <ClCompile Include="mcTransportSimpleSplitter.cpp" />
     <ClCompile Include="mcTransportSlab.cpp" />
+    <ClCompile Include="mcTransportSphereTrap.cpp" />
     <ClCompile Include="mcTransportWedge.cpp" />
     <ClCompile Include="mcVRMLDumper.cpp" />
     <ClCompile Include="ProfileProcessor.cpp" />

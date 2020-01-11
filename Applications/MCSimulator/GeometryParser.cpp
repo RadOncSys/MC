@@ -15,6 +15,7 @@
 #include "../../mc/mc/mcTransportSlab.h"
 #include "../../mc/mc/mcTransportPlaneFilter.h"
 #include "../../mc/mc/mcTransportRectangleTrap.h"
+#include "../../mc/mc/mcTransportSphereTrap.h"
 #include "../../mc/mc/mcTransportWedge.h"
 #include "../../mc/mc/mcTransportAxialSymmetricSplitter.h"
 #include "../../mc/mc/mcTransportSimpleSplitter.h"
@@ -37,6 +38,7 @@
 #include "../../mc/mc/mcScoreEnergySpectrum.h"
 #include "../../mc/mc/mcScoreEnergyFluence.h"
 #include "../../mc/mc/mcScoreSpectraFluence.h"
+#include "../../mc/mc/mcScoreSpectraFluenceSphere.h"
 #include "../../mc/mc/mcScoreParticleContainer.h"
 #include "../../mc/mc/mcScoreSphereFluence.h"
 #include "../../mc/mc/mcScoreSphereMatrix.h"
@@ -109,7 +111,7 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	wstring geomMedium;
 	double densityRatio = 1.0;
 	double electron_cut = 0, photon_cut = 0;
-	double cr = 1.0, cg = 1.0, cb = 1.0, ct = 1.0;
+	double cr = 1.0, cg = 1.0, cb = 1.0, ct = 0.8;
 	double x0, y0, z0;
 	double vx, vy, vz;
 	double xx, xy, xz;
@@ -373,6 +375,10 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 		auto trt = new mcTransportRectangleTrap(origin, normal, xaxis);
 		trt->SetFieldSize(x1, x2, y1, y2);
 		t = trt;
+	}
+	else if (_wcsicmp(geomType.c_str(), L"spheretrap") == 0)
+	{
+		t = new mcTransportSphereTrap(origin, normal, xaxis, radius);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"axial_splitter") == 0)
 	{
@@ -643,7 +649,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 				else if (_wcsicmp(n1.Name.c_str(), L"emax") == 0)
 					emax = _wtoi(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"ecut") == 0)
-					ecut = _wtoi(n1.Text.c_str());
+					ecut = _wtof(n1.Text.c_str());
 			}
 			if (node.Nodes.size() > 0)
 				isSpecParsDefined = true;
@@ -726,10 +732,16 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 		score = new mcScoreEnergyFluence(scoreModule.c_str(), nThreads, pt, nr, rmax);
 	}
 
-	// Распределение потока энергии в плоскости через кольца
+	// Распределение спектров в кольцах в пласкости
 	else if (_wcsicmp(scoreType.c_str(), L"spectra_fluence") == 0)
 	{
 		score = new mcScoreSpectraFluence(scoreModule.c_str(), nThreads, pt, ecut, nr, nebins, rmax, emax);
+	}
+
+	// Распределение спектров в кольцах на сфере
+	else if (_wcsicmp(scoreType.c_str(), L"spectra_fluence_sphere") == 0)
+	{
+		score = new mcScoreSpectraFluenceSphere(scoreModule.c_str(), nThreads, pt, ecut, nr, nebins, rmax, emax, 100.0);
 	}
 
 	// Поток излучения в RZ геометрии

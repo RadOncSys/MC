@@ -15,7 +15,7 @@ public:
 	void setName(const char*);
 	const char* getName() const { return name_; }
 
-	void setColor(double r, double g, double b, double t = 0);
+	void setColor(double r, double g, double b, double t = 0.8);
 	double r() const { return red_; }
 	double g() const { return green_; }
 	double b() const { return blue_; }

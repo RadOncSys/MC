@@ -19,10 +19,10 @@ mcTransportRectanglePolygonSideHole::mcTransportRectanglePolygonSideHole(const g
 
 	for (int i = 0; i < nlayers_; i++)
 	{
-		double a = x_[i + 1] - x_[i], b = z_[i + 1] - z_[i], c = sqrt(a*a + b*b);
+		double a = x_[i + 1] - x_[i], b = z_[i + 1] - z_[i], c = sqrt(a * a + b * b);
 		sinx_[i] = a / c;
 		cosx_[i] = b / c;
-		a = y_[i + 1] - y_[i], c = sqrt(a*a + b*b);
+		a = y_[i + 1] - y_[i], c = sqrt(a * a + b * b);
 		siny_[i] = a / c;
 		cosy_[i] = b / c;
 		xmax_ = MAX(xmax_, x_[i + 1]);
@@ -42,7 +42,7 @@ double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) con
 	// так как она внутри и, если пересечение существует, то оно ближайшее
 	for (int i = 0; i < nlayers_; i++)
 	{
-		double cd = mcGeometry::getDistanceToRectangleConeOutside(p.p, p.u, 
+		double cd = mcGeometry::getDistanceToRectangleConeOutside(p.p, p.u,
 			-x_[i] + fsx1_, x_[i] + fsx2_, cosx_[i], sinx_[i],
 			-y_[i] + fsy1_, y_[i] + fsy2_, cosy_[i], siny_[i], z_[i]);
 
@@ -113,7 +113,7 @@ double mcTransportRectanglePolygonSideHole::getDistanceOutside(mcParticle& p) co
 		// Если частица окажется на поверхности объекта, то это уже пересечение
 		if (x >= -dx_ + fsx1_ && x <= dx_ + fsx2_ && y >= -dy_ + fsy1_ && y <= dy_ + fsy2_ &&
 			!(x > -x_.front() + fsx1_ && x < x_.front() + fsx2_ &&
-			y > -y_.front() + fsx1_ && y < y_.front() + fsy2_))
+				y > -y_.front() + fsx1_ && y < y_.front() + fsy2_))
 			return cd;
 		else
 		{
@@ -133,7 +133,7 @@ double mcTransportRectanglePolygonSideHole::getDistanceOutside(mcParticle& p) co
 		// Если частица окажется на поверхности объекта, то это уже пересечение
 		if (x >= -dx_ + fsx1_ && x <= dx_ + fsx2_ && y >= -dy_ + fsy1_ && y <= dy_ + fsy2_ &&
 			!(x > -x_.back() + fsx1_ && x < x_.back() + fsx2_ &&
-			y > -y_.back() + fsx1_ && y < y_.back() + fsy2_))
+				y > -y_.back() + fsx1_ && y < y_.back() + fsy2_))
 			return cd;
 		else
 		{
@@ -170,8 +170,8 @@ double mcTransportRectanglePolygonSideHole::getDistanceOutsideWithinLayer(const 
 		// Оставшиеся частицы могут быть только в дырке. Проверяем все грани.
 		for (int i = 0; i < nlayers_; i++)
 		{
-			double cd = mcGeometry::getDistanceToRectangleConeInside(p, v, 
-				-x_[i] + fsx1_, x_[i] + fsx2_, cosx_[i], sinx_[i], 
+			double cd = mcGeometry::getDistanceToRectangleConeInside(p, v,
+				-x_[i] + fsx1_, x_[i] + fsx2_, cosx_[i], sinx_[i],
 				-y_[i] + fsy1_, y_[i] + fsy2_, cosy_[i], siny_[i], z_[i]);
 			if (cd == DBL_MAX) continue;
 			auto c = p + (v * cd);
@@ -206,18 +206,18 @@ double mcTransportRectanglePolygonSideHole::getDNearInside(const geomVector3D& p
 	if (dx1 > 0)
 	{
 		if (dy1 > 0)
-			return MIN(dd, sqrt(dx1*dx1 + dy1 * dy1));
+			return MIN(dd, sqrt(dx1 * dx1 + dy1 * dy1));
 		else if (dy2 > 0)
-			return MIN(dd, sqrt(dx1*dx1 + dy2 * dy2));
+			return MIN(dd, sqrt(dx1 * dx1 + dy2 * dy2));
 		else
 			return MIN(dd, dx1);
 	}
 	else if (dx2 > 0)
 	{
 		if (dy1 > 0)
-			return MIN(dd, sqrt(dx2*dx2 + dy1 * dy1));
+			return MIN(dd, sqrt(dx2 * dx2 + dy1 * dy1));
 		else if (dy2 > 0)
-			return MIN(dd, sqrt(dx2*dx2 + dy2 * dy2));
+			return MIN(dd, sqrt(dx2 * dx2 + dy2 * dy2));
 		else
 			return MIN(dd, dx2);
 	}

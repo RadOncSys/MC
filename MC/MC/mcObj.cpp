@@ -4,7 +4,7 @@ mcObj::mcObj(void)
 	:red_(0.5)
 	, green_(0.5)
 	, blue_(0.5)
-	, transparancy_(0.)
+	, transparancy_(0.8)
 {
 	name_[0] = char(0);
 }
