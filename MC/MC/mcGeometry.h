@@ -62,7 +62,7 @@ public:
 		double y1, double y2, double cosy, double siny, double z);
 	static double getDistanceToRectangleConeOutside(const geomVector3D& p, const geomVector3D& v,
 		double x1, double x2, double cosx, double sinx,
-		double y1, double y2, double cosy, double siny, double z);
+		double y1, double y2, double cosy, double siny, double z1, double z2);
 
 	/// <summary>
 	/// Расчет длины трека в вокселе.

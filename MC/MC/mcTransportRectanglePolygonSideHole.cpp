@@ -36,6 +36,9 @@ mcTransportRectanglePolygonSideHole::~mcTransportRectanglePolygonSideHole(void)
 
 double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) const
 {
+	// ƒопуск на погрешности геометрических расчетов
+	const double de = 0.01;
+
 	double z = p.p.z(), vz = p.u.z();
 
 	// ѕровер€ем пересечение с внутренней конусообразной поверхностью имеет смысл рассматривать в первую очередь,
@@ -44,12 +47,16 @@ double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) con
 	{
 		double cd = mcGeometry::getDistanceToRectangleConeOutside(p.p, p.u,
 			-x_[i] + fsx1_, x_[i] + fsx2_, cosx_[i], sinx_[i],
-			-y_[i] + fsy1_, y_[i] + fsy2_, cosy_[i], siny_[i], z_[i]);
+			-y_[i] + fsy1_, y_[i] + fsy2_, cosy_[i], siny_[i], z_[i], z_[i+1]);
 
 		if (cd == DBL_MAX) continue;
-		geomVector3D c = p.p + (p.u * cd);
-		if (c.z() >= z_[i] && c.z() <= z_[i + 1])	// ѕересечение внутри сло€
+		else
 			return cd;
+
+		// GG 20200930 - в следующем коде отпала необходимсть, так как теперь это провер€ктс€ внутри getDistanceToRectangleConeOutside
+		//geomVector3D c = p.p + (p.u * cd);
+		//if (c.z() >= z_[i] && c.z() <= z_[i + 1])	// ѕересечение внутри сло€
+		//	return cd;
 	}
 
 	// ѕровер€ем прохождение через переднюю или заднюю поверхность
@@ -61,8 +68,10 @@ double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) con
 		double cd = -z / vz;
 		geomVector3D c = p.p + (p.u * cd);
 		double x = c.x(), y = c.y();
-		if (x >= (-dx_ + fsx1_) && x <= (dx_ + fsx2_) && y >= (-dy_ + fsy1_) && y <= (dy_ + fsy2_) &&
-			(x <= (-x_.front() + fsx1_) || x >= (x_.front() + fsx2_) || y <= (-y_.front() + fsy1_) || y >= (y_.front() + fsy2_)))
+
+		// ѕересечение с внутренней дыркой не провер€ем, так как при правильном коде 
+		// мы должны были получить пересечение выше с гран€ми пр€моугольных конусов.
+		if (x >= (-dx_ + fsx1_ - de) && x <= (dx_ + fsx2_ + de) && y >= (-dy_ + fsy1_ - de) && y <= (dy_ + fsy2_ + de))
 			return cd;
 	}
 	else if (vz > 0)
@@ -70,8 +79,7 @@ double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) con
 		double cd = (zmax_ - z) / vz;
 		geomVector3D c = p.p + (p.u * cd);
 		double x = c.x(), y = c.y();
-		if (x >= (-dx_ + fsx1_) && x <= (dx_ + fsx2_) && y >= (-dy_ + fsy1_) && y <= (dy_ + fsy2_) &&
-			(x <= (-x_.back() + fsx1_) || x >= (x_.back() + fsx2_) || y <= (-y_.back() + fsy1_) || y >= (y_.back() + fsy2_)))
+		if (x >= (-dx_ + fsx1_ - de) && x <= (dx_ + fsx2_ + de) && y >= (-dy_ + fsy1_ - de) && y <= (dy_ + fsy2_ + de))
 			return cd;
 	}
 
@@ -89,7 +97,7 @@ double mcTransportRectanglePolygonSideHole::getDistanceInside(mcParticle& p) con
 
 	// ќтладка: ѕовторить расчет, чтобы пон€ть причину.
 	// Ќе допускать в норме, так как приведет к бесконечной рекурсии
-	//return getDistanceInside(p.p, p.u);
+	//return getDistanceInside(p);
 
 	//throw std::exception("mcTransportRectanglePolygonSideHole::getDistanceInside: particle inside should have distance");
 	return DBL_MAX;

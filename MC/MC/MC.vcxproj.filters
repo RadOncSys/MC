@@ -319,6 +319,15 @@
     <ClInclude Include="mcTransportSphereTrap.h">
       <Filter>Transport</Filter>
     </ClInclude>
+    <ClInclude Include="mcTransportJawPairFocused.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceModelRadialDirect.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScorePhaseSpaceDirect.h">
+      <Filter>Score</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -587,6 +596,15 @@
     </ClCompile>
     <ClCompile Include="mcTransportSphereTrap.cpp">
       <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportJawPairFocused.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceModelRadialDirect.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScorePhaseSpaceDirect.cpp">
+      <Filter>Score</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
