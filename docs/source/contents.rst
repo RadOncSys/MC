@@ -28,6 +28,7 @@ The document is for MC version |version| and was last compiled by |today|.
     Sources
     ReferenceApplication
     Validation
+    Examples
     
     
 * :ref:`search`
