@@ -1,9 +1,10 @@
 # MC
 
-Mocnte Carlo project for dosimetry modelling in the field of radiation oncology 
- 
+Monte-Carlo project for dosimetry modelling in the field of radiation oncology.
+
 History
 =======
+
 This project has started from the 
 [EGS-Nova: An Adaptation of EGS in C/C++](http://rcwww.kek.jp/research/egs/epub/aap/js3nov98.html)
 many years ago.
@@ -14,7 +15,6 @@ Thanks a lot to James C. Satterthwaite who has ported EGS4 to well structured C 
 Among them simulations of pencil beam dose distributions, radiotherapy unit radiation beam forming systems simulations, radiation source modeling, etc.
 
 Among them are simulations of pencil beam dose distributions, radiotherapy unit radiation beam forming systems simulations, radiation source modeling, etc.
-
 
 Project motivation
 ==================
@@ -27,7 +27,6 @@ Important reason for the creating new ***MC*** engine was requirement of program
 
 The last but not least reason is that ***C++*** classical object oriented MC system is a good educational and self-educational tool for studying radiation transport field and improving programming skills.
 
-
 Important decisions
 ===================
 
@@ -35,9 +34,9 @@ The biggest philosophical difference compare to ***EGS4*** is assumption, that s
 
 Transport logic (managing events and their processing) keeps physics nature from ***EGS4***, but has completely different implementation. It may be difficult to understand. Advantage is all this logic is implemented in compact form in a single class ***mcTransport***.
 
-
 Physics
 =======
+
 ***MC*** package implements ***EGS4*** physics models without modifications.
 
 Feature directions
@@ -47,7 +46,6 @@ Feature directions
 - Verify and improve radiation transport physics.
 - Documentation.
 - More samples.
-
 
 Installation
 ===================
@@ -64,7 +62,6 @@ Solution consists of four projects.
 | ***MC***  | Core Monte Carlo library |
 | ***MC.Tests***  | Some collection of tests. Valuable learning resource |
 | ***MCSimulator***  | Complex executable, which uses full power of MC library and can be used standalone. Most practical tasks can be completely described by XML input files |
-
 
 Running simulations
 ===================
@@ -84,8 +81,19 @@ Here are some examples to run simulations from the samples data:
 	MCSimulator S_Ross.xml G_Ross.xml
 	MCSimulator S_Target.xml G_Target.xml
 
-
 Output and visualization
 ========================
 
 ***MCSimulator*** produces two output files. Their names indicated in simulation conditions ***XML*** file. One file (**.dat*) contains numerical results of simulations. The other one is VRML graphical dump (**.wrl*). It can be viewed many ***VRML*** viewers. The recommended old style perfect one can be unzipped from this project ***.\Data\vrmlview.zip*** file.
+
+Documentation
+=============
+
+Project documentation can be found here
+[here...](https://radoncsys.github.io/MC)
+
+References
+==========
+
+ 1. [MC code presentaion at meetup](https://radoncsys.github.io/MC/files/2017_05_23_Meetup_MC.pdf) (Russian)
+ 1. [MC validation presentaion](https://radoncsys.github.io/MC/files/20201021_MCValid.pdf) (Russian)
