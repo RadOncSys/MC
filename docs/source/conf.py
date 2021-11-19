@@ -64,12 +64,30 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 # html_theme = 'alabaster'
-html_theme = 'nature'
+html_theme = 'sphinx_rtd_theme'
+html_theme_options = {
+    "collapse_navigation": True,
+    "display_version": True,
+    "sticky_navigation": True,  # Set to False to disable the sticky nav while scrolling.
+    "logo_only": True,  # if we have a html_logo below, this shows /only/ the logo with no title text
+    "style_nav_header_background": "#FBFBFB",
+}
+html_context = {
+    "display_github": True,
+    "github_user": "RadOncSys",
+    "github_repo": "MC",
+    "github_version": "master",
+    "conf_py_path": "/docs/source/",
+}
+html_scaled_image_link = False
+html_show_sourcelink = True
+html_favicon = "./images/favicon.ico"
+html_logo = "./images/logo.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ['_static']
 
 # locale_dirs = ['locale/']   # path is example but recommended.
 # gettext_compact = False     # optional.
@@ -83,3 +101,6 @@ latex_elements = {
 #    'pxunit': '0.75bp',
 #    'babel': 'russian'
 }
+
+html_static_path = ["./_static"]
+html_css_files = ["custom.css"]

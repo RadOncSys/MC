@@ -48,7 +48,7 @@ with **PEGS4** input file (**AcceleratorSimulator.pegs4dat** for now).
 
 Here are some examples to run simulations from the samples data:
 
-.. code-block:: language
+.. code-block:: console
 
    MCSimulator S_C60_sphere.xml G_C60_sphere.xml
    MCSimulator S_CK_6X.xml G_CyberKnife.xml
