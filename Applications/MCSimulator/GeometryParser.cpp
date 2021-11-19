@@ -9,12 +9,14 @@
 #include "../../mc/mc/mcTransportConicalHole.h"
 #include "../../mc/mc/mcTransportRectangleRing.h"
 #include "../../mc/mc/mcTransportJawPairRounded.h"
+#include "../../mc/mc/mcTransportJawPairFocused.h"
 #include "../../mc/mc/mcTransportRectanglePolygonSideHole.h"
 #include "../../mc/mc/mcTransportMLC.h"
 #include "../../mc/mc/mcTransportCylinderStack.h"
 #include "../../mc/mc/mcTransportSlab.h"
 #include "../../mc/mc/mcTransportPlaneFilter.h"
 #include "../../mc/mc/mcTransportRectangleTrap.h"
+#include "../../mc/mc/mcTransportSphereTrap.h"
 #include "../../mc/mc/mcTransportWedge.h"
 #include "../../mc/mc/mcTransportAxialSymmetricSplitter.h"
 #include "../../mc/mc/mcTransportSimpleSplitter.h"
@@ -32,11 +34,13 @@
 #include "../../mc/mc/mcScoreConicalRZ.h"
 #include "../../mc/mc/mcScoreBeamFluenceXY.h"
 #include "../../mc/mc/mcScorePhaseSpaceConcentrator.h"
+#include "../../mc/mc/mcScorePhaseSpaceDirect.h"
 #include "../../mc/mc/mcScoreMatrixXY.h"
 #include "../../mc/mc/mcScoreMatrix2D.h"
 #include "../../mc/mc/mcScoreEnergySpectrum.h"
 #include "../../mc/mc/mcScoreEnergyFluence.h"
 #include "../../mc/mc/mcScoreSpectraFluence.h"
+#include "../../mc/mc/mcScoreSpectraFluenceSphere.h"
 #include "../../mc/mc/mcScoreParticleContainer.h"
 #include "../../mc/mc/mcScoreSphereFluence.h"
 #include "../../mc/mc/mcScoreSphereMatrix.h"
@@ -46,6 +50,7 @@
 #include "../../mc/mc/mcSourceXraySigmaR.h"
 #include "../../mc/mc/mcSourceCylindricalC60.h"
 #include "../../mc/mc/mcSourceModelRadialPhsp.h"
+#include "../../mc/mc/mcSourceModelRadialDirect.h"
 #include "../../mc/mc/mcSourceLEBA.h"
 #include "../../mc/mc/mcSourceSphereC60.h"
 #include "../../mc/mc/mcSourceAcceleratedBeam.h"
@@ -109,7 +114,7 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	wstring geomMedium;
 	double densityRatio = 1.0;
 	double electron_cut = 0, photon_cut = 0;
-	double cr = 1.0, cg = 1.0, cb = 1.0, ct = 1.0;
+	double cr = 1.0, cg = 1.0, cb = 1.0, ct = 0.8;
 	double x0, y0, z0;
 	double vx, vy, vz;
 	double xx, xy, xz;
@@ -128,6 +133,8 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	double d = 0;
 	double h = 0;
 	double focus = 0;
+	double sad = 0;
+	double scd = 0;
 	int nc = 0;
 	int nsplit = 0;
 	mc_particle_t ptype = mc_particle_t::MCP_PHOTON;
@@ -236,6 +243,10 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 					r0 = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"r1") == 0)
 					r1 = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"sad") == 0)
+					sad = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"scd") == 0)
+					scd = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"focus") == 0)
 					focus = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"x0") == 0)
@@ -342,6 +353,11 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 		t = new mcTransportJawPairRounded(origin, normal, xaxis, radius, height, width);
 		((mcTransportJawPairRounded*)t)->setFS(x1, x2);
 	}
+	else if (_wcsicmp(geomType.c_str(), L"jaw_pair_focused") == 0)
+	{
+		t = new mcTransportJawPairFocused(origin, normal, xaxis, sad, scd, height, width, length);
+		((mcTransportJawPairFocused*)t)->setFS(x1, x2);
+	}
 	else if (_wcsicmp(geomType.c_str(), L"rectanglepolygonsidehole") == 0)
 	{
 		if (x1 == x2) { x1 = -sx0 / 2; x2 = sx0 / 2; }
@@ -373,6 +389,10 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 		auto trt = new mcTransportRectangleTrap(origin, normal, xaxis);
 		trt->SetFieldSize(x1, x2, y1, y2);
 		t = trt;
+	}
+	else if (_wcsicmp(geomType.c_str(), L"spheretrap") == 0)
+	{
+		t = new mcTransportSphereTrap(origin, normal, xaxis, radius);
 	}
 	else if (_wcsicmp(geomType.c_str(), L"axial_splitter") == 0)
 	{
@@ -643,7 +663,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 				else if (_wcsicmp(n1.Name.c_str(), L"emax") == 0)
 					emax = _wtoi(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"ecut") == 0)
-					ecut = _wtoi(n1.Text.c_str());
+					ecut = _wtof(n1.Text.c_str());
 			}
 			if (node.Nodes.size() > 0)
 				isSpecParsDefined = true;
@@ -726,10 +746,16 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 		score = new mcScoreEnergyFluence(scoreModule.c_str(), nThreads, pt, nr, rmax);
 	}
 
-	// Распределение потока энергии в плоскости через кольца
+	// Распределение спектров в кольцах в пласкости
 	else if (_wcsicmp(scoreType.c_str(), L"spectra_fluence") == 0)
 	{
 		score = new mcScoreSpectraFluence(scoreModule.c_str(), nThreads, pt, ecut, nr, nebins, rmax, emax);
+	}
+
+	// Распределение спектров в кольцах на сфере
+	else if (_wcsicmp(scoreType.c_str(), L"spectra_fluence_sphere") == 0)
+	{
+		score = new mcScoreSpectraFluenceSphere(scoreModule.c_str(), nThreads, pt, ecut, nr, nebins, rmax, emax, 100.0);
 	}
 
 	// Поток излучения в RZ геометрии
@@ -782,6 +808,14 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 			pt, isxray, focus, ne, nr, nt, na, emax, rmax, tmax, outfile.c_str());
 	}
 
+	// прямой накопитель в радиальной симметрии
+	else if (_wcsicmp(scoreType.c_str(), L"phsp_direct") == 0)
+	{
+		if (outfile.empty())
+			throw exception("Please, specify file name for scoring");
+		score = new mcScorePhaseSpaceDirect(scoreModule.c_str(), nThreads, pt, emax, rmax, outfile.c_str());
+	}
+
 	else if (_wcsicmp(scoreType.c_str(), L"fluence_plane") == 0)
 	{
 		auto sc = new mcScoreParticleContainer(scoreModule.c_str(), nThreads);
@@ -831,6 +865,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	wstring fileName;
 	double d = 0, h = 0, radius = 0, size = 0, angle = 0;
 	double fsx = 0, fsy = 0;
+	unsigned nsplit;
 	wstring srcType;
 	wstring shapeType;
 
@@ -902,6 +937,15 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 				isDirectionDefined = true;
 		}
 
+		else if (_wcsicmp(node.Name.c_str(), L"split") == 0)
+		{
+			for (auto n1 : node.Nodes)
+			{
+				if (_wcsicmp(n1.Name.c_str(), L"number") == 0)
+					nsplit = _wtoi(n1.Text.c_str());
+			}
+		}
+
 		else if (_wcsicmp(node.Name.c_str(), L"phsp") == 0)
 		{
 			for (auto n1 : node.Nodes)
@@ -962,7 +1006,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	if (!isDirectionDefined)
 		throw exception("Please, indicate radiation source direction");
 
-	if (_wcsicmp(radTypeName.c_str(), L"phsp_photon") == 0)
+	if (_wcsicmp(radTypeName.c_str(), L"phsp_photon") == 0 || _wcsicmp(radTypeName.c_str(), L"phsp_photon_direct") == 0)
 	{
 		// Источник на основе модели фазового пространства (гистограм распределений частиц)
 		if (!isRadiationDefined)
@@ -975,7 +1019,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		int ifile;
 		if (_sopen_s(&ifile, XmlParseReaderBase::copyWStringToStlString(fileName.c_str()).c_str(),
 			_O_RDONLY | _O_SEQUENTIAL | _O_BINARY, _SH_DENYWR, _O_RDONLY) != 0)
-			throw std::exception("mcScorePhaseSpaceConcentrator:: Cannot open model file to load");
+			throw std::exception("GeometryParser:: Cannot open model file to load");
 		long buflen = _filelength(ifile);
 		void* buf = malloc(buflen);
 		if (!buf)
@@ -985,8 +1029,17 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		if (rlen != buflen)
 			throw std::exception("error in reading source data file");
 
-		source = new mcSourceModelRadialPhsp(srcName.c_str(), nThreads, z0);
-		((mcSourceModelRadialPhsp*) source)->readFromMemory(buf);
+		if (_wcsicmp(radTypeName.c_str(), L"phsp_photon") == 0)
+		{
+			source = new mcSourceModelRadialPhsp(srcName.c_str(), nThreads, z0);
+			((mcSourceModelRadialPhsp*)source)->readFromMemory(buf);
+		}
+		else
+		{
+			source = new mcSourceModelRadialDirect(srcName.c_str(), nThreads, z0);
+			((mcSourceModelRadialDirect*)source)->readFromMemory(buf);
+			static_cast<mcSourceModelRadialDirect*>(source)->SetSplitting(nsplit);
+		}
 
 		free(buf);
 	}

@@ -378,25 +378,71 @@ double mcGeometry::getDistanceToRectangleConeInside(const geomVector3D& p, const
 
 double mcGeometry::getDistanceToRectangleConeOutside(const geomVector3D& p, const geomVector3D& v,
 	double x1, double x2, double cosx, double sinx,
-	double y1, double y2, double cosy, double siny, double z)
+	double y1, double y2, double cosy, double siny, double z1, double z2)
 {
 	double px = p.x(), py = p.y(), pz = p.z();
 	double vx = v.x(), vy = v.y(), vz = v.z();
 
 	// Скалярное произведение вектора скорости и нормали к грани
 	double vn = vx * cosx + vz * sinx;
-	double cx1 = vn <= 0 ? DBL_MAX : ((-px + x1) * cosx - (pz - z) * sinx) / vn;
+	double cx1 = vn <= 0 ? DBL_MAX : ((-px + x1) * cosx - (pz - z1) * sinx) / vn;
 	if (cx1 < 0) cx1 = DBL_MAX;
 	vn = -vx * cosx + vz * sinx;
-	double cx2 = vn < 0 ? DBL_MAX : ((px - x2) * cosx - (pz - z) * sinx) / vn;
+	double cx2 = vn < 0 ? DBL_MAX : ((px - x2) * cosx - (pz - z1) * sinx) / vn;
 	if (cx2 < 0) cx2 = DBL_MAX;
 
 	vn = vy * cosy + vz * siny;
-	double cy1 = vn < 0 ? DBL_MAX : ((-py + y1) * cosy - (pz - z) * siny) / vn;
+	double cy1 = vn < 0 ? DBL_MAX : ((-py + y1) * cosy - (pz - z1) * siny) / vn;
 	if (cy1 < 0) cy1 = DBL_MAX;
 	vn = -vy * cosy + vz * siny;
-	double cy2 = vn < 0 ? DBL_MAX : ((py - y2) * cosy - (pz - z) * siny) / vn;
+	double cy2 = vn < 0 ? DBL_MAX : ((py - y2) * cosy - (pz - z1) * siny) / vn;
 	if (cy2 < 0) cy2 = DBL_MAX;
+
+	// Проверяем точки пересечения на предмет попадания именно на поверхность конуса, ограниченную двумя Z
+	if (cx1 != DBL_MAX)
+	{
+		geomVector3D c = p + (v * cx1);
+		if (c.z() >= z1 && c.z() <= z2)
+		{
+			// Проверка попадание в ограничение перпендикулярных граней
+			if (c.y() < (y1 - (c.z() - z1) * siny) || c.y() > (y2 + (c.z() - z1) * siny))
+				cx1 = DBL_MAX;
+		}
+		else cx1 = DBL_MAX;
+	}
+	if (cx2 != DBL_MAX)
+	{
+		geomVector3D c = p + (v * cx2);
+		if (c.z() >= z1 && c.z() <= z2)
+		{
+			// Проверка попадание в ограничение перпендикулярных граней
+			if (c.y() < (y1 - (c.z() - z1) * siny) || c.y() > (y2 + (c.z() - z1) * siny))
+				cx2 = DBL_MAX;
+		}
+		else cx2 = DBL_MAX;
+	}
+	if (cy1 != DBL_MAX)
+	{
+		geomVector3D c = p + (v * cy1);
+		if (c.z() >= z1 && c.z() <= z2)
+		{
+			// Проверка попадание в ограничение перпендикулярных граней
+			if (c.x() < (x1 - (c.z() - z1) * sinx) || c.x() > (x2 + (c.z() - z1) * sinx))
+				cy1 = DBL_MAX;
+		}
+		else cy1 = DBL_MAX;
+	}
+	if (cy2 != DBL_MAX)
+	{
+		geomVector3D c = p + (v * cy2);
+		if (c.z() >= z1 && c.z() <= z2)
+		{
+			// Проверка попадание в ограничение перпендикулярных граней
+			if (c.x() < (x1 - (c.z() - z1) * sinx) || c.x() > (x2 + (c.z() - z1) * sinx))
+				cy2 = DBL_MAX;
+		}
+		else cy2 = DBL_MAX;
+	}
 
 	return MIN(MIN(cx1, cy1), MIN(cx2, cy2));
 }

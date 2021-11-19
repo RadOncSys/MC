@@ -296,7 +296,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		// Симуляция
 		//
 		mcTransport* tstart = tfirst;
-		if (startinside)
+		//if (startinside)
 		{
 			mcTransport* t = tfirst;
 			while (t)
