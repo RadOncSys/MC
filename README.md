@@ -2,6 +2,8 @@
 
 Monte-Carlo project for dosimetry modelling in the field of radiation oncology.
 
+Project documentation can be found [here...](https://radoncsys.github.io/MC)
+
 History
 =======
 
@@ -85,12 +87,6 @@ Output and visualization
 ========================
 
 ***MCSimulator*** produces two output files. Their names indicated in simulation conditions ***XML*** file. One file (**.dat*) contains numerical results of simulations. The other one is VRML graphical dump (**.wrl*). It can be viewed many ***VRML*** viewers. The recommended old style perfect one can be unzipped from this project ***.\Data\vrmlview.zip*** file.
-
-Documentation
-=============
-
-Project documentation can be found here
-[here...](https://radoncsys.github.io/MC)
 
 References
 ==========
