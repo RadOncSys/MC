@@ -20,7 +20,7 @@ public:
 	mcSource(const char* name, int nThreads);
 	virtual ~mcSource();
 
-	void setScoreTrack(double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons);
+	void setScoreTrack(double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons, bool doProtons, bool doNeutrons);
 	bool IsGamma() const { return isGamma_; };
 	bool IsStartInside() const { return isStartInside_; };
 	void SetIsStartInside(bool b) { isStartInside_ = b; };

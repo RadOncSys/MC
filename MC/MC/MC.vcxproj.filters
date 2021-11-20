@@ -328,6 +328,18 @@
     <ClInclude Include="mcScorePhaseSpaceDirect.h">
       <Filter>Score</Filter>
     </ClInclude>
+    <ClInclude Include="mcPhysicsProton.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMediumProton.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMediumNeutron.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsNeutron.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -605,6 +617,18 @@
     </ClCompile>
     <ClCompile Include="mcScorePhaseSpaceDirect.cpp">
       <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhysicsProton.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcMediumProton.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcMediumNeutron.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhysicsNeutron.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

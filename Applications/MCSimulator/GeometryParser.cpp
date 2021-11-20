@@ -71,6 +71,10 @@ enum mc_particle_t GeometryParser::convert_S2T_ptype(const wchar_t* st)
 		return MCP_NEGATRON;
 	else if (_wcsicmp(st, L"positron") == 0)
 		return MCP_POSITRON;
+	else if (_wcsicmp(st, L"proton") == 0)
+		return MCP_PROTON;
+	else if (_wcsicmp(st, L"neutron") == 0)
+		return MCP_NEUTRON;
 	else
 		throw exception("Unknown radiation type");
 }

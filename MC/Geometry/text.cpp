@@ -39,6 +39,18 @@ short GetTwoStringsFromLine(const string& line, string& s1, string& s2, const ch
 	return (short)s1.size();
 }
 
+int GetStringArray(const string& line, vector<string>& ss, const char* pmask)
+{
+	string l = line, l1, l2;
+	while (1) {
+		if (!GetTwoStringsFromLine(l, l1, l2, pmask))
+			break;
+		ss.push_back(l1);// VK - исправлено. Было l
+		l = l2;
+	}
+	return (int)ss.size();
+}
+
 int GetFloatArray(const string& line, double* x, int n)
 {
 	static const string mask(" \t,;=:)(\\");

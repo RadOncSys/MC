@@ -1,8 +1,12 @@
 #include "mcMedia.h"
 #include "mcMediumXE.h"
+#include "mcMediumProton.h"
+#include "mcMediumNeutron.h"
 #include "mcPhysicsPhoton.h"
 #include "mcPhysicsElectron.h"
 #include "mcPhysicsPositron.h"
+#include "mcPhysicsProton.h"
+#include "mcPhysicsNeutron.h"
 #include "mcParticle.h"
 #include "../geometry/text.h"
 #include <fstream>
@@ -13,6 +17,8 @@ mcMedia::mcMedia(void)
 	physics_[MCP_PHOTON] = new mcPhysicsPhoton();
 	physics_[MCP_NEGATRON] = new mcPhysicsElectron();
 	physics_[MCP_POSITRON] = new mcPhysicsPositron();
+	physics_[MCP_PROTON] = new mcPhysicsProton();
+	physics_[MCP_NEUTRON] = new mcPhysicsNeutron();
 }
 
 mcMedia::~mcMedia(void)
@@ -20,13 +26,17 @@ mcMedia::~mcMedia(void)
 	int i;
 	for (i = 0; i < (int)xes_.size(); i++)
 		delete xes_[i];
+	for (i = 0; i < (int)protons_.size(); i++)
+		delete protons_[i];
+	for (i = 0; i < (int)neutrons_.size(); i++)
+		delete neutrons_[i];
 	for (i = 0; i < (int)physics_.size(); i++)
 		delete physics_[i];
 }
 
 void mcMedia::addName(const char* mname)
 {
-	if (!xes_.empty())
+	if (!xes_.empty() || !protons_.empty() || !neutrons_.empty())
 		throw std::exception("Can't add media names after data initialization");
 	mnames_.push_back(mname);
 }
@@ -37,11 +47,26 @@ short mcMedia::getMediumIdx(const char* mname) const
 		if (mnames_[i] == mname) return i;
 	throw std::exception((string("Medium \"") + mname + string("\" does not exist")).c_str());
 }
+
 const mcMediumXE* mcMedia::getMediumXE(short idx) const
 {
 	if (idx >= (short)xes_.size())
 		throw std::exception("Medium index for photons an electrons is too big");
 	return (mcMediumXE*)xes_[idx];
+}
+
+const mcMediumProton* mcMedia::getProtonMedium(short idx) const
+{
+	if (idx >= (short)protons_.size())
+		throw std::exception("Medium index for protons is too big");
+	return (mcMediumProton*)protons_[idx];
+}
+
+const mcMediumProton* mcMedia::getNeutronMedium(short idx) const
+{
+	if (idx >= (short)neutrons_.size())
+		throw std::exception("Medium index for protons is too big");
+	return (mcMediumProton*)neutrons_[idx];
 }
 
 void mcMedia::initXEFromStream(istream& is)
@@ -95,6 +120,130 @@ void mcMedia::initXEFromFile(const string& fname)
 	initXEFromStream(is);
 }
 
+void mcMedia::initProtonFromStream(istream& is)
+{
+	if (!protons_.empty())
+		throw std::exception("Proton crossectons already initialized");
+	int i;
+	for (i = 0; i < (int)mnames_.size(); i++)
+		protons_.push_back(new mcMediumProton());
+
+	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
+	string line, s1, s2, s3, s4;
+	getline(is, line, '\n');
+	while (!is.fail())
+	{
+		if (line.find("MEDIUM=") != string::npos)
+		{
+			GetTwoStringsFromLine(line, s1, s2);
+			GetTwoStringsFromLine(s2, line, s1);
+
+			// Проверяем, нужна ли данная среда для загрузки?
+			int i;
+			for (i = 0; i < (int)mnames_.size(); i++)
+				if (mnames_[i] == line) break;
+
+			if (i < (int)mnames_.size()) {
+				// дополнительно проверяем версию input file VER=0.0.0
+				GetTwoStringsFromLine(s1, s2, s3);
+				GetTwoStringsFromLine(s3, s1, s4);
+				if ((s2 == "VER") || (s3 == "0.0.0")) {
+					protons_[i]->name_ = line;
+					((mcMediumProton*)protons_[i])->read(is);
+				}
+				else {
+					//throw std::exception("Wrong Proton media data version"); 
+					//в принципе данные могут быть дальше в этом же файле в другой версии, 
+					// так что просто не считываем данные
+				}
+			}
+		}
+		getline(is, line, '\n');
+	}
+
+	// Проверяем, все ли среды загружены
+	string errmedia;
+	for (int i = 0; i < (int)protons_.size(); i++)
+	{
+		if (protons_[i]->status_ != mcMedium::LOADED) {
+			errmedia += mnames_[i];
+			errmedia += "\n";
+		}
+	}
+	if (!errmedia.empty())
+		throw std::exception((string("The following Proton media were not loaded succcessfuly:\n") + errmedia).c_str());
+}
+
+void mcMedia::initProtonFromFile(const string& fname)
+{
+	ifstream is(fname.c_str());
+	if (is.fail())
+		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
+	initProtonFromStream(is);
+}
+
+void mcMedia::iniNeutronFromStream(istream& is)
+{
+	if (!neutrons_.empty())
+		throw std::exception("Proton crossectons already initialized");
+	int i;
+	for (i = 0; i < (int)mnames_.size(); i++)
+		neutrons_.push_back(new mcMediumProton());
+
+	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
+	string line, s1, s2, s3, s4;
+	getline(is, line, '\n');
+	while (!is.fail())
+	{
+		if (line.find("MEDIUM=") != string::npos)
+		{
+			GetTwoStringsFromLine(line, s1, s2);
+			GetTwoStringsFromLine(s2, line, s1);
+
+			// Проверяем, нужна ли данная среда для загрузки?
+			int i;
+			for (i = 0; i < (int)mnames_.size(); i++)
+				if (mnames_[i] == line) break;
+
+			if (i < (int)mnames_.size()) {
+				// дополнительно проверяем версию input file VER=0.0.0
+				GetTwoStringsFromLine(s1, s2, s3);
+				GetTwoStringsFromLine(s3, s1, s4);
+				if ((s2 == "VER") || (s3 == "0.0.0")) {
+					neutrons_[i]->name_ = line;
+					((mcMediumProton*)neutrons_[i])->read(is);
+				}
+				else {
+					//throw std::exception("Wrong Proton media data version"); 
+					//в принципе данные могут быть дальше в этом же файле в другой версии, 
+					// так что просто не считываем данные
+				}
+			}
+		}
+		getline(is, line, '\n');
+	}
+
+	// Проверяем, все ли среды загружены
+	string errmedia;
+	for (int i = 0; i < (int)neutrons_.size(); i++)
+	{
+		if (neutrons_[i]->status_ != mcMedium::LOADED) {
+			errmedia += mnames_[i];
+			errmedia += "\n";
+		}
+	}
+	if (!errmedia.empty())
+		throw std::exception((string("The following Neutron media were not loaded succcessfuly:\n") + errmedia).c_str());
+}
+
+void mcMedia::iniNeutronFromFile(const string& fname)
+{
+	ifstream is(fname.c_str());
+	if (is.fail())
+		throw std::exception((string("Can't open Neutron data file: ") + fname).c_str());
+	initProtonFromStream(is);
+}
+
 const mcPhysics* mcMedia::getPhysics(int ptype) const
 {
 	if (ptype >= (int)physics_.size())
@@ -106,5 +255,10 @@ const mcMedium* mcMedia::getMedium(int ptype, int idx) const
 {
 	if (idx >= (int)mnames_.size())
 		throw std::exception("Unsupported particle type");
-	return xes_[idx];
+	if (ptype == MCP_PROTON)
+		return protons_[idx];
+	else if (ptype == MCP_NEUTRON)
+		return neutrons_[idx];
+	else
+		return xes_[idx];
 }

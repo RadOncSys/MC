@@ -1,13 +1,15 @@
 #include "mcScoreTrack.h"
 #include "mcGeometry.h"
 
-mcScoreTrack::mcScoreTrack(int nThreads, double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons) :
+mcScoreTrack::mcScoreTrack(int nThreads, double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons, bool doProtons, bool doNeutrons) :
 	mcScore(nullptr, nThreads), R_(R), Z1_(Z1), Z2_(Z2), EMIN_(EMIN),
-	doPhotons_(doPhotons), doElectrons_(doElectrons), doPositrons_(doPositrons)
+	doPhotons_(doPhotons), doElectrons_(doElectrons), doPositrons_(doPositrons), doProtons_(doProtons), doNeutrons_(doNeutrons)
 {
 	photons_.resize(nThreads);
 	electrons_.resize(nThreads);
 	positrons_.resize(nThreads);
+	protons_.resize(nThreads);
+	neutrons_.resize(nThreads);
 }
 
 mcScoreTrack::~mcScoreTrack(void)
@@ -20,8 +22,8 @@ void mcScoreTrack::score(int iThread
 	, const geomVector3D& p1
 	, double ke)
 {
-	if ((pt == MCP_PHOTON && !doPhotons_) || (pt == MCP_NEGATRON && !doElectrons_) || (pt == MCP_POSITRON && !doPositrons_) ||
-		ke < EMIN_)
+	if ((pt == MCP_PHOTON && !doPhotons_) || (pt == MCP_NEGATRON && !doElectrons_) || (pt == MCP_POSITRON && !doPositrons_) || 
+		(pt == MCP_PROTON && !doProtons_) || (pt == MCP_NEUTRON && !doNeutrons_) || ke < EMIN_)
 		return;
 
 	geomVector3D pp0 = p0;
@@ -95,6 +97,14 @@ void mcScoreTrack::score(int iThread
 		positrons_[iThread].push_back(pp0);
 		positrons_[iThread].push_back(pp1);
 	}
+	else if (pt == MCP_PROTON) {
+		protons_[iThread].push_back(pp0);
+		protons_[iThread].push_back(pp1);
+	}
+	else if (pt == MCP_NEUTRON) {
+		neutrons_[iThread].push_back(pp0);
+		neutrons_[iThread].push_back(pp1);
+	}
 }
 
 void mcScoreTrack::dumpVRML(ostream& os) const
@@ -105,9 +115,9 @@ void mcScoreTrack::dumpVRML(ostream& os) const
 	os << "Group {" << endl;
 	os << "  children [" << endl;
 
-	for (ia = 0; ia < 4; ia++)
+	for (ia = 0; ia < 5; ia++)
 	{
-		const vector<vector<geomVector3D>>& t = ia == 0 ? photons_ : ia == 1 ? electrons_ : positrons_;
+		const vector<vector<geomVector3D>>& t = ia == 0 ? photons_ : ia == 1 ? electrons_ : ia == 2 ? positrons_ : ia == 3 ? protons_ : neutrons_;
 		if (t.empty())
 			continue;
 

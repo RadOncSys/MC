@@ -5,22 +5,32 @@ Bremsstrahlung production by electron beam on the target.
 -->
 
 <input>
-  <simulation nhistories="100000" nbanches="10">
-  </simulation>
+	<simulation nhistories="100000" nbanches="10">
+	</simulation>
 
-  <options>
-    <vrmlfile>PlaneScore.wrl</vrmlfile>
-    <statfile>PlaneScore.dat</statfile>
-    <transCutoff_elec unit="MeV" ecat ="0.0"/>
-  </options>
+	<options>
+		<vrmlfile>PlaneScore.wrl</vrmlfile>
+		<statfile>PlaneScore.dat</statfile>
+		<transCutoff_elec unit="MeV" ecat ="0.0"/>
+	</options>
 
-  <source name="Electron beam" module="Target" trackparticles="false">
-    <radiation type="electron" energy="6.0" />
-    <shape direction="conical" size="0.00" angle="0"/>
-    <position unit="cm" x="0" y="0" z="-1.0" />
-    <direction x="0" y="0" z="1" />
-  </source>
+	<!--
+	<source name="Electron beam" module="Target" trackparticles="false">
+		<radiation type="electron" energy="6.0" />
+		<shape direction="conical" size="0.00" angle="0"/>
+		<position unit="cm" x="0" y="0" z="-1.0" />
+		<direction x="0" y="0" z="1" />
+	</source>
+	-->
 
-  <score type="fluence_plane" module="Trap" pt ="photon"/>
+	<source name="Proton beam" module="Target" trackparticles="false">
+		<radiation type="proton" energy="80.0" />
+		<shape direction="conical" size="0.00" angle="0"/>
+		<position unit="cm" x="0" y="0" z="-1.0" />
+		<direction x="0" y="0" z="1" />
+	</source>
+
+	<!--<score type="fluence_plane" module="Trap" pt ="photon"/>-->
+	<score type="fluence_plane" module="Trap" pt ="proton"/>
 
 </input>

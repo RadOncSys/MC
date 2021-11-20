@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv [])
 	}
 
 	int i;
-	int nThreads = concurrency::GetProcessorCount();
-	//int nThreads = 1;
+	//int nThreads = concurrency::GetProcessorCount();
+	int nThreads = 1;
 
 	double simStartTime = TIME;
 
@@ -56,18 +56,20 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("TI700ICRU");
 		media.addName("STEEL700ICRU");
 		media.addName("CU700ICRU");
-		media.addName("C60");
-		media.addName("NAI700ICRU");
-		media.addName("SI700ICRU");
-		media.addName("MYLAR700ICRU");
-		media.addName("HE700ICRU");
-		media.addName("170C700ICRU");
-		media.addName("226C700ICRU");
-		media.addName("BE700ICRU");
-		media.addName("TA700ICRU");
-		media.addName("AU700ICRU");
+
+		//media.addName("C60");
+		//media.addName("NAI700ICRU");
+		//media.addName("SI700ICRU");
+		//media.addName("MYLAR700ICRU");
+		//media.addName("HE700ICRU");
+		//media.addName("170C700ICRU");
+		//media.addName("226C700ICRU");
+		//media.addName("BE700ICRU");
+		//media.addName("TA700ICRU");
+		//media.addName("AU700ICRU");
 
 		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
+		media.initProtonFromFile("../data/proton.dat");
 
 		// Pars input files
 		XPRNode paramsDoc, geometryDoc;
@@ -110,7 +112,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		wstring vrmlFile;
 		wstring statFile;
 		double trackR = DBL_MAX, trackZ1 = -DBL_MAX, trackZ2 = DBL_MAX, trackEMIN = 0;
-		bool doTrack = false, doTrackPhotons = true, doTrackElectrons = true, doTrackPositrons = true;
+		bool doTrack = false, doTrackPhotons = true, doTrackElectrons = true, doTrackPositrons = true, doTrackProtons = true, doTrackNeutrons = true;
 
 		if (_wcsicmp(paramsDoc.Name.c_str(), L"input") != 0)
 			throw exception("Parameters XML file should have root node \"input\"");
@@ -175,6 +177,10 @@ int _tmain(int argc, _TCHAR* argv [])
 										doTrackElectrons = _wcsicmp(n3.Text.c_str(), L"true") == 0 ? true : false;
 									else if (_wcsicmp(n3.Name.c_str(), L"positrons") == 0)
 										doTrackPositrons = _wcsicmp(n3.Text.c_str(), L"true") == 0 ? true : false;
+									else if (_wcsicmp(n3.Name.c_str(), L"protons") == 0)
+										doTrackProtons = _wcsicmp(n3.Text.c_str(), L"true") == 0 ? true : false;
+									else if (_wcsicmp(n3.Name.c_str(), L"neutrons") == 0)
+										doTrackNeutrons = _wcsicmp(n3.Text.c_str(), L"true") == 0 ? true : false;
 								}
 							}
 						}
@@ -252,7 +258,7 @@ int _tmain(int argc, _TCHAR* argv [])
 			throw exception("Particles ource must be provided");
 		bool startinside = source->IsGamma() || source->IsStartInside();
 		if (doTrack)
-			source->setScoreTrack(trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons);
+			source->setScoreTrack(trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons, doTrackProtons, doTrackNeutrons);
 
 		// Запись геометрии в VRML (до симуляции на случай если таковая сломается; 
 		// можно бкдет посмотреть простую причину)

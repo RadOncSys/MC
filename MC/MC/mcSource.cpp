@@ -27,9 +27,9 @@ mcSource::~mcSource()
 	if (trackScore_) delete trackScore_;
 }
 
-void mcSource::setScoreTrack(double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons)
+void mcSource::setScoreTrack(double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons, bool doProtons, bool doNeutrons)
 {
-	trackScore_ = new mcScoreTrack(nThreads_, R, Z1, Z2, EMIN, doPhotons, doElectrons, doPositrons);
+	trackScore_ = new mcScoreTrack(nThreads_, R, Z1, Z2, EMIN, doPhotons, doElectrons, doPositrons, doProtons, doNeutrons);
 }
 
 void mcSource::setModuleName(const char* s)

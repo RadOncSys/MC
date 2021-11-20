@@ -68,6 +68,8 @@ private:
 	static const unsigned int PHOTON_LATCH;
 	static const unsigned int NEGATRON_LATCH;
 	static const unsigned int POSITRON_LATCH;
+	static const unsigned int PROTON_LATCH;
+	static const unsigned int NEUTRON_LATCH;
 	static const unsigned int BUFFER_SIZE;
 
 	// R/W Buffers

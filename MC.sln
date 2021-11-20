@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MC", "MC", "{FCF84258-49CC-4956-84D1-FB725ADAF56B}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{D377A3E0-4D7E-47DD-996C-5A6F928D821B}"
 	ProjectSection(SolutionItems) = preProject
 		Data\AcceleratorSimulator.pegs4dat = Data\AcceleratorSimulator.pegs4dat
+		Data\neutron.dat = Data\neutron.dat
+		Data\proton.dat = Data\proton.dat
 		Data\vrmlview.zip = Data\vrmlview.zip
 	EndProjectSection
 EndProject
@@ -25,11 +27,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "XML", "XML", "{59B0D4E3-65A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Parameters", "Parameters", "{24015754-EBEF-4C17-8258-5D1AE514713F}"
 	ProjectSection(SolutionItems) = preProject
-		Data\Parameters\G_Faddegon.xml = Data\Parameters\G_Faddegon.xml
 		Data\Parameters\Ross_sim.xml = Data\Parameters\Ross_sim.xml
 		Data\Parameters\RTS_ImageSimulator_Cu_MTF.xml = Data\Parameters\RTS_ImageSimulator_Cu_MTF.xml
+		Data\Parameters\S_Brem_6X.xml = Data\Parameters\S_Brem_6X.xml
 		Data\Parameters\S_C60_sphere.xml = Data\Parameters\S_C60_sphere.xml
 		Data\Parameters\S_CK_6X.xml = Data\Parameters\S_CK_6X.xml
+		Data\Parameters\S_Faddegon.xml = Data\Parameters\S_Faddegon.xml
 		Data\Parameters\S_Ross.xml = Data\Parameters\S_Ross.xml
 		Data\Parameters\S_Target.xml = Data\Parameters\S_Target.xml
 		Data\Parameters\S_TBI_Cylinder.xml = Data\Parameters\S_TBI_Cylinder.xml
@@ -46,7 +49,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Geometries", "Geometries", 
 		Data\Geometries\G_TBI_Cylinder.xml = Data\Geometries\G_TBI_Cylinder.xml
 		Data\Geometries\Ross_geom.xml = Data\Geometries\Ross_geom.xml
 		Data\Geometries\RTS_ImageGeometry_Cu_MTF.xml = Data\Geometries\RTS_ImageGeometry_Cu_MTF.xml
-		Data\Geometries\S_Brem_6X.xml = Data\Geometries\S_Brem_6X.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{3DE2745D-82FD-4FE2-B767-8EB9A3F29A09}"

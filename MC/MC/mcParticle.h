@@ -12,7 +12,7 @@ class mcThread;
 class mcTransport;
 
 // Типы частиц введены в качестве индексов объектов транспорта
-enum mc_particle_t { MCP_PHOTON = 0, MCP_NEGATRON, MCP_POSITRON, MCP_NTYPES };
+enum mc_particle_t { MCP_PHOTON = 0, MCP_NEGATRON, MCP_POSITRON, MCP_PROTON, MCP_NEUTRON, MCP_NTYPES };
 
 class mcParticle
 {

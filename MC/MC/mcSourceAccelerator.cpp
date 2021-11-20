@@ -6,12 +6,12 @@
 mcSourceAccelerator::mcSourceAccelerator(const char* name, int nThreads, mc_particle_t type, double ke, double z, double r, double theta)
 	:mcSource(name, nThreads)
 	, type_(type)
-	, q_(0)
 	, ke_(ke)
 	, z_(z)
 	, r_(r)
 	, theta_(theta)
 {
+	q_ = (type_ == mc_particle_t::MCP_NEGATRON) ? -1 : (type_ == mc_particle_t::MCP_POSITRON || type_ == mc_particle_t::MCP_PROTON) ? 1 : 0;
 	tr_ = tan(PI * theta_ / 180);
 	uz_ = cos(tr_);
 	sinu_ = sin(tr_);

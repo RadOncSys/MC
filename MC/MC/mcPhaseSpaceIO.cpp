@@ -6,6 +6,8 @@
 const unsigned int mcPhaseSpaceIO::PHOTON_LATCH = 0x00000000;
 const unsigned int mcPhaseSpaceIO::NEGATRON_LATCH = 0x40000000;
 const unsigned int mcPhaseSpaceIO::POSITRON_LATCH = 0x20000000;
+const unsigned int mcPhaseSpaceIO::PROTON_LATCH = 0x80000000;
+const unsigned int mcPhaseSpaceIO::NEUTRON_LATCH = 0x40000000;
 const unsigned int mcPhaseSpaceIO::BUFFER_SIZE = 1024;
 
 mcPhaseSpaceIO::mcPhaseSpaceIO()
@@ -188,6 +190,16 @@ mcParticle mcPhaseSpaceIO::read()
 		ke -= EMASS;
 		pq = 1;
 	}
+	else if (rec.latch_ & PROTON_LATCH)
+	{
+		type = MCP_PROTON;
+		ke -= PMASS;
+		pq = 1;
+	}
+	else if (rec.latch_ & NEUTRON_LATCH)
+	{
+		type = MCP_NEUTRON;
+	}
 	mcParticle particle(type, pq, ke, r, u);
 	particle.weight = weight;
 	return particle;
@@ -232,6 +244,16 @@ void mcPhaseSpaceIO::write(const mcParticle& p)
 		rec.latch_ = NEGATRON_LATCH;
 		rec.energy_ = float(p.ke + EMASS);
 		if (preamble_.e_min_electrons > float(p.ke)) preamble_.e_min_electrons = float(p.ke);
+		break;
+	case MCP_PROTON:
+		rec.latch_ = PROTON_LATCH;
+		rec.energy_ = float(p.ke + PMASS);
+		//if(preamble_.e_min_electrons > p.ke) preamble_.e_min_electrons = p.ke;
+		break;
+	case MCP_NEUTRON:
+		rec.latch_ = NEUTRON_LATCH;
+		rec.energy_ = float(p.ke);
+		//if(preamble_.e_min_electrons > p.ke) preamble_.e_min_electrons = p.ke;
 		break;
 	default:
 		throw std::exception("Unknown particle type");

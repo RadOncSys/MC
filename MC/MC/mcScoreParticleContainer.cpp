@@ -118,7 +118,9 @@ void mcScoreParticleContainer::dumpStatistic(ostream& os) const
 	// Вывод частиц
 
 	os << "List of" << (ptypeFilter_ == mc_particle_t::MCP_NEGATRON ? "electron" :
-		ptypeFilter_ == mc_particle_t::MCP_POSITRON ? "positron" : "photon")
+		ptypeFilter_ == mc_particle_t::MCP_POSITRON ? "positron" : 
+		ptypeFilter_ == mc_particle_t::MCP_PROTON ? "proton" : 
+		ptypeFilter_ == mc_particle_t::MCP_NEUTRON ? "neutron" : "photon")
 		<< "s on the score surface:" << endl;
 	os << endl;
 	os << "X\tY\tZ\tUx\tUy\tUz\tE\tR\tAngle (degrees)" << endl;
