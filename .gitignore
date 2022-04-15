@@ -6,6 +6,7 @@
 
 # User-specific files
 *.suo
+*.vscode
 *.user
 *.userosscache
 *.sln.docstates
@@ -76,3 +77,6 @@ ipch/
 # Include intensionally
 !MC/Data/vrmlview.zip
 /work
+
+# Manual should be in seperate brunch
+manual

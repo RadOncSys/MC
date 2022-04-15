@@ -182,13 +182,13 @@ void mcMedia::initProtonFromFile(const string& fname)
 	initProtonFromStream(is);
 }
 
-void mcMedia::iniNeutronFromStream(istream& is)
+void mcMedia::initNeutronFromStream(istream& is)
 {
 	if (!neutrons_.empty())
-		throw std::exception("Proton crossectons already initialized");
+		throw std::exception("Neutron crossectons already initialized");
 	int i;
 	for (i = 0; i < (int)mnames_.size(); i++)
-		neutrons_.push_back(new mcMediumProton());
+		neutrons_.push_back(new mcMediumNeutron());
 
 	// „тение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
 	string line, s1, s2, s3, s4;
@@ -211,10 +211,10 @@ void mcMedia::iniNeutronFromStream(istream& is)
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
 					neutrons_[i]->name_ = line;
-					((mcMediumProton*)neutrons_[i])->read(is);
+					((mcMediumNeutron*)neutrons_[i])->read(is);
 				}
 				else {
-					//throw std::exception("Wrong Proton media data version"); 
+					//throw std::exception("Wrong Neutron media data version"); 
 					//в принципе данные могут быть дальше в этом же файле в другой версии, 
 					// так что просто не считываем данные
 				}
@@ -236,12 +236,12 @@ void mcMedia::iniNeutronFromStream(istream& is)
 		throw std::exception((string("The following Neutron media were not loaded succcessfuly:\n") + errmedia).c_str());
 }
 
-void mcMedia::iniNeutronFromFile(const string& fname)
+void mcMedia::initNeutronFromFile(const string& fname)
 {
 	ifstream is(fname.c_str());
 	if (is.fail())
 		throw std::exception((string("Can't open Neutron data file: ") + fname).c_str());
-	initProtonFromStream(is);
+	initNeutronFromStream(is);
 }
 
 const mcPhysics* mcMedia::getPhysics(int ptype) const

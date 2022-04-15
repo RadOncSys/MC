@@ -30,7 +30,7 @@ void mcSourceSimpleMono::init(mc_particle_t type
 	ke_ = ke;
 	p_ = p;
 	v_ = v;
-	q_ = type_ == MCP_PHOTON ? 0 : type_ == MCP_NEGATRON ? -1 : 1;
+	q_ = (type_ == mc_particle_t::MCP_NEGATRON) ? -1 : (type_ == mc_particle_t::MCP_POSITRON || type_ == mc_particle_t::MCP_PROTON) ? 1 : 0;
 }
 
 void mcSourceSimpleMono::sample(mcParticle& p, mcThread* thread)

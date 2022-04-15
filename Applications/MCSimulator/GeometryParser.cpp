@@ -52,6 +52,7 @@
 #include "../../mc/mc/mcSourceModelRadialPhsp.h"
 #include "../../mc/mc/mcSourceModelRadialDirect.h"
 #include "../../mc/mc/mcSourceLEBA.h"
+#include "../../mc/mc/mcSourceUniformCone.h"
 #include "../../mc/mc/mcSourceSphereC60.h"
 #include "../../mc/mc/mcSourceAcceleratedBeam.h"
 #include "../../mc/mc/mcClinicalElectronBeam.h"
@@ -868,7 +869,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	// ƒл€ простоты перечисл€ем все возможные варианты.
 	wstring fileName;
 	double d = 0, h = 0, radius = 0, size = 0, angle = 0;
-	double fsx = 0, fsy = 0;
+	double fsx = 0, fsy = 0, r0 = 0, sad = 0;
 	unsigned nsplit;
 	wstring srcType;
 	wstring shapeType;
@@ -992,6 +993,10 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 					fsx = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"fsy") == 0)
 					fsy = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"radius") == 0)
+					r0 = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"sad") == 0)
+					sad = _wtof(n1.Text.c_str());
 			}
 			if (node.Nodes.size() > 0)
 				isShapeDefined = true;
@@ -1109,6 +1114,10 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		else if (_wcsicmp(srcType.c_str(), L"src_leba") == 0)
 		{
 			source = new mcSourceLEBA(srcName.c_str(), nThreads, sptype, prf_type, energy, ewidth, z0, size);
+		}
+		else if (_wcsicmp(srcType.c_str(), L"uniform_cone") == 0)
+		{
+			source = new mcSourceUniformCone(srcName.c_str(), nThreads, particleType, energy, z0, r0, sad);
 		}
 		else
 			throw exception("Unknown radiation source type");

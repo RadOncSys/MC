@@ -147,7 +147,7 @@ void mcTransportCone::dumpVRML(ostream& os) const
 	v(3) = 0;
 	v = v * mttow_;
 
-	os << "# Cylinder: " << this->getName() << endl;
+	os << "# Cone: " << this->getName() << endl;
 	os << "Transform {" << endl;
 	os << "  translation " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
 	//os << "  rotation 1 0 0 1.5708" << endl;

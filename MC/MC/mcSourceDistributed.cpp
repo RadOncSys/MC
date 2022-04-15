@@ -44,7 +44,7 @@ void mcSourceDistributed::init(mc_particle_t type
 	ke_ = ke;
 	p_ = p;
 	v_ = v;
-	q_ = type_ == MCP_PHOTON ? 0 : type_ == MCP_NEGATRON ? -1 : 1;
+	q_ = (type_ == mc_particle_t::MCP_NEGATRON) ? -1 : (type_ == mc_particle_t::MCP_POSITRON || type_ == mc_particle_t::MCP_PROTON) ? 1 : 0;
 
 	distr_ = distr;  // тип распределения
 	Emitx_ = Emitx;  // х-эмиттанс, в см. "Нормализованный", без пи, т.е. просто rbeam*rbeta, rbeta = vrmax/C, C - скорость света

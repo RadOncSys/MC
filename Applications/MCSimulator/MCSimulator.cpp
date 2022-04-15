@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv [])
 	}
 
 	int i;
-	//int nThreads = concurrency::GetProcessorCount();
-	int nThreads = 1;
+	int nThreads = concurrency::GetProcessorCount();
+	//int nThreads = 1;
 
 	double simStartTime = TIME;
 
@@ -70,6 +70,7 @@ int _tmain(int argc, _TCHAR* argv [])
 
 		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
 		media.initProtonFromFile("../data/proton.dat");
+		media.initNeutronFromFile("../data/neutron.dat");
 
 		// Pars input files
 		XPRNode paramsDoc, geometryDoc;

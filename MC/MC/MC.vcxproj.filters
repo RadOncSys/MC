@@ -340,6 +340,9 @@
     <ClInclude Include="mcPhysicsNeutron.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="mcSourceUniformCone.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -629,6 +632,9 @@
     </ClCompile>
     <ClCompile Include="mcPhysicsNeutron.cpp">
       <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceUniformCone.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

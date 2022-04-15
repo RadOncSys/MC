@@ -38,8 +38,8 @@ public:
 	void initProtonFromStream(istream&);
 	void initProtonFromFile(const string& fname);
 
-	void iniNeutronFromStream(istream&);
-	void iniNeutronFromFile(const string& fname);
+	void initNeutronFromStream(istream&);
+	void initNeutronFromFile(const string& fname);
 
 	// Возвращает указатель объекта физических расчетов для частицы указанного типа
 	const mcPhysics* getPhysics(int ptype) const;
