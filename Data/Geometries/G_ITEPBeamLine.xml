@@ -1,0 +1,115 @@
+﻿<?xml version="1.0"?>
+
+<accelerator>
+
+  <!-- первый коллиматор -->
+  <module type="ring" name="Prmary Collimator" medium="W700ICRU" density="1">
+    <Color r="0.2" g="0.2" b="0.2" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-240" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="3.0" r1="10.0" height="8.0"/>
+  </module>
+
+  <!-- Стриповая камера 1 -->
+  <module type="cylinder" name="Strip Ionization Chamber 1" medium="H2O700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-220" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="5.0" height="0.05"/>
+  </module>
+
+  <!-- второй коллиматор -->
+  <module type="ring" name="Secondary Collimator" medium="W700ICRU" density="1">
+    <Color r="0.2" g="0.2" b="0.2" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-172" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="3.0" r1="10.0" height="8.0"/>
+  </module>
+
+  <!-- Стриповая камера 2 -->
+  <module type="cylinder" name="Strip Ionization Chamber 2" medium="H2O700ICRU" density="1">
+    <Color r="0.5" g="0.5" b="0.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-162" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="5.0" height="0.05"/>
+  </module>
+
+  <!-- Мониторная ионизационная камера -->
+  <module type="cylinder" name="Dose monitor chamber" medium="H2O700ICRU" density="1">
+    <Color r="1.0" g="0.5" b="0.0" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-130" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="5.0" height="0.05"/>
+  </module>
+
+  <!-- Модулятор спектра (стек цилиндров) -->
+  <module type="cylinder" name="Energy modulator" medium="AL700ICRU" density="1">
+    <Color r="0.0" g="0.5" b="0.5" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-25" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="3.5" height="0.7"/>
+  </module>
+
+  <!-- Модулятор положения пика Брэга (замедлитель) -->
+  <module type="cylinder" name="Attenuator" medium="AL700ICRU" density="1">
+    <Color r="0.8" g="0.8" b="0.8" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-24" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" radius="3.5" height="0.1"/>
+  </module>
+
+  <!-- Большая труба обечайки -->
+  <module type="ring" name="Final collimator big tube" medium="CU700ICRU" density="1">
+    <Color r="1.1" g="0.5" b="0.2" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-23" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="3.0" r1="3.50" height="8.0"/>
+  </module>
+
+  <!-- Первое кольцо обечайки -->
+  <module type="ring" name="Final collimator кштп 1" medium="CU700ICRU" density="1">
+    <Color r="1.1" g="0.5" b="0.2" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-23" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="2.0" r1="3.50" height="2.0"/>
+  </module>
+
+  <!-- Малая труба обечайки -->
+  <module type="ring" name="Final collimator small tube" medium="CU700ICRU" density="1">
+    <Color r="1.1" g="0.5" b="0.2" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-21" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="2.5" r1="3.0" height="12.0"/>
+  </module>
+
+  <!-- Второе кольцо обечайки -->
+  <module type="ring" name="Final collimator кштп 1" medium="CU700ICRU" density="1">
+    <Color r="1.1" g="0.5" b="0.2" t="0.3" />
+    <position unit="cm" x="0" y="0" z="-9" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" r0="2.0" r1="3.0" height="2.0"/>
+  </module>
+
+  <!--
+  Водяной фантом
+  -->
+  <module type="slab" name="Phantom" medium="H2O700ICRU" density="1">
+    <Color r="0" g="1.0" b="0" t="0.8" />
+    <position unit="cm" x="0" y="0" z="0" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+    <size unit="cm" height="20.0"/>
+  </module>
+
+</accelerator>

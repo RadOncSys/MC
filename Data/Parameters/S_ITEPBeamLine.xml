@@ -1,0 +1,51 @@
+﻿<?xml version="1.0"?>
+
+<input>
+  <simulation nhistories="100" nbanches="10">
+  </simulation>
+
+  <options>
+    <vrmlfile>ITEPFig.wrl</vrmlfile>
+    <statfile>ITEPFig.txt</statfile>
+    <trackparticles unit="MeV" ecat ="0.2"/>
+    <!--Описание условий накоплени треков частиц (отсутсвие записи означает ненакопление)-->
+    <trackparticles>
+      <bounding R="10.0" Z1="-250" Z2="25" EMIN="0.5"/>
+      <particles photons="false" electrons="false" positrons="false" protons="true" neutrons="true"/>
+    </trackparticles>
+  </options>
+
+  <!-- 
+  Источник 
+  -->
+  <!-- 
+  <source name="OKO proton beam" module="Prmary Collimator" trackparticles="true">
+    <Color r="0" g="0.5" b="1" t="0.2" />
+    <radiation type="proton" energy="70" />
+    <shape direction="mono" size="3.0" shapetype="simple"/>
+    <position uint="cm" x="0" y="0" z="-250" />
+    <direction x="0" y="0" z="1" />
+  </source>
+  -->
+
+  <source name="OKO proton beam" module="Prmary Collimator" trackparticles="true">
+    <Color r="0" g="0.5" b="1" t="0.2" />
+    <radiation type="proton" energy="70" />
+    <shape direction="mono" size="3.0" shapetype="simple"/>
+    <position uint="cm" x="0" y="0" z="-250" />
+    <direction x="0" y="0" z="1" />
+  </source>
+
+  <!-- 
+  Скоринг
+  -->
+  <!-- 
+  <score type="phsp" module="PHSP detector" outfile="Fig.dat">
+  </score>
+  -->
+
+  <score type="rz" module="Phantom" outfile="Fig.phs">
+    <size unit="cm" nr="100" nz="150" rmax="5.0" zmin="0.0" zmax="10.0"/>
+  </score>
+  
+</input>

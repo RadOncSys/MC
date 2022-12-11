@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv [])
 	}
 
 	int i;
-	int nThreads = concurrency::GetProcessorCount();
-	//int nThreads = 1;
+	//int nThreads = concurrency::GetProcessorCount();
+	int nThreads = 1;
 
 	double simStartTime = TIME;
 
@@ -261,44 +261,6 @@ int _tmain(int argc, _TCHAR* argv [])
 		if (doTrack)
 			source->setScoreTrack(trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons, doTrackProtons, doTrackNeutrons);
 
-		// Запись геометрии в VRML (до симуляции на случай если таковая сломается; 
-		// можно бкдет посмотреть простую причину)
-		if (!vrmlFile.empty())
-		{
-			ofstream wfs(vrmlFile.c_str());
-			if (wfs.fail())
-				throw exception("Can't open wrl file for writing");
-
-			mcVRMLDumper::dumpHead(wfs);
-			mcVRMLDumper::dumpWorldAxis(wfs);
-
-			mcTransport* t = tfirst;
-			while (t)
-			{
-				t->dumpVRML(wfs);
-				mcScore* s = t->getScore();
-				if (s) s->dumpVRML(wfs);
-
-				// Проверяем вложения
-				mcTransport* ti = t;
-				if (ti != nullptr) ti = ti->getInternalTransport();
-				while (ti)
-				{
-					ti->dumpVRML(wfs);
-					mcScore* ss = ti->getScore();
-					if (s) ss->dumpVRML(wfs);
-					ti = ti->getInternalTransport();
-				}
-
-				t = (mcTransport*)t->getNextTransport();
-			}
-			source->dumpVRML(wfs);
-
-			wcout << L"VRML has been dumped to " << vrmlFile << endl;
-		}
-		else
-			wcout << L"VRML dump skipped" << endl;
-
 		//
 		// Симуляция
 		//
@@ -365,6 +327,44 @@ int _tmain(int argc, _TCHAR* argv [])
 
 		wcout << L"Simulation time =  " << TIMESINCE(simStartTime) << L" sec" << endl;
 		wcout << L"Writing results ..." << endl;
+
+		// Запись геометрии в VRML (до симуляции на случай если таковая сломается; 
+		// можно бкдет посмотреть простую причину)
+		if (!vrmlFile.empty())
+		{
+			ofstream wfs(vrmlFile.c_str());
+			if (wfs.fail())
+				throw exception("Can't open wrl file for writing");
+
+			mcVRMLDumper::dumpHead(wfs);
+			mcVRMLDumper::dumpWorldAxis(wfs);
+
+			mcTransport* t = tfirst;
+			while (t)
+			{
+				t->dumpVRML(wfs);
+				mcScore* s = t->getScore();
+				if (s) s->dumpVRML(wfs);
+
+				// Проверяем вложения
+				mcTransport* ti = t;
+				if (ti != nullptr) ti = ti->getInternalTransport();
+				while (ti)
+				{
+					ti->dumpVRML(wfs);
+					mcScore* ss = ti->getScore();
+					if (s) ss->dumpVRML(wfs);
+					ti = ti->getInternalTransport();
+				}
+
+				t = (mcTransport*)t->getNextTransport();
+			}
+			source->dumpVRML(wfs);
+
+			wcout << L"VRML has been dumped to " << vrmlFile << endl;
+		}
+		else
+			wcout << L"VRML dump skipped" << endl;
 
 		// Сохранение статистики
 		double energyDeposited = 0;
