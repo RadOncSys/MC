@@ -1,5 +1,5 @@
 .. toctree::
-     :maxdepth: 3
+     :maxdepth: 4
 
 .. MC Users Guide documentation master file
 
@@ -13,22 +13,52 @@ The document is for MC version |version| and was last compiled by |today|.
 
 .. The history of the document is available by the link :ref:`revisions`
 
+Introduction and Getting Started
+********************************
+
 .. toctree::
     :name: introduction
     :numbered:
-    :maxdepth: 2
+    :maxdepth: 4
     
     Introduction
     GettingStarted
+
+Source Code Structure
+*********************
+
+.. toctree::
+    :name: sourcecode
+    :numbered:
+    :maxdepth: 4
+    
     SourceCodeStructure
     Shower
     Geometry
     Transports
     Scores
     Sources
-    ReferenceApplication
+
+Validation
+**********
+
+.. toctree::
+    :name: validation
+    :numbered:
+    :maxdepth: 4
+    
     Validation
+
+Examples
+********
+
+.. toctree::
+    :name: examples
+    :numbered:
+    :maxdepth: 4
+    
+    ReferenceApplication
     Examples
     
-    
 * :ref:`search`
+* 

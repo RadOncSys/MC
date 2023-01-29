@@ -1,83 +1,43 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>9. Reference application &mdash; MC Users Guide 0.0.1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-
-  
-  
+  <title>10. Reference application &mdash; MC Users Guide 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/drawio.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-  
-
-  
-  
-
-  
-
-  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="10. Validation" href="Validation.html" />
-    <link rel="prev" title="8. Sources" href="Sources.html" /> 
+    <link rel="next" title="11. Examples" href="Examples.html" />
+    <link rel="prev" title="9. Validation" href="Validation.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #FBFBFB" >
-          
-
-          
             <a href="index.html">
-          
-
-          
-            
             <img src="_static/logo.png" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
               <div class="version">
                 1.0.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -85,119 +45,71 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <ul class="current">
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">2. Getting started</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="SourceCodeStructure.html">3. Source code structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Shower.html">4. Shower</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Geometry.html">5. Geometry</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Transports.html">6. Transports</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Scores.html">7. Scores</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Sources.html">8. Sources</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">9. Reference application</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#transport-modules-coding-in-xml-geometry-file">9.1. Transport modules coding in XML geometry file</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#module-cylinder">9.1.1. Module “<em>cylinder</em>”</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-rectanglepolygonsidehole">9.1.2. Module “<em>rectanglepolygonsidehole</em>”</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">9. Validation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">10. Reference application</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#transport-modules-coding-in-xml-geometry-file">10.1. Transport modules coding in XML geometry file</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-cylinder">10.1.1. Module “<em>cylinder</em>”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-rectanglepolygonsidehole">10.1.2. Module “<em>rectanglepolygonsidehole</em>”</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#composite-transport-modules-coding-in-xml-geometry-file">9.2. Composite transport modules coding in XML geometry file</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#module-group">9.2.1. Module “<em>group</em>”</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-embedding">9.2.2. Module “<em>embedding</em>”</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-embedded-group">9.2.3. Module “<em>embedded_group</em>”</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-linear-chain">9.2.4. Module “<em>linear_chain</em>”</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#composite-transport-modules-coding-in-xml-geometry-file">10.2. Composite transport modules coding in XML geometry file</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-group">10.2.1. Module “<em>group</em>”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-embedding">10.2.2. Module “<em>embedding</em>”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-embedded-group">10.2.3. Module “<em>embedded_group</em>”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-linear-chain">10.2.4. Module “<em>linear_chain</em>”</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Validation.html">10. Validation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Examples.html">11. Examples</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #FBFBFB" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">MC Users Guide</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li><span class="section-number">9. </span>Reference application</li>
-    
-    
+      <li><span class="section-number">10. </span>Reference application</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
-            
-              <a href="https://github.com/RadOncSys/MC/blob/mc-pages/manual/source/ReferenceApplication.rst" class="fa fa-github"> Edit on GitHub</a>
-            
-          
-        
+              <a href="https://github.com/RadOncSys/MCDocs/blob/main/Manual/source/ReferenceApplication.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="reference-application">
-<span id="ch-reference-application"></span><h1><span class="section-number">9. </span>Reference application<a class="headerlink" href="#reference-application" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="transport-modules-coding-in-xml-geometry-file">
-<h2><span class="section-number">9.1. </span>Transport modules coding in XML geometry file<a class="headerlink" href="#transport-modules-coding-in-xml-geometry-file" title="Permalink to this headline">¶</a></h2>
+             
+  <section id="reference-application">
+<span id="ch-reference-application"></span><h1><span class="section-number">10. </span>Reference application<a class="headerlink" href="#reference-application" title="Permalink to this heading"></a></h1>
+<section id="transport-modules-coding-in-xml-geometry-file">
+<h2><span class="section-number">10.1. </span>Transport modules coding in XML geometry file<a class="headerlink" href="#transport-modules-coding-in-xml-geometry-file" title="Permalink to this heading"></a></h2>
 <table class="colwidths-given docutils align-default" id="module-simple-types-table" style="width: 100%">
-<caption><span class="caption-number">Table 9.1 </span><span class="caption-text">List of simple transport module types</span><a class="headerlink" href="#module-simple-types-table" title="Permalink to this table">¶</a></caption>
+<caption><span class="caption-number">Table 10.1.1 </span><span class="caption-text">List of simple transport module types</span><a class="headerlink" href="#module-simple-types-table" title="Permalink to this table"></a></caption>
 <colgroup>
 <col style="width: 25%" />
 <col style="width: 38%" />
@@ -306,22 +218,22 @@ around <em>Z</em> axis and preserving total weight</p></td>
 </tbody>
 </table>
 <p>Next is an example of code, which parses geometry configuration file and creates network of transport objects.</p>
-<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;ptlasvegas&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">mcPTLasVegas</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;esphere&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">mcETransportSphere</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">,</span> <span class="n">radius</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;e_convex_polygon_circle&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">mcETransportConvexPolygonCircle</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">,</span> <span class="n">poly_z</span><span class="p">,</span> <span class="n">poly_x</span><span class="p">);</span>
-<span class="p">}</span>
+<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;ptlasvegas&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">mcPTLasVegas</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+<span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;esphere&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">mcETransportSphere</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">,</span><span class="w"> </span><span class="n">radius</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+<span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;e_convex_polygon_circle&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">mcETransportConvexPolygonCircle</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">,</span><span class="w"> </span><span class="n">poly_z</span><span class="p">,</span><span class="w"> </span><span class="n">poly_x</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
-<div class="section" id="module-cylinder">
-<h3><span class="section-number">9.1.1. </span>Module “<em>cylinder</em>”<a class="headerlink" href="#module-cylinder" title="Permalink to this headline">¶</a></h3>
+<section id="module-cylinder">
+<h3><span class="section-number">10.1.1. </span>Module “<em>cylinder</em>”<a class="headerlink" href="#module-cylinder" title="Permalink to this heading"></a></h3>
 <table class="colwidths-given docutils align-default" id="module-cylinder-table" style="width: 100%">
 <colgroup>
 <col style="width: 17%" />
@@ -339,9 +251,9 @@ around <em>Z</em> axis and preserving total weight</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="module-rectanglepolygonsidehole">
-<h3><span class="section-number">9.1.2. </span>Module “<em>rectanglepolygonsidehole</em>”<a class="headerlink" href="#module-rectanglepolygonsidehole" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="module-rectanglepolygonsidehole">
+<h3><span class="section-number">10.1.2. </span>Module “<em>rectanglepolygonsidehole</em>”<a class="headerlink" href="#module-rectanglepolygonsidehole" title="Permalink to this heading"></a></h3>
 <table class="colwidths-given docutils align-default" id="module-rectanglepolygonsidehole-table" style="width: 100%">
 <colgroup>
 <col style="width: 17%" />
@@ -359,12 +271,12 @@ around <em>Z</em> axis and preserving total weight</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="composite-transport-modules-coding-in-xml-geometry-file">
-<h2><span class="section-number">9.2. </span>Composite transport modules coding in XML geometry file<a class="headerlink" href="#composite-transport-modules-coding-in-xml-geometry-file" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="composite-transport-modules-coding-in-xml-geometry-file">
+<h2><span class="section-number">10.2. </span>Composite transport modules coding in XML geometry file<a class="headerlink" href="#composite-transport-modules-coding-in-xml-geometry-file" title="Permalink to this heading"></a></h2>
 <table class="colwidths-given docutils align-default" id="module-composite-types-table" style="width: 100%">
-<caption><span class="caption-number">Table 9.2 </span><span class="caption-text">List of composite transport module types</span><a class="headerlink" href="#module-composite-types-table" title="Permalink to this table">¶</a></caption>
+<caption><span class="caption-number">Table 10.2.1 </span><span class="caption-text">List of composite transport module types</span><a class="headerlink" href="#module-composite-types-table" title="Permalink to this table"></a></caption>
 <colgroup>
 <col style="width: 25%" />
 <col style="width: 38%" />
@@ -395,8 +307,8 @@ around <em>Z</em> axis and preserving total weight</p></td>
 </tr>
 </tbody>
 </table>
-<div class="section" id="module-group">
-<h3><span class="section-number">9.2.1. </span>Module “<em>group</em>”<a class="headerlink" href="#module-group" title="Permalink to this headline">¶</a></h3>
+<section id="module-group">
+<h3><span class="section-number">10.2.1. </span>Module “<em>group</em>”<a class="headerlink" href="#module-group" title="Permalink to this heading"></a></h3>
 <table class="colwidths-given docutils align-default" id="module-group-table" style="width: 100%">
 <colgroup>
 <col style="width: 17%" />
@@ -412,7 +324,7 @@ Group is treated by shower as a single object.
 I.e. it looks like a module in z-ordered chain of modules.</p></td>
 </tr>
 <tr class="row-odd"><td><p><strong>Example:</strong></p></td>
-<td><div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="c">&lt;!--CyberKnife primary collimator with aluminum filter layer--&gt;</span>
+<td><div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="cm">&lt;!--CyberKnife primary collimator with aluminum filter layer--&gt;</span>
 <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;group&quot;</span> <span class="na">name=</span><span class="s">&quot;PRI_1&quot;</span><span class="nt">&gt;</span>
   <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;-78.5&quot;</span> <span class="nt">/&gt;</span>
   <span class="nt">&lt;normal</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
@@ -440,20 +352,20 @@ I.e. it looks like a module in z-ordered chain of modules.</p></td>
 </table>
 <p>Next is a parser code fragment, that demonstrates how content of <em>“group”</em> module description is interpreted.
 Grouping is implemented through the concept of <em>Regions</em>.</p>
-<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;group&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">mcTransport</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">);</span>
-        <span class="c1">// Search and parse embedded modules</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">node</span> <span class="p">:</span> <span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span>
-        <span class="p">{</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="p">{</span>
-                        <span class="n">mcTransport</span><span class="o">*</span> <span class="n">region</span> <span class="o">=</span> <span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">media</span><span class="p">,</span> <span class="n">nThreads</span><span class="p">);</span>
-                        <span class="n">region</span><span class="o">-&gt;</span><span class="n">setDefaultScore</span><span class="p">(</span><span class="n">nThreads</span><span class="p">);</span>
-                        <span class="n">t</span><span class="o">-&gt;</span><span class="n">addRegion</span><span class="p">(</span><span class="n">region</span><span class="p">);</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;group&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">mcTransport</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Search and parse embedded modules</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">{</span><span class="w"></span>
+<span class="w">                        </span><span class="n">mcTransport</span><span class="o">*</span><span class="w"> </span><span class="n">region</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="n">media</span><span class="p">,</span><span class="w"> </span><span class="n">nThreads</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="n">region</span><span class="o">-&gt;</span><span class="n">setDefaultScore</span><span class="p">(</span><span class="n">nThreads</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="n">t</span><span class="o">-&gt;</span><span class="n">addRegion</span><span class="p">(</span><span class="n">region</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>In this code example variable <em>t</em> represents transport module which will be inserted in to the current transport chain.
@@ -467,9 +379,9 @@ Their registration in parent as regions means, that after each event of exiting
 from nested module particles will be tested on possibility of hitting any other region.
 If so, transport will be delegated to the nearest hitting region.
 Otherwise particle will exit parent module.</p>
-</div>
-<div class="section" id="module-embedding">
-<h3><span class="section-number">9.2.2. </span>Module “<em>embedding</em>”<a class="headerlink" href="#module-embedding" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="module-embedding">
+<h3><span class="section-number">10.2.2. </span>Module “<em>embedding</em>”<a class="headerlink" href="#module-embedding" title="Permalink to this heading"></a></h3>
 <table class="colwidths-given docutils align-default" id="module-embedding-table" style="width: 100%">
 <colgroup>
 <col style="width: 17%" />
@@ -485,21 +397,21 @@ the whole module from the point of view of consuming linear chain of transports.
 </tr>
 <tr class="row-odd"><td><p><strong>Example:</strong></p></td>
 <td><div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
-<span class="c">&lt;!-- Faddegon experiment geometry with spherical detector --&gt;</span>
+<span class="cm">&lt;!-- Faddegon experiment geometry with spherical detector --&gt;</span>
 <span class="nt">&lt;accelerator&gt;</span>
-<span class="c">&lt;!--</span>
-<span class="c">    Objects are sequence of nested objects.</span>
-<span class="c">    First one is experimental unit as whole (wich can be inserted in other chains).</span>
-<span class="c">    All its childs are nested as a Russian dole.</span>
-<span class="c">    First child is most internal object (target in this case).</span>
-<span class="c">    All child coordinates are defined relatively to the parent.</span>
-<span class="c">--&gt;</span>
+<span class="cm">&lt;!--</span>
+<span class="cm">    Objects are sequence of nested objects.</span>
+<span class="cm">    First one is experimental unit as whole (wich can be inserted in other chains).</span>
+<span class="cm">    All its childs are nested as a Russian dole.</span>
+<span class="cm">    First child is most internal object (target in this case).</span>
+<span class="cm">    All child coordinates are defined relatively to the parent.</span>
+<span class="cm">--&gt;</span>
 <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;embedding&quot;</span> <span class="na">name=</span><span class="s">&quot;ExperimentalUnit&quot;</span><span class="nt">&gt;</span>
     <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;normal</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;xaxis</span> <span class="na">x=</span><span class="s">&quot;1&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
-    <span class="c">&lt;!--Target--&gt;</span>
-    <span class="c">&lt;!-- Pb (9.13 g/cm2 thick, 17.95 g/cm2 radius RHO= 1.1340E+01 --&gt;</span>
+    <span class="cm">&lt;!--Target--&gt;</span>
+    <span class="cm">&lt;!-- Pb (9.13 g/cm2 thick, 17.95 g/cm2 radius RHO= 1.1340E+01 --&gt;</span>
     <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;cylinder&quot;</span> <span class="na">name=</span><span class="s">&quot;Target&quot;</span> <span class="na">medium=</span><span class="s">&quot;PB700ICRU&quot;</span> <span class="na">density=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
     <span class="nt">&lt;Color</span> <span class="na">r=</span><span class="s">&quot;1&quot;</span> <span class="na">g=</span><span class="s">&quot;1&quot;</span> <span class="na">b=</span><span class="s">&quot;1&quot;</span> <span class="na">t=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
@@ -508,9 +420,9 @@ the whole module from the point of view of consuming linear chain of transports.
     <span class="nt">&lt;size</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">radius=</span><span class="s">&quot;1.58&quot;</span> <span class="na">height=</span><span class="s">&quot;0.805&quot;</span><span class="nt">/&gt;</span>
     <span class="nt">&lt;/module&gt;</span>
 
-    <span class="c">&lt;!-- Assume transport in Vacuum (i.e. next will be detector) --&gt;</span>
+    <span class="cm">&lt;!-- Assume transport in Vacuum (i.e. next will be detector) --&gt;</span>
 
-    <span class="c">&lt;!--Spherical detector is requred to atach scoring--&gt;</span>
+    <span class="cm">&lt;!--Spherical detector is requred to atach scoring--&gt;</span>
     <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;spheretrap&quot;</span> <span class="na">name=</span><span class="s">&quot;Detector&quot;</span> <span class="na">medium=</span><span class="s">&quot;H2O700ICRU&quot;</span> <span class="na">density=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
     <span class="nt">&lt;Color</span> <span class="na">r=</span><span class="s">&quot;1.0&quot;</span> <span class="na">g=</span><span class="s">&quot;0.5&quot;</span> <span class="na">b=</span><span class="s">&quot;0.5&quot;</span> <span class="na">t=</span><span class="s">&quot;0.8&quot;</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
@@ -531,36 +443,36 @@ the whole module from the point of view of consuming linear chain of transports.
 Grouping is implemented through the concept of nested transports,
 which means <em>russian doll</em> type construction, i.e. nested transport is completely covered by parent transport.
 Each transport may have only one reference to embedded transport.</p>
-<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;embedding&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="c1">// Temporal transport needed for group coordinate system</span>
-        <span class="n">mcTransport</span> <span class="n">ttmp</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">);</span>
-        <span class="n">mcTransport</span><span class="o">*</span> <span class="n">eprev</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;embedding&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Temporal transport needed for group coordinate system</span>
+<span class="w">        </span><span class="n">mcTransport</span><span class="w"> </span><span class="nf">ttmp</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">mcTransport</span><span class="o">*</span><span class="w"> </span><span class="n">eprev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span><span class="w"></span>
 
-        <span class="c1">// Search and parse nested transports</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">node</span> <span class="p">:</span> <span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span>
-        <span class="p">{</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="p">{</span>
-                        <span class="n">mcTransport</span><span class="o">*</span> <span class="n">eobj</span> <span class="o">=</span> <span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">media</span><span class="p">,</span> <span class="n">nThreads</span><span class="p">);</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="n">eobj</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span>
-                                <span class="k">throw</span> <span class="n">exception</span><span class="p">(</span><span class="s">&quot;Embedding group should contain only embedding objects&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// Search and parse nested transports</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">{</span><span class="w"></span>
+<span class="w">                        </span><span class="n">mcTransport</span><span class="o">*</span><span class="w"> </span><span class="n">eobj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="n">media</span><span class="p">,</span><span class="w"> </span><span class="n">nThreads</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">eobj</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                </span><span class="k">throw</span><span class="w"> </span><span class="n">exception</span><span class="p">(</span><span class="s">&quot;Embedding group should contain only embedding objects&quot;</span><span class="p">);</span><span class="w"></span>
 
-                        <span class="c1">// Transfer coordinate system from group to world</span>
-                        <span class="n">eobj</span><span class="o">-&gt;</span><span class="n">MoveToCoordinateSystem</span><span class="p">(</span><span class="n">ttmp</span><span class="p">.</span><span class="n">MT2W</span><span class="p">());</span>
+<span class="w">                        </span><span class="c1">// Transfer coordinate system from group to world</span>
+<span class="w">                        </span><span class="n">eobj</span><span class="o">-&gt;</span><span class="n">MoveToCoordinateSystem</span><span class="p">(</span><span class="n">ttmp</span><span class="p">.</span><span class="n">MT2W</span><span class="p">());</span><span class="w"></span>
 
-                        <span class="n">eobj</span><span class="o">-&gt;</span><span class="n">setDefaultScore</span><span class="p">(</span><span class="n">nThreads</span><span class="p">);</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="n">eprev</span> <span class="o">!=</span> <span class="k">nullptr</span><span class="p">)</span>
-                        <span class="p">{</span>
-                                <span class="n">eprev</span><span class="o">-&gt;</span><span class="n">setExternalTransport</span><span class="p">(</span><span class="n">eobj</span><span class="p">);</span>
-                                <span class="n">eobj</span><span class="o">-&gt;</span><span class="n">setInternalTransport</span><span class="p">(</span><span class="n">eprev</span><span class="p">);</span>
-                        <span class="p">}</span>
-                        <span class="n">eprev</span> <span class="o">=</span> <span class="n">eobj</span><span class="p">;</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="n">eprev</span><span class="p">;</span>
-        <span class="n">skipInit</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-<span class="p">}</span>
+<span class="w">                        </span><span class="n">eobj</span><span class="o">-&gt;</span><span class="n">setDefaultScore</span><span class="p">(</span><span class="n">nThreads</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">eprev</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"></span>
+<span class="w">                        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                                </span><span class="n">eprev</span><span class="o">-&gt;</span><span class="n">setExternalTransport</span><span class="p">(</span><span class="n">eobj</span><span class="p">);</span><span class="w"></span>
+<span class="w">                                </span><span class="n">eobj</span><span class="o">-&gt;</span><span class="n">setInternalTransport</span><span class="p">(</span><span class="n">eprev</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="p">}</span><span class="w"></span>
+<span class="w">                        </span><span class="n">eprev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eobj</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">eprev</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">skipInit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>In this code example variable <em>t</em> represents transport module
@@ -578,9 +490,9 @@ nested transport is implemented by setting references in each transport
 <em>“embedding”</em> module references to external and internal ones.
 Registration transports in a such a way is provided by
 <em>setExternalTransport() / setInternalTransport()</em> functions.</p>
-</div>
-<div class="section" id="module-embedded-group">
-<h3><span class="section-number">9.2.3. </span>Module “<em>embedded_group</em>”<a class="headerlink" href="#module-embedded-group" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="module-embedded-group">
+<h3><span class="section-number">10.2.3. </span>Module “<em>embedded_group</em>”<a class="headerlink" href="#module-embedded-group" title="Permalink to this heading"></a></h3>
 <table class="colwidths-given docutils align-default" id="module-embedded-group-table" style="width: 100%">
 <colgroup>
 <col style="width: 17%" />
@@ -596,26 +508,26 @@ detects nearest transport from internal collection which can be hit by particles
 If no internal transport can be hit, particle exits from this module.</p></td>
 </tr>
 <tr class="row-odd"><td><p><strong>Example:</strong></p></td>
-<td><div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="c">&lt;!--</span>
-<span class="c">Group of modules consisting of target and</span>
-<span class="c">shielding elements and primary collimator hole</span>
-<span class="c">--&gt;</span>
+<td><div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="cm">&lt;!--</span>
+<span class="cm">Group of modules consisting of target and</span>
+<span class="cm">shielding elements and primary collimator hole</span>
+<span class="cm">--&gt;</span>
 <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;embedded_group&quot;</span> <span class="na">name=</span><span class="s">&quot;ShieldInternalGroup&quot;</span><span class="nt">&gt;</span>
   <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
   <span class="nt">&lt;normal</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
   <span class="nt">&lt;xaxis</span> <span class="na">x=</span><span class="s">&quot;1&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
 
-  <span class="c">&lt;!--Accelerator part--&gt;</span>
+  <span class="cm">&lt;!--Accelerator part--&gt;</span>
   <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;embedding&quot;</span> <span class="na">name=</span><span class="s">&quot;Accelerator&quot;</span><span class="nt">&gt;</span>
     <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;normal</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;xaxis</span> <span class="na">x=</span><span class="s">&quot;1&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
 
-    <span class="c">&lt;!--......................--&gt;</span>
+    <span class="cm">&lt;!--......................--&gt;</span>
 
   <span class="nt">&lt;/module&gt;</span>
 
-  <span class="c">&lt;!--Primary collimator hole--&gt;</span>
+  <span class="cm">&lt;!--Primary collimator hole--&gt;</span>
   <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;e_convex_polygon_circle&quot;</span> <span class="na">name=</span><span class="s">&quot;PriCollAir&quot;</span>
           <span class="na">medium=</span><span class="s">&quot;AIR700ICRU&quot;</span> <span class="na">density=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
     <span class="nt">&lt;Color</span> <span class="na">r=</span><span class="s">&quot;0.2&quot;</span> <span class="na">g=</span><span class="s">&quot;0.2&quot;</span> <span class="na">b=</span><span class="s">&quot;1.0&quot;</span> <span class="na">t=</span><span class="s">&quot;0.8&quot;</span> <span class="nt">/&gt;</span>
@@ -638,25 +550,25 @@ If no internal transport can be hit, particle exits from this module.</p></td>
 <p>Next is a parser code fragment, that demonstrates how content of <em>“embedded_group”</em> module description is interpreted.
 Grouping is implemented through the concept of internal collection of transport modules,
 which can be hit by the particles in any order.</p>
-<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;embedded_group&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">mcTransportEmbeddedGroup</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">);</span>
+<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;embedded_group&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">mcTransportEmbeddedGroup</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">);</span><span class="w"></span>
 
-        <span class="c1">// Search and parse nested transports</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">node</span> <span class="p">:</span> <span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span>
-        <span class="p">{</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="p">{</span>
-                        <span class="n">mcTransport</span><span class="o">*</span> <span class="n">eobj</span> <span class="o">=</span> <span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">media</span><span class="p">,</span> <span class="n">nThreads</span><span class="p">);</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="n">eobj</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span>
-                                <span class="k">throw</span> <span class="n">exception</span><span class="p">(</span><span class="s">&quot;embedded_group internal module parse error&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// Search and parse nested transports</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">{</span><span class="w"></span>
+<span class="w">                        </span><span class="n">mcTransport</span><span class="o">*</span><span class="w"> </span><span class="n">eobj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="n">media</span><span class="p">,</span><span class="w"> </span><span class="n">nThreads</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">eobj</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                </span><span class="k">throw</span><span class="w"> </span><span class="n">exception</span><span class="p">(</span><span class="s">&quot;embedded_group internal module parse error&quot;</span><span class="p">);</span><span class="w"></span>
 
-                        <span class="c1">// Transfer coordinate system from group to world</span>
-                        <span class="n">eobj</span><span class="o">-&gt;</span><span class="n">MoveToCoordinateSystem</span><span class="p">(</span><span class="n">t</span><span class="o">-&gt;</span><span class="n">MT2W</span><span class="p">());</span>
-                        <span class="p">((</span><span class="n">mcTransportEmbeddedGroup</span><span class="o">*</span><span class="p">)</span><span class="n">t</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">addTransport</span><span class="p">(</span><span class="n">eobj</span><span class="p">);</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-<span class="p">}</span>
+<span class="w">                        </span><span class="c1">// Transfer coordinate system from group to world</span>
+<span class="w">                        </span><span class="n">eobj</span><span class="o">-&gt;</span><span class="n">MoveToCoordinateSystem</span><span class="p">(</span><span class="n">t</span><span class="o">-&gt;</span><span class="n">MT2W</span><span class="p">());</span><span class="w"></span>
+<span class="w">                        </span><span class="p">((</span><span class="n">mcTransportEmbeddedGroup</span><span class="o">*</span><span class="p">)</span><span class="n">t</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">addTransport</span><span class="p">(</span><span class="n">eobj</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>In this code example variable <em>t</em> represents transport module
@@ -668,9 +580,9 @@ which will be inserted in to the current transport chain.</p>
 <p>In this particular module <em>“embedded_group”</em> example demonstrates
 how primary collimator hole can be implemented inside the whole shield
 side by side with electron accelerator inside the same shied object.</p>
-</div>
-<div class="section" id="module-linear-chain">
-<h3><span class="section-number">9.2.4. </span>Module “<em>linear_chain</em>”<a class="headerlink" href="#module-linear-chain" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="module-linear-chain">
+<h3><span class="section-number">10.2.4. </span>Module “<em>linear_chain</em>”<a class="headerlink" href="#module-linear-chain" title="Permalink to this heading"></a></h3>
 <table class="colwidths-given docutils align-default" id="module-linear-chain-table" style="width: 100%">
 <colgroup>
 <col style="width: 17%" />
@@ -696,11 +608,11 @@ If no internal transport can be hit, particle exits from this module.</p></td>
         <span class="nt">&lt;normal</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
         <span class="nt">&lt;xaxis</span> <span class="na">x=</span><span class="s">&quot;1&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
 
-        <span class="c">&lt;!--......................--&gt;</span>
+        <span class="cm">&lt;!--......................--&gt;</span>
 
     <span class="nt">&lt;/module&gt;</span>
 
-    <span class="c">&lt;!--Flattening filter--&gt;</span>
+    <span class="cm">&lt;!--Flattening filter--&gt;</span>
     <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;cone&quot;</span> <span class="na">name=</span><span class="s">&quot;Flattenig Filter&quot;</span> <span class="na">medium=</span><span class="s">&quot;W700ICRU&quot;</span> <span class="na">density=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
         <span class="nt">&lt;Color</span> <span class="na">r=</span><span class="s">&quot;0.7&quot;</span> <span class="na">g=</span><span class="s">&quot;0.7&quot;</span> <span class="na">b=</span><span class="s">&quot;0.7&quot;</span> <span class="na">t=</span><span class="s">&quot;0.2&quot;</span> <span class="nt">/&gt;</span>
         <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;11&quot;</span> <span class="nt">/&gt;</span>
@@ -709,7 +621,7 @@ If no internal transport can be hit, particle exits from this module.</p></td>
         <span class="nt">&lt;size</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">radius=</span><span class="s">&quot;2.4&quot;</span> <span class="na">height=</span><span class="s">&quot;1.0&quot;</span><span class="nt">/&gt;</span>
     <span class="nt">&lt;/module&gt;</span>
 
-    <span class="c">&lt;!--Ionization chamber--&gt;</span>
+    <span class="cm">&lt;!--Ionization chamber--&gt;</span>
     <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;cylinder&quot;</span> <span class="na">name=</span><span class="s">&quot;IonChamber&quot;</span> <span class="na">medium=</span><span class="s">&quot;AIR700ICRU&quot;</span> <span class="na">density=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
         <span class="nt">&lt;Color</span> <span class="na">r=</span><span class="s">&quot;1.0&quot;</span> <span class="na">g=</span><span class="s">&quot;0.5&quot;</span> <span class="na">b=</span><span class="s">&quot;0.0&quot;</span> <span class="na">t=</span><span class="s">&quot;0.7&quot;</span> <span class="nt">/&gt;</span>
         <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;11.5&quot;</span> <span class="nt">/&gt;</span>
@@ -718,7 +630,7 @@ If no internal transport can be hit, particle exits from this module.</p></td>
         <span class="nt">&lt;size</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">radius=</span><span class="s">&quot;6.0&quot;</span> <span class="na">height=</span><span class="s">&quot;2&quot;</span><span class="nt">/&gt;</span>
     <span class="nt">&lt;/module&gt;</span>
 
-    <span class="c">&lt;!--......................--&gt;</span>
+    <span class="cm">&lt;!--......................--&gt;</span>
 
 <span class="nt">&lt;/module&gt;</span>
 </pre></div>
@@ -730,23 +642,23 @@ If no internal transport can be hit, particle exits from this module.</p></td>
 <p><em>XML</em> configuration file contains nested transports of <em>“linear_chain”</em> module in the order of internal transports first.</p>
 <p>Next is a parser code fragment, that demonstrates how content of <em>“linear_chain”</em> module description is interpreted.
 Grouping is implemented through the concept of internal linear Z ordered chain of transport modules.</p>
-<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;linear_chain&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-<span class="p">{</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">mcTransportLinearChain</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">xaxis</span><span class="p">);</span>
+<div class="highlight-CPP notranslate"><div class="highlight"><pre><span></span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">geomType</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;linear_chain&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">mcTransportLinearChain</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">,</span><span class="w"> </span><span class="n">xaxis</span><span class="p">);</span><span class="w"></span>
 
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">node</span> <span class="p">:</span> <span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span>
-        <span class="p">{</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="p">{</span>
-                        <span class="n">mcTransport</span><span class="o">*</span> <span class="n">eobj</span> <span class="o">=</span> <span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">media</span><span class="p">,</span> <span class="n">nThreads</span><span class="p">);</span>
-                        <span class="k">if</span> <span class="p">(</span><span class="n">eobj</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span>
-                                <span class="k">throw</span> <span class="n">exception</span><span class="p">(</span><span class="s">&quot;Embedding group should contain only embedding objects&quot;</span><span class="p">);</span>
-                        <span class="n">eobj</span><span class="o">-&gt;</span><span class="n">MoveToCoordinateSystem</span><span class="p">(</span><span class="n">t</span><span class="o">-&gt;</span><span class="n">MT2W</span><span class="p">());</span>
-                        <span class="p">((</span><span class="n">mcTransportLinearChain</span><span class="o">*</span><span class="p">)</span><span class="n">t</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">addTransport</span><span class="p">(</span><span class="n">eobj</span><span class="p">);</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="p">((</span><span class="n">mcTransportLinearChain</span><span class="o">*</span><span class="p">)</span><span class="n">t</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">completeInit</span><span class="p">();</span>
-<span class="p">}</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">geometry</span><span class="p">.</span><span class="n">Nodes</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_wcsicmp</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">Name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="sa">L</span><span class="s">&quot;module&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">{</span><span class="w"></span>
+<span class="w">                        </span><span class="n">mcTransport</span><span class="o">*</span><span class="w"> </span><span class="n">eobj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeometryParser</span><span class="o">::</span><span class="n">ParseTransport</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="n">media</span><span class="p">,</span><span class="w"> </span><span class="n">nThreads</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">eobj</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                </span><span class="k">throw</span><span class="w"> </span><span class="n">exception</span><span class="p">(</span><span class="s">&quot;Embedding group should contain only embedding objects&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">                        </span><span class="n">eobj</span><span class="o">-&gt;</span><span class="n">MoveToCoordinateSystem</span><span class="p">(</span><span class="n">t</span><span class="o">-&gt;</span><span class="n">MT2W</span><span class="p">());</span><span class="w"></span>
+<span class="w">                        </span><span class="p">((</span><span class="n">mcTransportLinearChain</span><span class="o">*</span><span class="p">)</span><span class="n">t</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">addTransport</span><span class="p">(</span><span class="n">eobj</span><span class="p">);</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">((</span><span class="n">mcTransportLinearChain</span><span class="o">*</span><span class="p">)</span><span class="n">t</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">completeInit</span><span class="p">();</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>In this code example variable <em>t</em> represents transport module
@@ -758,56 +670,36 @@ which will be inserted in to the current transport chain.</p>
 <p>In this particular module <em>“linear_chain”</em> example demonstrates
 implementation accelerator head collimating structures sequence,
 where elements can be separated by planes, orthogonal to <em>Z</em> axis.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Validation.html" class="btn btn-neutral float-right" title="10. Validation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Sources.html" class="btn btn-neutral float-left" title="8. Sources" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Validation.html" class="btn btn-neutral float-left" title="9. Validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Examples.html" class="btn btn-neutral float-right" title="11. Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2020, ROISS.
-
-    </p>
+    <p>&#169; Copyright 2020-23, ROISS.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
