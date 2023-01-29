@@ -1,0 +1,335 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>11. Examples &mdash; MC Users Guide 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="10. Validation" href="Validation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #FBFBFB" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">2. Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SourceCodeStructure.html">3. Source code structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Shower.html">4. Shower</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Geometry.html">5. Geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Transports.html">6. Transports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Scores.html">7. Scores</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Sources.html">8. Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ReferenceApplication.html">9. Reference application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Validation.html">10. Validation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">11. Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simple-bremsstrahlung">11.1. Simple bremsstrahlung</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MC Users Guide</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><span class="section-number">11. </span>Examples</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/RadOncSys/MC/blob/mc-pages/manual/source/Examples.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="examples">
+<h1><span class="section-number">11. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<p>This chapter contains some examples of using reference application for radiation transport simulations.
+Configuration files format is not explained here in detail.
+See complete description in the chapter
+<a class="reference internal" href="ReferenceApplication.html#ch-reference-application"><span class="std std-ref">Reference application</span></a></p>
+<div class="section" id="simple-bremsstrahlung">
+<h2><span class="section-number">11.1. </span>Simple bremsstrahlung<a class="headerlink" href="#simple-bremsstrahlung" title="Permalink to this headline">¶</a></h2>
+<p>In order to run simulation of <em>bremsstrahlung</em> production using reference application
+you need to prepare two task description <em>XML</em> configuration files.</p>
+<p>Here is an example of first one geometry description file <em>G_Target.xml</em>:</p>
+<div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;accelerator&gt;</span>
+    <span class="c">&lt;!--Tungsten target--&gt;</span>
+    <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;cylinder&quot;</span> <span class="na">name=</span><span class="s">&quot;Target&quot;</span> <span class="na">medium=</span><span class="s">&quot;W700ICRU&quot;</span> <span class="na">density=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;Color</span> <span class="na">r=</span><span class="s">&quot;0&quot;</span> <span class="na">g=</span><span class="s">&quot;0.5&quot;</span> <span class="na">b=</span><span class="s">&quot;1&quot;</span> <span class="na">t=</span><span class="s">&quot;0.2&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;normal</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;xaxis</span> <span class="na">x=</span><span class="s">&quot;1&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;size</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">radius=</span><span class="s">&quot;1.0&quot;</span> <span class="na">height=</span><span class="s">&quot;0.2&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/module&gt;</span>
+    <span class="nt">&lt;module</span> <span class="na">type=</span><span class="s">&quot;planefilter&quot;</span> <span class="na">name=</span><span class="s">&quot;Trap&quot;</span> <span class="na">medium=</span><span class="s">&quot;AIR700ICRU&quot;</span> <span class="na">density=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;Color</span> <span class="na">r=</span><span class="s">&quot;0&quot;</span> <span class="na">g=</span><span class="s">&quot;0.5&quot;</span> <span class="na">b=</span><span class="s">&quot;0.5&quot;</span> <span class="na">t=</span><span class="s">&quot;0.8&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0.2&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;normal</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;xaxis</span> <span class="na">x=</span><span class="s">&quot;1&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;0&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/module&gt;</span>
+<span class="nt">&lt;/accelerator&gt;</span>
+</pre></div>
+</div>
+<p>Geometry consists of two modules.
+First is cylindrical tungsten target with front plane located in the coordinate system origin.
+Its <em>Z</em> axis directed along the world <em>Z</em> axis.
+Target thickness is 0.2 cm and radius is 1.0 cm.</p>
+<p>The second module is a plane filter dedicated to host scoring object defined in simulation file.
+It is located at the level of back plane of the target (<em>z</em> = 0.2).</p>
+<p>Next is an example of simulation description file <em>S_Target.xml</em>:</p>
+<div class="highlight-XML notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="c">&lt;!-- Bremsstrahlung production by electron beam on the target --&gt;</span>
+<span class="nt">&lt;input&gt;</span>
+    <span class="nt">&lt;simulation</span> <span class="na">nhistories=</span><span class="s">&quot;100000&quot;</span> <span class="na">nbanches=</span><span class="s">&quot;10&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/simulation&gt;</span>
+    <span class="nt">&lt;options&gt;</span>
+        <span class="nt">&lt;vrmlfile&gt;</span>PlaneScore.wrl<span class="nt">&lt;/vrmlfile&gt;</span>
+        <span class="nt">&lt;statfile&gt;</span>PlaneScore.dat<span class="nt">&lt;/statfile&gt;</span>
+        <span class="nt">&lt;transCutoff_elec</span> <span class="na">unit=</span><span class="s">&quot;MeV&quot;</span> <span class="na">ecat =</span><span class="s">&quot;0.0&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/options&gt;</span>
+    <span class="nt">&lt;source</span> <span class="na">name=</span><span class="s">&quot;Electron beam&quot;</span> <span class="na">module=</span><span class="s">&quot;Target&quot;</span> <span class="na">trackparticles=</span><span class="s">&quot;false&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;radiation</span> <span class="na">type=</span><span class="s">&quot;electron&quot;</span> <span class="na">energy=</span><span class="s">&quot;6.0&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;shape</span> <span class="na">direction=</span><span class="s">&quot;conical&quot;</span> <span class="na">size=</span><span class="s">&quot;0.00&quot;</span> <span class="na">angle=</span><span class="s">&quot;0&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;position</span> <span class="na">unit=</span><span class="s">&quot;cm&quot;</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;-1.0&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;direction</span> <span class="na">x=</span><span class="s">&quot;0&quot;</span> <span class="na">y=</span><span class="s">&quot;0&quot;</span> <span class="na">z=</span><span class="s">&quot;1&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/source&gt;</span>
+    <span class="nt">&lt;score</span> <span class="na">type=</span><span class="s">&quot;fluence_plane&quot;</span> <span class="na">module=</span><span class="s">&quot;Trap&quot;</span> <span class="na">pt=</span><span class="s">&quot;photon&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/input&gt;</span>
+</pre></div>
+</div>
+<p>This file prescribes <em>1E6</em> particles, which sampling from <em>“Electron beam”</em> source.
+Point source is located at the world Z axis at -1.0 cm distance from its origin
+and emits electrons with energy 6 <em>MeV</em> along Z axis.
+First object that electrons will hit is directly indicated and it is module <em>“Target”</em>.</p>
+<p>Scoring type is <em>“fluence_plane”</em>.
+It is connected to module <em>“Trap”</em>.
+Scoring is accounting only photons.
+<em>Electrons</em> and <em>negatrons</em> will be ignored.</p>
+<p>To start simulation go to the directory of the simulation configuration files
+and run the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MCSimulator</span> <span class="n">S_Target</span><span class="o">.</span><span class="n">xml</span> <span class="n">G_Target</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><em>MCSimulator</em> requires that PEGS file <em>AcceleratorSimulator.pegs4dat</em>
+must be located at <em>../data</em> folder.</p>
+</div>
+<p>Next figure
+<a class="reference internal" href="#target-sim-proc-figure"><span class="std std-numref">(Fig. 11.1)</span></a>.
+shows screenshot of simulation process.</p>
+<div class="align-center figure" id="target-sim-proc-figure">
+<img alt="_images/TargetSimProc.png" src="_images/TargetSimProc.png" style="width: 70%;" />
+<p class="caption"><span class="caption-number">Fig. 11.1 </span><span class="caption-text">Simulation process screenshot.</span><a class="headerlink" href="#target-sim-proc-figure" title="Permalink to this image">¶</a></p>
+</div>
+<p>Simulation will produce two files.
+According to configuration simulation scene
+will be written in <em>VRML</em> graphical format file <em>PlaneScore.wrl</em>.
+Next figure
+<a class="reference internal" href="#plane-score-wrl-figure"><span class="std std-numref">(Fig. 11.2)</span></a>.
+shows its content in <em>VrmlView</em> application.</p>
+<div class="align-center figure" id="plane-score-wrl-figure">
+<img alt="_images/PlaneScoreWrl.png" src="_images/PlaneScoreWrl.png" style="width: 50%;" />
+<p class="caption"><span class="caption-number">Fig. 11.2 </span><span class="caption-text">Simulation scene graphical view.</span><a class="headerlink" href="#plane-score-wrl-figure" title="Permalink to this image">¶</a></p>
+</div>
+<p>Second file <em>PlaneScore.dat</em> is a dump of scoring content.
+In this case it is simple text file with a few distributions,
+which easily can be analyzed, for example, in EXCEL.
+Next figure
+<a class="reference internal" href="#plane-score-stat-figure"><span class="std std-numref">(Fig. 11.3)</span></a>.
+shows mean energy distribution depending on direction as an example.</p>
+<div class="align-center figure" id="plane-score-stat-figure">
+<img alt="_images/PlaneScoreStat.png" src="_images/PlaneScoreStat.png" style="width: 70%;" />
+<p class="caption"><span class="caption-number">Fig. 11.3 </span><span class="caption-text">Statistic on mean photon energy distribution depending of direction of bremsstrahlung.</span><a class="headerlink" href="#plane-score-stat-figure" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="Validation.html" class="btn btn-neutral float-left" title="10. Validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, ROISS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
