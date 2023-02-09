@@ -99,7 +99,7 @@ double mcPhysicsPositron::TakeOneStep(mcParticle* p, const mcMedium& med, double
 		pathLength * p->regDensityRatio);
 
 	p->plast = p->p;
-	p->mfps = 0;
+	// p->mfps = 0;
 	p->ke -= e_dep;
 	p->dnear -= step;
 	return e_dep;

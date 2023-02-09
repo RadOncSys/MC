@@ -418,6 +418,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	{
 		double stepRequested = step;
 		edep = phys->TakeOneStep(particle, *med, step);
+		particle->mfps -= step / freepath;
 
 		if (particle->trackScore_)
 			particle->trackScore_->score(particle->thread_->id(), particle->t, particle->p * mttow_, (particle->p - (particle->u * step)) * mttow_, particle->ke);

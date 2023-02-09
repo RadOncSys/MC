@@ -52,25 +52,6 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	// В конце коректируем направление скорости согласно теории рассеяния и обновляем переменную шага
 	// (что нужно для моделирования дискретных событий).
 
-	// вместо логарифма используем линейно энергию
-	double logKE = p->ke;//log(p->ke);
-	int iLogKE = int(logKE);//(int) (m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);
-
-	// Ситуация, когда частица заведомо не выйдет из области.
-	// Шаг не может быть больше 
-	// А что, нас не интересует как частица по этой области будет перемещаться, в каких её точках терять энергию???
-	// Результатом является длинный хвост за пиком Брэгга до конца фантома - явная ошибка.
-	//double range = p->ke / dedx;
-	//if(range < step && range < p->dnear)
-	//{
-	//  step = range;
-	//  e_dep = p->ke;
-	//  p->p += p->u * step;
-	//  p->ke = 0;
-	//  return e_dep;
-	//}
-
 	// VK
 	// Определить размер шага, на который происходит транспорт и занести его в step
 	// Определить потери энергии на этом шаге 
@@ -87,9 +68,9 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	//double mE = kE;		// исходная версия (Отчёт)
 	double mE = p->ke - e_dep / 2.0;  // коррекция март 2008
 	// вместо логарифма используем линейно энергию
-	logKE = mE; //p->ke;//log(p->ke);
-	iLogKE = int(logKE);//(int) (m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);
+	double logKE = mE; //p->ke;//log(p->ke);
+	int iLogKE = int(logKE);//(int) (m.iLogKE0_proto + logKE * m.iLogKE1_proto);
+	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);
 	// более короткие шаги (до пересечения с границей или точечного вз. считаем без поправки
 	step = MIN(step, e_dep / dedx);
 	e_dep = step * dedx;	// если изменился шаг
@@ -131,60 +112,7 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	double phi = p->thread_->rng().rnd() * TWOPI;
 	ChangeDirection(cos(theta), sin(theta), cos(phi), sin(phi), p->u);
 
-
-
-	//////
-	////// BEGIN изменений под протоны.
-	//////
-	////// Цель кода и вероятные изменения:
-	////// 1. stepSize - длина шага непрерывных потерь 
-	//////    (у VK расчитывается как расстояние, на котором будет потеряно 1% энергии).
-	//////    Почему в EGS все сложнее? 
-	//////    Разобраться, в генерацию сред вставить табуляцию шага в зависимости от энергии.
-	////// 2. Параметр tscat вероятно связан с длиной пути, на которой угловое отклонение 
-	//////    достигает определенного предела. В электронах эта длина лимитирует шаг.
-	//////    Нужно ли это для протонов и могут ли при этом использоваться электронные формулы?
-	////// 3. Возможно ReducedPathLength() годится и для протонов.
-	////// 4. Коррекцию на изменение dE/dX в одном шаге нужно делать как в электронах
-	////// 5. Мольеровское рассеяние - разобраться и учесть опыт EGS.
-
-	////// Compute some useful kinematic parameters
-	////double eTotal = p->ke + EMASS;
-	////double betaSquared = p->ke * (p->ke + TWICE_EMASS) / SQUARE(eTotal);
-	////betaSquared = MAX(betaSquared, minBetaSquared);
-	////double tscat = twoOverEsubS * betaSquared * eTotal;
-	////tscat = m.radLength * SQUARE(tscat) / p->regDensityRatio;
-
-	////// Реальный шаг выбирается как минимальный из шага до дискретного события, 
-	////// шага непрерывных потерь и расстояние, на котором влияние рассеяния не становится критичным для модели.
-	////double stepSize = (m.stepSize0_proto[iLogKE] + logKE * m.stepSize1_proto[iLogKE]) / p->regDensityRatio;
-	////step = MIN(stepSize, MIN(step, 0.3 * tscat));
-
-	////// Длина трека больше расстояния между точками и связана рассеивающей способностью.
-	////double pathLength = ReducedPathLength(step, tscat);
-
-	////// Потери в треке расчитываются в два шага, сначала для dedx текущей энергии, затем средней.
-	////e_dep = dedx * pathLength;
-	////e_dep = MIN(e_dep, p->ke);
-
-	////logKE = log(p->ke - 0.5 * e_dep);
-	////iLogKE = int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	////if(iLogKE < 0) iLogKE = 0;  // вблизи энергии поглощения возможна проблема индексов
-	////dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);
-	////e_dep = dedx * pathLength;
-	////e_dep = MIN(e_dep, p->ke);
-	////p->p += p->u * step;
-
-	////// Change direction in accordance with the Moliere theory
-	////MoliereScatter(m.scaledLittleB, m.chi_cc, p->u,
-	////               p->ke + EMASS, betaSquared,
-	////               pathLength * p->regDensityRatio);
-	//////
-	////// END изменений под протоны.
-	//////
-
-	p->mfps = 0; // VK Это зачем? Если мы не разыгрываем каждый раз mfp, а редуцируем его, то эта строка кажестя не верна 
-
+	// p->mfps = 0; // VK Это зачем? Если мы не разыгрываем каждый раз mfp, а редуцируем его, то эта строка кажестя не верна 
 
 	p->ke -= e_dep;
 	return e_dep;

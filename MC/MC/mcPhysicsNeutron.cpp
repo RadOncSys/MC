@@ -75,7 +75,7 @@ double mcPhysicsNeutron::TakeOneStep(mcParticle* p, const mcMedium& med, double&
 	double phi = p->thread_->rng().rnd() * TWOPI;
 	ChangeDirection(cos(theta), sin(theta), cos(phi), sin(phi), p->u);
 
-	p->mfps = 0;
+	// p->mfps = 0;
 	p->ke -= e_dep;
 	return e_dep;
 }
