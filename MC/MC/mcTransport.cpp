@@ -427,6 +427,15 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 			particle->dnear = regions_[particle->region.idx_ - 1]->getDNearInside(particle->p);
 		else
 			particle->dnear = getDNearInside(particle->p);
+
+		// !! Деликатное трудно понимаемое место.
+		// Решение о событии взаимодействия принимается только если реальный шаг строго равен запрошенному шагу.
+		// Следует помнить, что к данному моменту шаг определен как "step = freepath * particle->mfps;"
+		// В случае заряженных частиц реальный шаг в основном определяется шагом, 
+		// на котором будет потеряна определенная часть энергии (например 1%).
+		// Благодаря счетчику "particle->mfps" частица будет протаскиваться через непрывное торможение
+		// пока не доберется места дискретного события.
+
 		if (step < stepRequested)
 			return MCMR_CONTINUE;
 		else

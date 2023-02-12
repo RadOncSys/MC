@@ -119,7 +119,9 @@ mcMediumProton::~mcMediumProton(void)
 {
 }
 
-const double mcMediumProton::AtomicWeight() const {	// Атомный вес среды, г/моль SUM{Ni*Ai}
+// Атомный вес среды, г/моль SUM{Ni*Ai}
+const double mcMediumProton::AtomicWeight() const
+{
 	double A = 0.0; // Атомный вес
 	for (vector<mcElement>::const_iterator el = elements_.begin(); el != elements_.end(); el++) {
 		A += el->atomicMass * el->partsByNumber;
@@ -191,18 +193,12 @@ void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
 	return;
 }
 
-
-
-const void	mcMediumProton::gSigmaInelastic(
-	int Ap//=1
-	, int Zp//=1
-
-)
 // mfp=1/(S) 
 // даёт sigma*dens*Na/A [1/cm]
 // для налетающей частицы с массой (в единицах массы протона) Ap 
 // и зарядом (в единицах заряда электрона) Zp
 // По умолчанию для протона (Ap = Zp = 1)
+const void	mcMediumProton::gSigmaInelastic(int Ap, int Zp)
 {
 	double S;
 	vector<double>sigma_in;
