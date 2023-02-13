@@ -73,6 +73,4 @@ public:
   //vector<double> stepSize1_proto;
 
   double transCutoff_proto; // Energy cutoff for proton transport
-
-
 };

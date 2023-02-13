@@ -33,7 +33,7 @@ void mcTransportPolygon::setGeometry(int np, double h, double r)
 	//cout << "========================================================";
 	//cout << "Insert (z,r)-coordinates of polygon : " << endl;
 
-	//for(int register i = 0; i<_np; i++)
+	//for(int i = 0; i<_np; i++)
 	//{
 	//	if(i==0)
 	//	{
@@ -75,7 +75,7 @@ double mcTransportPolygon::getDistanceInside(mcParticle& p) const
 
 	//пересечение с основанием отсутствует;
 	//ищем пересечение с боковой поверхностью.
-	for (int register i = 0; i < (_np - 1); i++)
+	for (int i = 0; i < (_np - 1); i++)
 	{
 		geomVector2D* ptr = _ptr;
 		double z_i = ptr->x();
@@ -131,7 +131,7 @@ double mcTransportPolygon::getDistanceOutside(mcParticle& p) const
 	double dCone = 0;
 	double dCone_temp;
 
-	for (int register i = 0; i < (_np - 1); i++)
+	for (int i = 0; i < (_np - 1); i++)
 	{
 		geomVector2D* ptr = _ptr;
 		double z_i = ptr->x();

@@ -32,7 +32,7 @@ double mcPhysicsNeutron::MeanFreePath(double ke, const mcMedium& med, double den
 	const mcMediumNeutron& m = (const mcMediumNeutron&)med;
 	double logKE = ke;
 	int iLogKE = int(ke);
-	double sigma = (m.sigma0_proto[iLogKE] + logKE * m.sigma1_proto[iLogKE]) * dens;
+	double sigma = (m.sigma0_neutro[iLogKE] + logKE * m.sigma1_neutro[iLogKE]) * dens;
 	return (sigma > 0.0) ? 1 / sigma : DBL_MAX;
 }
 
@@ -46,13 +46,13 @@ double mcPhysicsNeutron::TakeOneStep(mcParticle* p, const mcMedium& med, double&
 
 	double logKE = p->ke;
 	int iLogKE = int(logKE);
-	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);
+	double dedx = p->regDensityRatio * (m.dedx0_neutro[iLogKE] + logKE * m.dedx1_neutro[iLogKE]);
 
 	e_dep = 0.01 * p->ke;
 	double mE = p->ke - e_dep / 2.0;
 	logKE = mE;
 	iLogKE = int(logKE);
-	dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);
+	dedx = p->regDensityRatio * (m.dedx0_neutro[iLogKE] + logKE * m.dedx1_neutro[iLogKE]);
 	step = MIN(step, e_dep / dedx);
 	e_dep = step * dedx;
 

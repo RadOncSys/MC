@@ -7,3 +7,5 @@
 #endif
 
 #include <windows.h>
+
+#define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING

@@ -76,7 +76,7 @@ void coeff_calcNeutron(const vector<double>& s, vector<double>& a, vector<double
 	for (int i = 0; i < n - 1; i++)
 	{
 		a[i] = s[i + 1] - s[i];
-		b[i] = s[i] - a[i] * (i + 1);
+		b[i] = s[i] - a[i] * i;
 	}
 	a[n - 1] = a[n - 2];
 	b[n - 1] = b[n - 2];
@@ -159,7 +159,7 @@ void mcMediumNeutron::read(istream& is)
 	for (i = 0; i < kE.size(); i++) {
 		if (kE[i] != double(i + 1)) { throw std::exception("kE is not [1,2,...]"); }
 	};
-	coeff_calcNeutron(dEdx, dedx1_proto, dedx0_proto);
+	coeff_calcNeutron(dEdx, dedx1_neutro, dedx0_neutro);
 
 	gdEdxStragglingGaussVarianceConstPart();
 	gRadiationLength();
@@ -211,5 +211,5 @@ const void	mcMediumNeutron::gSigmaInelastic(int Ap, int Zp)
 		}
 		sigma_in.push_back(S * NAVOGADRO * density_ / AtomicWeight());
 	}
-	coeff_calcNeutron(sigma_in, sigma1_proto, sigma0_proto);
+	coeff_calcNeutron(sigma_in, sigma1_neutro, sigma0_neutro);
 }

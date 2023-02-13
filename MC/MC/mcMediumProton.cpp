@@ -185,7 +185,7 @@ void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
 	a.assign(n, 0.0); b.assign(n, 0.0); // очищаем вектора, устанавливаем размер
 	for (int i = 0; i < n - 1; i++) {
 		a[i] = s[i + 1] - s[i]; // делим на (i+1) - (i)
-		b[i] = s[i] - a[i] * (i + 1);
+		b[i] = s[i] - a[i] * i;
 	}
 	//экстрапол€ци€ в область больших значений - с коэффициентами предыдущей €чейки
 	a[n - 1] = a[n - 2];

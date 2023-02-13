@@ -178,7 +178,7 @@ double mcScoreMatrix2D::Sigma(int ix, int iz) const
 		return 0;
 	f /= nThreads_; // средн€€ доза по батчам
 	double sigma = 0;
-	for (int register i = 0; i < nThreads_; i++)///цикл дл€ суммировани€ сигма по батчам
+	for (int i = 0; i < nThreads_; i++)///цикл дл€ суммировани€ сигма по батчам
 	{
 		sigma += pow((m_M[i][iz*m_nx + ix] - f), 2);
 	}

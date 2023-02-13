@@ -16,7 +16,7 @@ public:
 
 	virtual void read(istream& is);
 
-    const double kEmax(void)const{return (double)dedx1_proto.size();}
+    const double kEmax(void)const{return (double)dedx1_neutro.size();}
 	const double AtomicWeight() const;
 
 private:
@@ -28,10 +28,10 @@ public:
 	double dEdxStragglingGaussVarianceConstPart_;
 	double radLength;
 
-	vector<double> sigma0_proto;
-	vector<double> sigma1_proto;
-	vector<double> dedx0_proto;
-	vector<double> dedx1_proto;
+	vector<double> sigma0_neutro;
+	vector<double> sigma1_neutro;
+	vector<double> dedx0_neutro;
+	vector<double> dedx1_neutro;
 
 	double transCutoff_neutron;
 };

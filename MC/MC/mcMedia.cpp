@@ -10,6 +10,11 @@
 #include "mcParticle.h"
 #include "../geometry/text.h"
 #include <fstream>
+//#include <string>
+//#include <iostream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 mcMedia::mcMedia(void)
 {
@@ -120,7 +125,7 @@ void mcMedia::initXEFromFile(const string& fname)
 	initXEFromStream(is);
 }
 
-void mcMedia::initProtonFromStream(istream& is)
+void mcMedia::initProtonDeDxFromStream(istream& is)
 {
 	if (!protons_.empty())
 		throw std::exception("Proton crossectons already initialized");
@@ -174,12 +179,33 @@ void mcMedia::initProtonFromStream(istream& is)
 		throw std::exception((string("The following Proton media were not loaded succcessfuly:\n") + errmedia).c_str());
 }
 
-void mcMedia::initProtonFromFile(const string& fname)
+void mcMedia::initProtonFromFiles(const string& fname, const string& pstardir, const string& icru63dir)
 {
+	// Старый вариант тормозных спопосбностей (Костюченко, 2008)
 	ifstream is(fname.c_str());
 	if (is.fail())
 		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
-	initProtonFromStream(is);
+	initProtonDeDxFromStream(is);
+
+	// TODO: новая версия тормозных способностей из базы данных PSTAR.
+	// Note: эта база содержит весьма ограниченный набор атомов, 
+	// по крайней мере в версии с запросами по имени атома л материала.
+	// Нужно разобрться, нет ли где-то файлов для всех атомов или это просто формула
+	// для которой нужно только брать правильные поенциалы I.
+	// 
+	// Не реализовано! Должно заменить старый вариант.
+	//
+
+	// Сначала формируем базу данных сечений всех имеющихся атомов.
+	// Файлы для протонов удовлетворяют маске "P*.DAT".
+
+	// Идем по всем файлам и формируем базу данных ICRU 63 для протонов.
+
+
+
+	std::string path = "/path/to/directory";
+	for (const auto& entry : fs::directory_iterator(path))
+		std::cout << entry.path() << std::endl;
 }
 
 void mcMedia::initNeutronFromStream(istream& is)

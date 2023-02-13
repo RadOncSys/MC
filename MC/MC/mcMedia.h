@@ -35,8 +35,12 @@ public:
 	void initXEFromStream(istream&);
 	void initXEFromFile(const string& fname);
 
-	void initProtonFromStream(istream&);
-	void initProtonFromFile(const string& fname);
+	// Импорт данных протонов из множества файлов
+	// fname - файл, содержащий заголовки сред, соглсованные с PEGS4
+	// pstardir - файлы с тормозными способностями отдельных атомов по базе данных PSTAR
+	// icrudir63 - файлы сечений ядерных реакций из протокола ICRU63
+	void initProtonFromFiles(const string& fname, const string& pstardir, const string& icru63dir);
+	void initProtonDeDxFromStream(istream&);
 
 	void initNeutronFromStream(istream&);
 	void initNeutronFromFile(const string& fname);
