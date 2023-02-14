@@ -201,11 +201,39 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& pstardir, c
 
 	// Идем по всем файлам и формируем базу данных ICRU 63 для протонов.
 
+	//fs::path p = fs::current_path();
+	//std::cout << "The current path " << p << " decomposes into:\n"
+	//	<< "root-path " << p.root_path() << '\n'
+	//	<< "relative path " << p.relative_path() << '\n';
 
+	//std::filesystem::current_path("C:/MCSimulations/protons/");
 
-	std::string path = "/path/to/directory";
-	for (const auto& entry : fs::directory_iterator(path))
+	/*
+	std::vector<FileEntry> CollectFiles(const fs::path & inPath)
+	{
+		std::vector<fs::path> paths;
+		if (fs::exists(inPath) && fs::is_directory(inPath))
+		{
+			std::filesystem::recursive_directory_iterator dirpos{ inPath };
+
+			std::copy_if(begin(dirpos), end(dirpos), std::back_inserter(paths),
+				[](const fs::directory_entry& entry) {
+					return entry.is_regular_file();
+				}
+			);
+		}
+		std::vector<FileEntry> files(paths.size());
+		std::transform(paths.cbegin(), paths.cend(), files.begin(), FileEntry::Create);
+		return files;
+	}
+	*/
+
+	for (const auto& entry : fs::directory_iterator(icru63dir))
+	{
+		//if (std::regex_match(entry., reg))
 		std::cout << entry.path() << std::endl;
+
+	}
 }
 
 void mcMedia::initNeutronFromStream(istream& is)
