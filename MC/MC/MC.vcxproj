@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="mcClinicalElectronBeam.h" />
+    <ClInclude Include="mcCSNuclear.h" />
     <ClInclude Include="mcDefs.h" />
     <ClInclude Include="mcElement.h" />
     <ClInclude Include="mcETransportConvexPolygonCircle.h" />
@@ -259,6 +260,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcClinicalElectronBeam.cpp" />
+    <ClCompile Include="mcCSNuclear.cpp" />
     <ClCompile Include="mcETransportConvexPolygonCircle.cpp" />
     <ClCompile Include="mcETransportSphere.cpp" />
     <ClCompile Include="mcETransportTrap.cpp" />

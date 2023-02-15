@@ -36,10 +36,10 @@ public:
 	// Коэффициенты интерполяции S(E)=S0[Ei]+S1[Ei]*E, Ei=int(E)
 	// В электронах вместо энергии используется логарифм
 	// Мы пока оставим линейную интерполяцию
-	vector<double> sigma0_proto;	// Fictitious cross section, 1/cm
+	vector<double> sigma0_proto;	// Fictitious cross section, 1/cm (речь о ядерных взаимодействиях)
 	vector<double> sigma1_proto;
-	vector<double> dedx0_proto;	// Linear energy loss rate (stopping power)(Mev/cm)
+	vector<double> dedx0_proto;		// Linear energy loss rate (stopping power)(Mev/cm)
 	vector<double> dedx1_proto;
 
-	double transCutoff_proto;	// Energy cutoff for proton transport
+	double transCutoff_proto;		// Energy cutoff for proton transport
 };

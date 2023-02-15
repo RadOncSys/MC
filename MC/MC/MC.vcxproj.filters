@@ -343,6 +343,9 @@
     <ClInclude Include="mcSourceUniformCone.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="mcCSNuclear.h">
+      <Filter>Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -635,6 +638,9 @@
     </ClCompile>
     <ClCompile Include="mcSourceUniformCone.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcCSNuclear.cpp">
+      <Filter>Media</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
