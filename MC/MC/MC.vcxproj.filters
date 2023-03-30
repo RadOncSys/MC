@@ -346,6 +346,9 @@
     <ClInclude Include="mcCSNuclear.h">
       <Filter>Media</Filter>
     </ClInclude>
+    <ClInclude Include="mcEndfP.h">
+      <Filter>Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -640,6 +643,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="mcCSNuclear.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcEndfP.cpp">
       <Filter>Media</Filter>
     </ClCompile>
   </ItemGroup>

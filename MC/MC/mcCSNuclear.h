@@ -10,7 +10,7 @@
 #include <vector>
 #include <memory>
 
-// Ветор спектров родившихся частиц при отдельно взятом угле
+// Вектор спектров родившихся частиц при отдельно взятом угле
 class mcCSNuclearForAngleSpectrum
 {
 public:
@@ -63,6 +63,9 @@ public:
 
 	// Массивы таблиц сечений отдельно выбранных энергий
 	std::vector<mcCSNuclearParticleEnergy> Energies;
+
+	// Загрузка одного файла сечений
+	void Load(const char* fname, const char* ename);
 
 	void Clear();
 };

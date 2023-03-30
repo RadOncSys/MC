@@ -8,11 +8,10 @@
 #include "mcPhysicsProton.h"
 #include "mcPhysicsNeutron.h"
 #include "mcParticle.h"
-#include "mcCSNuclear.h"
+//#include "mcCSNuclear.h"
+#include "mcEndfP.h"
 #include "../geometry/text.h"
 #include <fstream>
-//#include <string>
-//#include <iostream>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -180,7 +179,7 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 		throw std::exception((string("The following Proton media were not loaded succcessfuly:\n") + errmedia).c_str());
 }
 
-void mcMedia::initProtonFromFiles(const string& fname, const string& pstardir, const string& icru63dir)
+void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 {
 	// Старый вариант тормозных спопосбностей (Костюченко, 2008)
 	ifstream is(fname.c_str());
@@ -188,62 +187,17 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& pstardir, c
 		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
 	initProtonDeDxFromStream(is);
 
-	// TODO: новая версия тормозных способностей из базы данных PSTAR.
-	// Note: эта база содержит весьма ограниченный набор атомов, 
-	// по крайней мере в версии с запросами по имени атома л материала.
-	// Нужно разобрться, нет ли где-то файлов для всех атомов или это просто формула
-	// для которой нужно только брать правильные поенциалы I.
-	// 
-	// Не реализовано! Должно заменить старый вариант.
-	//
-
-	// Сначала формируем базу данных сечений всех имеющихся атомов.
-	// Файлы для протонов удовлетворяют маске "P*.DAT".
-
-	// Идем по всем файлам и формируем базу данных ICRU 63 для протонов.
-
-	//fs::path p = fs::current_path();
-	//std::cout << "The current path " << p << " decomposes into:\n"
-	//	<< "root-path " << p.root_path() << '\n'
-	//	<< "relative path " << p.relative_path() << '\n';
-
-	//std::filesystem::current_path("C:/MCSimulations/protons/");
-
-	/*
-	std::vector<FileEntry> CollectFiles(const fs::path & inPath)
-	{
-		std::vector<fs::path> paths;
-		if (fs::exists(inPath) && fs::is_directory(inPath))
-		{
-			std::filesystem::recursive_directory_iterator dirpos{ inPath };
-
-			std::copy_if(begin(dirpos), end(dirpos), std::back_inserter(paths),
-				[](const fs::directory_entry& entry) {
-					return entry.is_regular_file();
-				}
-			);
-		}
-		std::vector<FileEntry> files(paths.size());
-		std::transform(paths.cbegin(), paths.cend(), files.begin(), FileEntry::Create);
-		return files;
-	}
-	*/
-
-	// Separators
-	std::string energySeparator("+++++++++++++++++++++++++++++++");
-	std::string evalueSeparator("Cross section summary information for");
-	std::string tcsvalueSeparator("Nonelastic cross section =");
-	std::string protonsSeparator("*protons*");
-	std::string neutronsSeparator("*neutrons*");
-	std::string protonCrossSectionSeparator("proton production cross section (mb) =");
-	std::string neutronCrossSectionSeparator("neutron production cross section (mb) =");
-
 	// Объект, в который сначала закачиваем всю баз данных сечений
 	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
-	auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
+
+	// ICRU-63
+	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
+
+	// ENDF
+	auto dbData = std::make_unique<std::vector<mcEndfP>>();
 
 	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
-	for (const auto& entry : fs::directory_iterator(icru63dir))
+	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
 			continue;
@@ -251,150 +205,20 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& pstardir, c
 		//string fname = fs::path(entry.path()).filename().string();
 		string fname = fs::path(entry.path()).stem().string();
 		string ext = fs::path(entry.path()).extension().string();
+		std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
 
-		if(fname[0] != 'P' || ext != ".DAT")
+		if(std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
-		//if (std::regex_match(entry., reg))
-		//std::cout << entry.path() << std::endl;
-		//std::cout << elementName << std::endl;
-
-		// Парсим файл сечений протонов.
 		// Метку атомного элемента берем из имени файла.
 		string elementName = std::string(&fname[1]);
 
-		ifstream isIcru(entry.path().c_str());
-		if (isIcru.fail())
-			throw std::exception((string("Can't open Proton data file: ") + entry.path().string()).c_str());
-
 		// База данных изотопа
-		mcCSNuclear csForElement;
-		csForElement.ElementName = elementName;
+		//mcCSNuclear csForElement;
+		mcEndfP csForElement;
+		csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 
-		// Сечения для энергии падающей частицы
-		mcCSNuclearParticleEnergy csForEnergy;
-		mcCSNuclearForAngleSpectrum particleAngle;
-		mcCSNuclearForAngleSpectrum neutronAngle;
-
-		// Читаем строки текста одну за другой и выбираем нужную информацию
-		string line, s1, s2, s3, s4;
-		std::getline(isIcru, line, '\n');
-
-		// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
-		bool isNewEnergyPrepare = false;
-		bool isProtons = false;
-		bool isNeutrons = false;
-		int angleCount = 0;
-
-		while (!isIcru.fail())
-		{
-			// Начало новой энергии
-			if (line.find(energySeparator) != string::npos)
-			{
-				csForEnergy.Clear();
-				isNewEnergyPrepare = true;
-			}
-			else if (isNewEnergyPrepare)
-			{
-				if (line.find(evalueSeparator) != string::npos)
-				{
-					csForEnergy.Energy = atof(&line[evalueSeparator.size()]);
-				}
-				else if (line.find(tcsvalueSeparator) != string::npos)
-				{
-					csForEnergy.TotalCrossSection = atof(&line[tcsvalueSeparator.size()]);
-					isNewEnergyPrepare = false;
-				}
-			}
-
-			// proton spectra
-			else if (line.find(protonsSeparator) != string::npos)
-			{
-				csForEnergy.ProtonAngles.clear();
-				isProtons = true;
-				angleCount = 0;
-			}
-			else if (isProtons)
-			{
-				if (line.find("ANGLE(deg)") != string::npos)
-				{
-					std::vector<std::string> ss;
-					GetStringArray(line, ss, " ");
-					angleCount = ss.size() - 2;
-					csForEnergy.ProtonAngles.resize(angleCount);
-					for (int i = 0; i < angleCount; i++)
-						csForEnergy.ProtonAngles[i].Angle = atof(ss[i + 1].c_str());
-				}
-				else if (line.find("ENERGY") != string::npos || line.find("------") != string::npos)
-				{
-				}
-				else if (line.find(protonCrossSectionSeparator) != string::npos)
-				{
-					std::vector<std::string> ss;
-					GetStringArray(line, ss, "=");
-					csForEnergy.ProtonCrossSection = atof(ss[1].c_str());
-					isProtons = false;
-				}
-				else
-				{
-					std::vector<std::string> ss;
-					GetStringArray(line, ss, " ");
-					for (int i = 0; i < (int)csForEnergy.ProtonAngles.size(); i++)
-					{
-						csForEnergy.ProtonAngles[i].SourceBinUps.push_back(atof(ss[1].c_str()));
-						csForEnergy.ProtonAngles[i].SourceSpectrum.push_back(atof(ss[i + 2].c_str()));
-					}
-				}
-
-			}
-
-			// neutron spectra
-			else if (line.find(neutronsSeparator) != string::npos)
-			{
-				csForEnergy.NeutronAngles.clear();
-				isNeutrons = true;
-				angleCount = 0;
-			}
-			else if (isNeutrons)
-			{
-				if (line.find("ANGLE(deg)") != string::npos)
-				{
-					std::vector<std::string> ss;
-					GetStringArray(line, ss, " ");
-					angleCount = ss.size() - 2;
-					csForEnergy.NeutronAngles.resize(angleCount);
-					for (int i = 0; i < angleCount; i++)
-						csForEnergy.NeutronAngles[i].Angle = atof(ss[i + 1].c_str());
-				}
-				else if (line.find("ENERGY") != string::npos || line.find("------") != string::npos)
-				{
-				}
-				else if (line.find(neutronCrossSectionSeparator) != string::npos)
-				{
-					std::vector<std::string> ss;
-					GetStringArray(line, ss, "=");
-					csForEnergy.NeutronCrossSection = atof(ss[1].c_str());
-					isNeutrons = false;
-				}
-				else
-				{
-					std::vector<std::string> ss;
-					GetStringArray(line, ss, " ");
-					for (int i = 0; i < (int)csForEnergy.NeutronAngles.size(); i++)
-					{
-						csForEnergy.NeutronAngles[i].SourceBinUps.push_back(atof(ss[1].c_str()));
-						csForEnergy.NeutronAngles[i].SourceSpectrum.push_back(atof(ss[i + 2].c_str()));
-					}
-				}
-			}
-
-			else if (line.find("**************************************************************************************************************************") != string::npos)
-			{
-				csForElement.Energies.push_back(csForEnergy);
-			}
-			std::getline(isIcru, line, '\n');
-		}
-
+		//ifstream isIcru(entry.path().c_str());
 		dbData->push_back(csForElement);
 	}
 }

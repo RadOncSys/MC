@@ -159,6 +159,7 @@
     <ClInclude Include="mcCSNuclear.h" />
     <ClInclude Include="mcDefs.h" />
     <ClInclude Include="mcElement.h" />
+    <ClInclude Include="mcEndfP.h" />
     <ClInclude Include="mcETransportConvexPolygonCircle.h" />
     <ClInclude Include="mcETransportSphere.h" />
     <ClInclude Include="mcETransportTrap.h" />
@@ -261,6 +262,7 @@
   <ItemGroup>
     <ClCompile Include="mcClinicalElectronBeam.cpp" />
     <ClCompile Include="mcCSNuclear.cpp" />
+    <ClCompile Include="mcEndfP.cpp" />
     <ClCompile Include="mcETransportConvexPolygonCircle.cpp" />
     <ClCompile Include="mcETransportSphere.cpp" />
     <ClCompile Include="mcETransportTrap.cpp" />
