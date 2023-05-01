@@ -30,6 +30,9 @@ struct mcEndfRecord
 class mcEndfCrossSectionTable
 {
 public:
+	void Load(std::istream& is);
+	void dump(std::ostream& os) const;
+
 	// Количество пар энергия падающей частицы / сечение
 	int npoints;
 
@@ -57,11 +60,18 @@ public:
 	// Используется как уникальный идентификатор.
 	std::string ElementName;
 
+	// Сечения суммы упругих рассеяний и ядерных реакций в зависимости от энергии падающей частицы
+	// TODO: Возможно временная таблица. Разобраться, не нужно ли эти реакции учитывать 
+	// в дополнение к тому, что в угловом смысле ассоциируется с dE/dX.
+	mcEndfCrossSectionTable TotalCrossSections;
+
 	// Сечения ядерных реакций в зависимости от энергии падающей частицы
-	mcEndfCrossSectionTable CrossSections;
+	mcEndfCrossSectionTable NuclearCrossSections;
 
 	// Загрузка одного файла сечений
 	void Load(const char* fname, const char* ename);
 
 	void Clear();
+
+	void dumpTotalCrossections(std::ostream& os) const;
 };

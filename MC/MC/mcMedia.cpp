@@ -207,11 +207,11 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		string ext = fs::path(entry.path()).extension().string();
 		std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
 
-		if(std::toupper(fname[0]) != 'P' || ext != ".DAT")
+		if(std::toupper(fname[0]) != 'P' || ext != ".TENDL")
 			continue;
 
 		// Метку атомного элемента берем из имени файла.
-		string elementName = std::string(&fname[1]);
+		string elementName = std::string(&fname[2]);
 
 		// База данных изотопа
 		//mcCSNuclear csForElement;

@@ -16,6 +16,64 @@ double mcEndfRecord::ParseValue(const char* s, int n)
 	return f;
 }
 
+void mcEndfCrossSectionTable::Load(istream& is)
+{
+	string line, s1, s2, s3, s4;
+	mcEndfRecord record;
+	int pointCount = 0;
+
+	getline(is, line, '\n');
+
+	while (!is.fail())
+	{
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+
+		// Сечения 
+		if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '2')
+		{
+			ninterpolations = atoi(record.c[4]);
+			if (ninterpolations > 1)
+				throw exception("UUnexpected multiple interpolation types");
+		}
+		else if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '3')
+		{
+			npoints = atoi(record.c[0]);
+			interpolationType = atoi(record.c[1]);
+			Energies.resize(npoints, 0);
+			Values.resize(npoints, 0);
+		}
+		else
+		{
+			for (int ii = 0; ii < 6; ii += 2)
+			{
+				if (pointCount < npoints)
+				{
+					Energies[pointCount] = mcEndfRecord::ParseValue(record.c[ii], 11);
+					Values[pointCount] = mcEndfRecord::ParseValue(record.c[ii + 1], 11);
+					pointCount++;
+				}
+			}
+			if (pointCount == npoints)
+				break; // конец таблицы, прерываем while
+		}
+
+		getline(is, line, '\n');
+	}
+}
+
+void mcEndfCrossSectionTable::dump(std::ostream& os) const
+{
+	os << "NPoints = \t" << npoints << endl;
+	os << "InterpolationType = \t" << interpolationType << endl;
+	os << endl;
+	os << "Energy\tValue" << endl;
+
+	for (int i = 0; i < Energies.size(); i++)
+		os << Energies[i] << "\t" << Values[i] << endl;
+}
+
 void mcEndfP::Load(const char* fname, const char* ename)
 {
 	// Separators
@@ -24,10 +82,11 @@ void mcEndfP::Load(const char* fname, const char* ename)
 	ifstream isEndf(fname);
 	if (isEndf.fail())
 		throw exception((string("Can't open Proton data file: ") + ename).c_str());
+	ElementName = ename;
 
 	// Читаем строки текста одну за другой и выбираем нужную информацию
 	string line, s1, s2, s3, s4;
-	std::getline(isEndf, line, '\n');
+	getline(isEndf, line, '\n');
 
 	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
 	bool isInData = false;
@@ -61,38 +120,18 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		// Используем только MF=3 (сечения реакций) / MT=5 (сумма всех реакций за исключением отдельно оговоренных)
 		// и     MF=6 (энерго-угловые распределени) / MT=5
 
-		// TODO: Проверить предыдущую гипотезу по другим атомам.
-		// Т.е. на предмет того что в других изотопах нет отдельно (от MT=5) описанных реакций.
-
-		// Сечения
+		// Сечения суммы эластичных рассеяний и ядерных реакций
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' && 
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
+		{
+			TotalCrossSections.Load(isEndf);
+		}
+
+		// Сечения ядерных реакций
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
 		{
-			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '2')
-			{
-				CrossSections.ninterpolations = atoi(record.c[4]);
-				if (CrossSections.ninterpolations > 1)
-					throw exception("UUnexpected multiple interpolation types");
-			}
-			else if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '3')
-			{
-				CrossSections.npoints = atoi(record.c[0]);
-				CrossSections.interpolationType = atoi(record.c[1]);
-				CrossSections.Energies.resize(CrossSections.npoints, 0);
-				CrossSections.Values.resize(CrossSections.npoints, 0);
-			}
-			else
-			{
-				for (int ii = 0; ii < 6; ii+=2)
-				{
-					if (pointCount < CrossSections.npoints)
-					{
-						CrossSections.Energies[pointCount] = mcEndfRecord::ParseValue(record.c[ii], 11);
-						CrossSections.Values[pointCount] = mcEndfRecord::ParseValue(record.c[ii+1], 11);
-						pointCount++;
-					}
-				}
-			}
+			NuclearCrossSections.Load(isEndf);
 		}
 
 		// Энерго-угловые распределения
@@ -108,4 +147,19 @@ void mcEndfP::Load(const char* fname, const char* ename)
 void mcEndfP::Clear()
 {
 	//Energies.clear();
+}
+
+void mcEndfP::dumpTotalCrossections(ostream& os) const
+{
+	os << endl;
+	os << "Dump total proton crossections for element = \t" << ElementName << endl;
+	os << "---------------------------------------------------------------" << endl;
+	os << endl;
+	TotalCrossSections.dump(os);
+
+	os << endl;
+	os << "Dump nuclear proton crossections for element = \t" << ElementName << endl;
+	os << "--------------------------------------------------------------" << endl;
+	os << endl;
+	NuclearCrossSections.dump(os);
 }

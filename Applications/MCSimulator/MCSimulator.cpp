@@ -70,7 +70,7 @@ int _tmain(int argc, _TCHAR* argv [])
 
 		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
 		//media.initProtonFromFiles("../data/proton.dat", "../data/PSTAR", "../data/ICRU63");
-		media.initProtonFromFiles("../data/proton.dat", "../data/p");
+		media.initProtonFromFiles("../data/proton.dat", "../data/ENDFP");
 		media.initNeutronFromFile("../data/neutron.dat");
 
 		// Pars input files
