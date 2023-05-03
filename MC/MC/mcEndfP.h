@@ -52,10 +52,69 @@ public:
 	std::vector<double> Values;
 };
 
-// Class that keeps coss sections for one atomic isotope
+// Класс для чтения MF=6 MT=5 
+
+class mcEndfEANuclearCrossSectionTable
+{
+public:
+	void mLoad(std::istream& is);
+	//void dump(std::ostream& os) const;
+
+	void Load(std::istream& is);
+
+	// Количество пар энергия падающей частицы / мультиплетность
+	int n_energypoints;
+
+	// Количество чего-то там
+	int npoints_ang;
+
+	// Количество видов интерполяции
+	// Временно предполагаем, что мы не столкнемся со 
+	// множесвенностью интерполяций в пределах одной таблицы.
+	// TODO: Проверить эту гипотезу (в коде стоит exception на этот случай)
+	int ninterpolations;
+
+	// Тип интерполяции.
+	// TODO: если обнаружится потребность в поддержке 
+	// множества типов интерполяций переделать в массив
+	int interpolationType;
+
+	// Точки
+	std::vector<double> Energies;
+	std::vector<double> Multiplicities;
+};
+
+enum particle_type { neutron = 0, proton, gamma };
+
+class mcEndfProduct
+{
+public:
+
+	mcEndfProduct();
+
+	~mcEndfProduct();
+
+	//To do: enum n, gamma, proton
+	particle_type product_type;
+
+	int AWP, ZAP;
+	
+	mcEndfEANuclearCrossSectionTable NuclearMultiplicity;
+
+	// Энерго-угловые сечения в зависимости от энергии налетающих протонов
+	std::vector<mcEndfEANuclearCrossSectionTable*> EANuclearCrossSections;
+	
+	void Load(std::istream& is);
+};
+
+// Class that keeps cross sections for one atomic isotope
 class mcEndfP
 {
 public:
+	mcEndfP();
+
+	~mcEndfP();
+
 	// Назавание изотопа, включающее атомное имя и атомный вес.
 	// Используется как уникальный идентификатор.
 	std::string ElementName;
@@ -67,6 +126,8 @@ public:
 
 	// Сечения ядерных реакций в зависимости от энергии падающей частицы
 	mcEndfCrossSectionTable NuclearCrossSections;
+
+	std::vector<mcEndfProduct*> Products;
 
 	// Загрузка одного файла сечений
 	void Load(const char* fname, const char* ename);
