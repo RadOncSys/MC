@@ -2,6 +2,7 @@
 #include "../geometry/text.h"
 #include <fstream>
 #include <filesystem>
+#include <iostream>
 
 using namespace std;
 
@@ -78,7 +79,7 @@ void mcEndfEANuclearCrossSectionTable::mLoad(istream& is)
 		::memcpy(&record, line.c_str(), 80);
 
 		// Мультиплетности 
-		if (record.c[2][1] == ' ')
+		if (record.c[2][10] == ' ')
 		{
 			n_energypoints = atoi(record.c[0]);
 			interpolationType = atoi(record.c[1]);
@@ -105,7 +106,56 @@ void mcEndfEANuclearCrossSectionTable::mLoad(istream& is)
 
 void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
 {
+	string line;
+	mcEndfRecord record;
+	int pointCount = 0, i = 0;
+	bool is_ea_read = false;
+	getline(is, line, '\n');
+	memcpy(&record, line.c_str(), 80);
 	//чтение энерго-угловых параметров
+	while (!is.fail())
+	{
+		
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+
+		if (!is_ea_read)
+		{
+			n_energypoints = atoi(record.c[0]);
+			ninterpolations = atoi(record.c[1]);
+			EA_par.resize(n_energypoints);
+			getline(is, line, '\n');
+			is_ea_read = true;
+		}
+		else
+		{
+			for (i = 0; i < n_energypoints; i++)
+			{
+				npoints_ang = atoi(record.c[4]);
+				EA_par[i].resize(npoints_ang / 3);
+				
+				for (int k = 0; k < EA_par[i].size(); k++)
+					EA_par[i][k].resize(3);
+				
+				for (int j = 0; j < npoints_ang; j+=6)
+				{												//нормально парсит одну строчку и видимо падает в бесконечный цикл??? Решить
+					int counter = npoints_ang / 3;
+					getline(is, line, '\n');
+					::memcpy(&record, line.c_str(), 80);
+					for (int ii = 0; ii < 6; ii += 3)
+					{
+						EA_par[i][j / 6 + ii / 3][0] = mcEndfRecord::ParseValue(record.c[ii], 11);
+						EA_par[i][j / 6 + ii / 3][1] = mcEndfRecord::ParseValue(record.c[ii + 1], 11);
+						EA_par[i][j / 6 + ii / 3][2] = mcEndfRecord::ParseValue(record.c[ii + 2], 11);
+					}
+				}
+				pointCount++;
+			}
+		}
+		if (pointCount == n_energypoints - 1)
+			break;
+	}
 }
 
 mcEndfProduct::mcEndfProduct()
@@ -124,6 +174,7 @@ void mcEndfProduct::Load(std::istream& is)
 {
 	// Читаем строки текста одну за другой и выбираем нужную информацию
 	string line, s1, s2, s3, s4;
+	int i = 0;
 	getline(is, line, '\n');
 
 	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
@@ -170,7 +221,7 @@ void mcEndfProduct::Load(std::istream& is)
 			EANuclearCrossSections.push_back(energyangle);
 		}
 
-		getline(is, line, '\n');
+ 		getline(is, line, '\n');
 	}
 
 }

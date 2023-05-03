@@ -79,9 +79,14 @@ public:
 	// множества типов интерполяций переделать в массив
 	int interpolationType;
 
+	std::vector<std::vector<std::vector<double>>> EA_par;
+
 	// Точки
 	std::vector<double> Energies;
 	std::vector<double> Multiplicities;
+	/*std::vector<double> Out_Energies;
+	std::vector<double> f_0;
+	std::vector<double> r;*/
 };
 
 enum particle_type { neutron = 0, proton, gamma };
