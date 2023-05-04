@@ -65,8 +65,14 @@ public:
 	// Количество пар энергия падающей частицы / мультиплетность
 	int n_energypoints;
 
-	// Количество чего-то там
-	int npoints_ang;
+	// Количество энергий вылета проодуктов в распределении (NEP в ENDF [Chapter 6])
+	int npoints_out;
+
+	//LANG (= 1 - представление Лежандра, = 2 - представление Кальбаха-Манна)
+	int LANG;
+
+	//Количество угловых параметров
+	int NA;
 
 	// Количество видов интерполяции
 	// Временно предполагаем, что мы не столкнемся со 
@@ -78,7 +84,8 @@ public:
 	// TODO: если обнаружится потребность в поддержке 
 	// множества типов интерполяций переделать в массив
 	int interpolationType;
-
+	
+	//Трехмерный вектор с энерго-угловыми параметрами
 	std::vector<std::vector<std::vector<double>>> EA_par;
 
 	// Точки
@@ -96,12 +103,12 @@ public:
 
 	~mcEndfProduct();
 
-	//To do: enum n, gamma, proton
+	//Type of product
 	particle_type product_type;
 
-	int AWP, ZAP;
-	
-	std::vector<mcEndfEANuclearCrossSectionTable*> NuclearMultiplicity;
+	int ZAP;
+
+	double AWP;
 
 	// Энерго-угловые сечения в зависимости от энергии налетающих протонов
 	std::vector<mcEndfEANuclearCrossSectionTable*> EANuclearCrossSections;
