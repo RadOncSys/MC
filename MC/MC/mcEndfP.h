@@ -84,12 +84,9 @@ public:
 	// Точки
 	std::vector<double> Energies;
 	std::vector<double> Multiplicities;
-	/*std::vector<double> Out_Energies;
-	std::vector<double> f_0;
-	std::vector<double> r;*/
 };
 
-enum particle_type { neutron = 0, proton, gamma };
+enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma };
 
 class mcEndfProduct
 {
@@ -104,7 +101,7 @@ public:
 
 	int AWP, ZAP;
 	
-	mcEndfEANuclearCrossSectionTable NuclearMultiplicity;
+	std::vector<mcEndfEANuclearCrossSectionTable*> NuclearMultiplicity;
 
 	// Энерго-угловые сечения в зависимости от энергии налетающих протонов
 	std::vector<mcEndfEANuclearCrossSectionTable*> EANuclearCrossSections;

@@ -111,7 +111,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
 	int pointCount = 0, i = 0;
 	bool is_ea_read = false;
 	getline(is, line, '\n');
-	memcpy(&record, line.c_str(), 80);
+	::memcpy(&record, line.c_str(), 80);
 	//чтение энерго-угловых параметров
 	while (!is.fail())
 	{
@@ -132,28 +132,32 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
 		{
 			for (i = 0; i < n_energypoints; i++)
 			{
-				npoints_ang = atoi(record.c[4]);
-				EA_par[i].resize(npoints_ang / 3);
+				npoints_ang = atoi(record.c[5]);
+				EA_par[i].resize(npoints_ang);
 				
 				for (int k = 0; k < EA_par[i].size(); k++)
 					EA_par[i][k].resize(3);
 				
-				for (int j = 0; j < npoints_ang; j+=6)
-				{												//нормально парсит одну строчку и видимо падает в бесконечный цикл??? Решить
-					int counter = npoints_ang / 3;
+				for (int j = 0; j < npoints_ang; j++)
+				{												
+					if (j % 2 == 0)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+					}
+					EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[(j % 2)*3], 11);
+					EA_par[i][j][1] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 1], 11);
+					EA_par[i][j][2] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 2], 11);
+				}
+				if (pointCount < n_energypoints - 1)
+				{
 					getline(is, line, '\n');
 					::memcpy(&record, line.c_str(), 80);
-					for (int ii = 0; ii < 6; ii += 3)
-					{
-						EA_par[i][j / 6 + ii / 3][0] = mcEndfRecord::ParseValue(record.c[ii], 11);
-						EA_par[i][j / 6 + ii / 3][1] = mcEndfRecord::ParseValue(record.c[ii + 1], 11);
-						EA_par[i][j / 6 + ii / 3][2] = mcEndfRecord::ParseValue(record.c[ii + 2], 11);
-					}
 				}
 				pointCount++;
 			}
 		}
-		if (pointCount == n_energypoints - 1)
+		if (pointCount == n_energypoints)
 			break;
 	}
 }
@@ -189,7 +193,7 @@ void mcEndfProduct::Load(std::istream& is)
 	{
 		if (line.size() < 80)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
-		memcpy(&record, line.c_str(), 80);
+		::memcpy(&record, line.c_str(), 80);
 
 		if (!is_multiplicity_read)
 		{
@@ -204,14 +208,25 @@ void mcEndfProduct::Load(std::istream& is)
 				case 1001:
 					product_type = particle_type::proton;
 					break;
+				case 1002:
+					product_type = particle_type::deutron;
+					break;
+				case 1003:
+					product_type = particle_type::triton;
+					break;
+				case 2004:
+					product_type = particle_type::alpha;
+					break;
 				case 0:
 					product_type = particle_type::gamma;
 					break;
 				default:
-					throw exception((string("Wrong particle type with AWP = ") + record.c[0]).c_str());
+					product_type = particle_type::recoils;
 					break;
 			}
-			NuclearMultiplicity.mLoad(is);
+			auto multiplicities = new mcEndfEANuclearCrossSectionTable();
+			multiplicities->mLoad(is);
+			NuclearMultiplicity.push_back(multiplicities);
 			is_multiplicity_read = true;
 		}
 		else
@@ -219,6 +234,7 @@ void mcEndfProduct::Load(std::istream& is)
 			auto energyangle = new mcEndfEANuclearCrossSectionTable();
 			energyangle->Load(is);
 			EANuclearCrossSections.push_back(energyangle);
+			break;																	//Разобраться с брейками!! Считывать NK в начале, чтобы считывать все продукты
 		}
 
  		getline(is, line, '\n');
@@ -276,7 +292,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 	{
 		if(line.size() < 80)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
-		memcpy(&record, line.c_str(), 80);
+		::memcpy(&record, line.c_str(), 80);
 
 		// Начало новой энергии
 		if (!isInData)
