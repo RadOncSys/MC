@@ -2,6 +2,7 @@
 #include "../geometry/text.h"
 #include <fstream>
 #include <filesystem>
+#include <iostream>
 
 using namespace std;
 
@@ -63,6 +64,252 @@ void mcEndfCrossSectionTable::Load(istream& is)
 	}
 }
 
+void mcEndfEANuclearCrossSectionTable::mLoad(istream& is)
+{
+	string line, s1, s2, s3, s4;
+	mcEndfRecord record;
+	int pointCount = 0;
+	bool is_e_points_read = false;
+
+	getline(is, line, '\n');
+
+	while (!is.fail())
+	{
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+
+		// Мультиплетности 
+		if (!is_e_points_read)
+		{
+			n_energypoints = atoi(record.c[0]);
+			interpolationType = atoi(record.c[1]);
+			Energies.resize(n_energypoints, 0);
+			Multiplicities.resize(n_energypoints, 0);
+			is_e_points_read = true;
+		}
+		else
+		{
+			for (int ii = 0; ii < 6; ii += 2)
+			{
+				if (pointCount < n_energypoints)
+				{
+					Energies[pointCount] = mcEndfRecord::ParseValue(record.c[ii], 11);
+					Multiplicities[pointCount] = mcEndfRecord::ParseValue(record.c[ii + 1], 11);
+					pointCount++;
+				}
+			}
+		}
+		if (pointCount == n_energypoints)
+			break;
+		getline(is, line, '\n');
+	}
+}
+
+void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
+{
+	string line;
+	mcEndfRecord record;
+	int pointCount = 0, i = 0;
+	bool is_ea_read = false;
+	getline(is, line, '\n');
+	::memcpy(&record, line.c_str(), 80);
+	LANG = atoi(record.c[2]);
+
+	//чтение энерго-угловых параметров
+	getline(is, line, '\n');
+
+	if (LANG == 2)
+		while (!is.fail())
+		{
+
+			if (line.size() < 80)
+				throw exception((string("Wrong ENDF line length ") + line).c_str());
+			::memcpy(&record, line.c_str(), 80);
+
+			if (!is_ea_read)
+			{
+				n_energypoints = atoi(record.c[0]);
+				ninterpolations = atoi(record.c[1]);
+				EA_par.resize(n_energypoints);
+				getline(is, line, '\n');
+				is_ea_read = true;
+			}
+			else
+			{
+				for (i = 0; i < n_energypoints; i++)
+				{
+					npoints_out = atoi(record.c[5]);
+					EA_par[i].resize(npoints_out);
+
+					for (int k = 0; k < EA_par[i].size(); k++)
+						EA_par[i][k].resize(3);
+
+					for (int j = 0; j < npoints_out; j++)
+					{
+						if (j % 2 == 0)
+						{
+							getline(is, line, '\n');
+							::memcpy(&record, line.c_str(), 80);
+						}
+						EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3], 11);
+						EA_par[i][j][1] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 1], 11);
+						EA_par[i][j][2] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 2], 11);
+					}
+					if (pointCount < n_energypoints - 1)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+					}
+					pointCount++;
+				}
+			}
+			if (pointCount == n_energypoints)
+				break;
+		}
+	else if (LANG == 1)
+		while (!is.fail())
+		{
+
+			if (line.size() < 80)
+				throw exception((string("Wrong ENDF line length ") + line).c_str());
+			::memcpy(&record, line.c_str(), 80);
+
+			if (!is_ea_read)
+			{
+				n_energypoints = atoi(record.c[0]);
+				ninterpolations = atoi(record.c[1]);
+				EA_par.resize(n_energypoints);
+				getline(is, line, '\n');
+				is_ea_read = true;
+			}
+			else
+			{
+				for (i = 0; i < n_energypoints; i++)
+				{
+					int c = 0, c1 = 0; //counters
+					NA = atoi(record.c[3]);
+					npoints_out = atoi(record.c[5]);
+					EA_par[i].resize(npoints_out);
+
+					for (int k = 0; k < EA_par[i].size(); k++)
+						EA_par[i][k].resize(NA + 2);
+
+					for (int j = 0; j < npoints_out; j++)
+					{
+						if (j == 0)
+						{
+							getline(is, line, '\n');
+							::memcpy(&record, line.c_str(), 80);
+						}
+						EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[c1], 11);
+						c = c1 + 1;
+						for (int ii = 0; ii < NA + 1; ii++)
+						{
+							EA_par[i][j][ii + 1] = mcEndfRecord::ParseValue(record.c[c], 11);
+							if (c % 5 == 0)
+							{
+								getline(is, line, '\n');
+								::memcpy(&record, line.c_str(), 80);
+								c = 0;
+							}
+							else
+								c++;
+						}
+						c1 = c;
+					}
+					if (pointCount < n_energypoints - 1)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+					}
+					pointCount++;
+				}
+			}
+			if (pointCount == n_energypoints)
+				break;
+		}
+	else
+		throw exception("This LANG type isn't supported by this code");
+}
+
+mcEndfProduct::mcEndfProduct()
+{
+}
+
+mcEndfProduct::~mcEndfProduct()
+{
+	for (int i = 0; i < EANuclearCrossSections.size(); i++)
+	{
+		delete EANuclearCrossSections[i];
+	}
+}
+
+void mcEndfProduct::Load(std::istream& is)
+{
+	// Читаем строки текста одну за другой и выбираем нужную информацию
+	string line, s1, s2, s3, s4;
+	int i = 0;
+	getline(is, line, '\n');
+
+	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
+	bool isInData = false;
+	bool is_multiplicity_read = false;
+	int energy_count = 0;
+	int pointCount = 0;
+
+	auto energyangle = new mcEndfEANuclearCrossSectionTable();
+
+	mcEndfRecord record;
+
+	while (!is.fail())
+	{
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+
+		if (!is_multiplicity_read)
+		{
+			//long double test = atof(record.c[0]);
+			ZAP = round(mcEndfRecord::ParseValue(record.c[0], 11));
+			AWP = mcEndfRecord::ParseValue(record.c[1], 11);
+
+			switch (ZAP) {
+			
+				case 1:
+					product_type = particle_type::neutron;
+					break;
+				case 1001:
+					product_type = particle_type::proton;
+					break;
+				case 1002:
+					product_type = particle_type::deutron;
+					break;
+				case 1003:
+					product_type = particle_type::triton;
+					break;
+				case 2004:
+					product_type = particle_type::alpha;
+					break;
+				case 0:
+					product_type = particle_type::gamma;
+					break;
+				default:
+					product_type = particle_type::recoils;
+					break;
+			}
+			energyangle->mLoad(is);
+			is_multiplicity_read = true;
+		}
+		else
+		{
+			energyangle->Load(is);
+			EANuclearCrossSections.push_back(energyangle);
+			break;																	//Разобраться с брейками!! Считывать NK в начале, чтобы считывать все продукты
+		}
+	}
+}
+
 void mcEndfCrossSectionTable::dump(std::ostream& os) const
 {
 	os << "NPoints = \t" << npoints << endl;
@@ -72,6 +319,21 @@ void mcEndfCrossSectionTable::dump(std::ostream& os) const
 
 	for (int i = 0; i < Energies.size(); i++)
 		os << Energies[i] << "\t" << Values[i] << endl;
+}
+
+// dump y_i
+
+
+mcEndfP::mcEndfP()
+{
+}
+
+mcEndfP::~mcEndfP()
+{
+	for (int i = 0; i < Products.size(); i++)
+	{
+		delete Products[i];
+	}
 }
 
 void mcEndfP::Load(const char* fname, const char* ename)
@@ -98,7 +360,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 	{
 		if(line.size() < 80)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
-		memcpy(&record, line.c_str(), 80);
+		::memcpy(&record, line.c_str(), 80);
 
 		// Начало новой энергии
 		if (!isInData)
@@ -138,6 +400,17 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' && 
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
 		{
+			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+			{
+				int NK = atoi(record.c[4]);
+				for (int i = 0; i < NK; i++)
+				{
+					auto product = new mcEndfProduct();
+					product->Load(isEndf);
+					Products.push_back(product);
+				}
+				cout << "Da ladno" << endl;
+			}
 		}
 
 		getline(isEndf, line, '\n');
@@ -162,4 +435,12 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	NuclearCrossSections.dump(os);
+
+	os << endl;
+	os << "Dump EA proton crossections for element = \t" << ElementName << endl;
+	os << "---------------------------------------------------------------" << endl;
+	os << endl;
+	//EANuclearCrossSections.dump(os);
 }
+
+
