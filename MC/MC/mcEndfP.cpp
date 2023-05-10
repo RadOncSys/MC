@@ -305,7 +305,7 @@ void mcEndfProduct::Load(std::istream& is)
 		{
 			energyangle->Load(is);
 			EANuclearCrossSections.push_back(energyangle);
-			break;																	//Разобраться с брейками!! Считывать NK в начале, чтобы считывать все продукты
+			break;																
 		}
 	}
 }
@@ -409,7 +409,6 @@ void mcEndfP::Load(const char* fname, const char* ename)
 					product->Load(isEndf);
 					Products.push_back(product);
 				}
-				cout << "Da ladno" << endl;
 			}
 		}
 
