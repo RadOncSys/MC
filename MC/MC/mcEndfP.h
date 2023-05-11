@@ -58,9 +58,10 @@ class mcEndfEANuclearCrossSectionTable
 {
 public:
 	void mLoad(std::istream& is);
-	//void dump(std::ostream& os) const;
-
+	
 	void Load(std::istream& is);
+
+	void dump(std::ostream& os) const;
 
 	// Количество пар энергия падающей частицы / мультиплетность
 	int n_energypoints;
@@ -94,6 +95,9 @@ public:
 };
 
 enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma };
+
+//Количество продуктов
+int NK;
 
 class mcEndfProduct
 {

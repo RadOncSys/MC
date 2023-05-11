@@ -321,7 +321,10 @@ void mcEndfCrossSectionTable::dump(std::ostream& os) const
 		os << Energies[i] << "\t" << Values[i] << endl;
 }
 
-// dump y_i
+void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
+{
+	//dump 3-dimensional vector
+}
 
 
 mcEndfP::mcEndfP()
@@ -402,7 +405,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
-				int NK = atoi(record.c[4]);
+				 NK = atoi(record.c[4]);
 				for (int i = 0; i < NK; i++)
 				{
 					auto product = new mcEndfProduct();
@@ -436,10 +439,13 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 	NuclearCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump EA proton crossections for element = \t" << ElementName << endl;
+	os << "Dump EA proton crossections for element = \t" << ElementName << " with " << NK << " products." << endl;
 	os << "---------------------------------------------------------------" << endl;
 	os << endl;
-	//EANuclearCrossSections.dump(os);
+	for (int i = 0; i < Products.size(); i++)
+	{
+		Products.at(0)->EANuclearCrossSections.at(0).dump(os);		//?????????????????
+	}
 }
 
 
