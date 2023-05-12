@@ -245,6 +245,30 @@ mcEndfProduct::~mcEndfProduct()
 	}
 }
 
+std::string mcEndfProduct::typeof(int i)
+{
+	{
+		switch (i) {
+		case 0: return "neutron";
+			break;
+		case 1: return "proton";
+			break;
+		case 2: return "deutron";
+			break;
+		case 3: return "triton";
+			break;
+		case 4: return "alpha";
+			break;
+		case 5: return "recoils";
+			break;
+		case 6: return "gamma";
+			break;
+		default: return "Unknown product";
+			break;
+		}
+	}
+}
+
 void mcEndfProduct::Load(std::istream& is)
 {
 	// Читаем строки текста одну за другой и выбираем нужную информацию
@@ -323,7 +347,25 @@ void mcEndfCrossSectionTable::dump(std::ostream& os) const
 
 void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 {
-	//dump 3-dimensional vector
+	os << "Multiplicity table:" << endl;
+	os << "# \t" << "Energy \t" << "Multiplicity" << endl;
+	for (int i = 0; i < n_energypoints; i++)
+	{
+		os << i << "\t" << Energies[i] << "\t" << Multiplicities[i] << endl;
+	}
+	if (LANG == 2)
+	{
+		for (int i = 0; i < n_energypoints; i++)
+		{
+			os << "#" << i << "\t" << "Incedent energy = \t" << Energies[i] << endl;
+			os << "Out energy \t " << "f_0 \t " << "r \t" << endl;
+			for (int j = 0; j < EA_par[i].size(); j++)
+			{
+				os << EA_par[i][j][0] << "\t" << EA_par[i][j][1] << "\t" << EA_par[i][j][2] << endl;
+			}
+		}
+	}
+	
 }
 
 
@@ -405,7 +447,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
-				 NK = atoi(record.c[4]);
+				 int NK = atoi(record.c[4]);
 				for (int i = 0; i < NK; i++)
 				{
 					auto product = new mcEndfProduct();
@@ -439,12 +481,13 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 	NuclearCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump EA proton crossections for element = \t" << ElementName << " with " << NK << " products." << endl;
+	os << "Dump EA proton crossections for element = \t" << ElementName << " with \t" << Products.size() << " products." << endl;
 	os << "---------------------------------------------------------------" << endl;
 	os << endl;
 	for (int i = 0; i < Products.size(); i++)
 	{
-		Products.at(0)->EANuclearCrossSections.at(0).dump(os);		//?????????????????
+		os << "Product - \t" << Products[i]->typeof(Products[i]->product_type) << endl;
+		Products[i]->EANuclearCrossSections[0]->dump(os);	
 	}
 }
 

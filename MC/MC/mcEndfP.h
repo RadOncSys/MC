@@ -96,9 +96,6 @@ public:
 
 enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma };
 
-//Количество продуктов
-int NK;
-
 class mcEndfProduct
 {
 public:
@@ -109,6 +106,8 @@ public:
 
 	//Type of product
 	particle_type product_type;
+
+	std::string typeof(int i);
 
 	int ZAP;
 
