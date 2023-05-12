@@ -355,6 +355,7 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	}
 	if (LANG == 2)
 	{
+		os << "---------------------KALBACH-MAHN REPRESENTATION------------------" << endl;
 		for (int i = 0; i < n_energypoints; i++)
 		{
 			os << "#" << i << "\t" << "Incedent energy = \t" << Energies[i] << endl;
@@ -364,6 +365,30 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 				os << EA_par[i][j][0] << "\t" << EA_par[i][j][1] << "\t" << EA_par[i][j][2] << endl;
 			}
 		}
+		os << endl;
+	}
+	else if (LANG == 1)
+	{
+		os << "---------------------LEGANDRE REPRESENTATION------------------" << endl;
+		for (int i = 0; i < n_energypoints; i++)
+		{
+			os << "#" << i << "\t" << "Incedent energy = \t" << Energies[i] << endl;
+			for (int j = 0; j < EA_par[i].size(); j++)
+			{
+				os << "Out energy \t ";
+				for (int k = 0; k < EA_par[i][j].size() - 1; k++)
+				{
+					os << "f_" << k << "\t";
+				}
+				os << endl;
+				for (int k = 0; k < EA_par[i][j].size(); k++)
+				{
+					os << EA_par[i][j][k] << "\t";
+				}
+				os << endl;
+			}
+		}
+		os << endl;
 	}
 	
 }
@@ -486,7 +511,9 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 	os << endl;
 	for (int i = 0; i < Products.size(); i++)
 	{
-		os << "Product - \t" << Products[i]->typeof(Products[i]->product_type) << endl;
+		os << "Product - \t" << Products[i]->typeof(Products[i]->product_type) << "\t #" << i + 1 << endl;
+		if (Products[i]->product_type == 5)
+			os << "Nucleous with:" << endl << "A = \t" << Products[i]->ZAP % 1000 << endl << "Z = \t" << Products[i]->ZAP / 1000 << endl << endl;
 		Products[i]->EANuclearCrossSections[0]->dump(os);	
 	}
 }
