@@ -7,6 +7,8 @@
 #include <iostream>
 #include "mcEndfP.h"
 
+void testproton();
+
 int main(int argc, char* argv[])
 {
 	if (argc != 2)
@@ -31,6 +33,10 @@ int main(int argc, char* argv[])
 			mcEndfP elementData;
 			elementData.Load(fname.c_str(), element);
 			elementData.dumpTotalCrossections(std::cout);
+		}
+		else if (strcmp(argv[1], "3") == 0)
+		{
+			testproton();
 		}
 	}
 	catch (std::exception& e)

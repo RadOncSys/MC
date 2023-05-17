@@ -18,5 +18,8 @@
     <ClCompile Include="MCTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testProton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

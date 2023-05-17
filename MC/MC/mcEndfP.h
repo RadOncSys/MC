@@ -24,6 +24,13 @@ struct mcEndfRecord
 	// Парсинг значени с плавающей точкой в формате ENDF
 	// (где степнь указана нестандартно после знака +/-).
 	static double ParseValue(const char* s, int n);
+
+	static double iStrCrop(const char* s, int n) {
+		std::string s1 = s;
+		s1.erase(n);
+		double f = std::stoi(s1);
+		return f;
+	}
 };
 
 // Crossections per istope per incident particle energy

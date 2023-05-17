@@ -8,12 +8,17 @@ using namespace std;
 
 double mcEndfRecord::ParseValue(const char* s, int n)
 {
+	std::string s1 = s;
+	s1.erase(n);
 	double f = atof(s);
 	int i = 0;
-	for (; i < n; i++)
-		if (s[i] == '+' || s[i] == '-') break;
+	for (; i < n; i++)											
+		if (s[i] == '+' || s[i] == '-' && i != 0) break;  //Исправлен парсинг upd. 17.05.23 by GK
 	if (i < n)
-		f *= pow(10.0, atof(s + i));
+	{
+		s1.erase(0, i);
+		f *= pow(10.0, std::stoi(s1));
+	}
 	return f;
 }
 
@@ -53,6 +58,7 @@ void mcEndfCrossSectionTable::Load(istream& is)
 				{
 					Energies[pointCount] = mcEndfRecord::ParseValue(record.c[ii], 11);
 					Values[pointCount] = mcEndfRecord::ParseValue(record.c[ii + 1], 11);
+				//	cout << record.c[ii + 1] << endl;
 					pointCount++;
 				}
 			}
@@ -139,7 +145,12 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
 			{
 				for (i = 0; i < n_energypoints; i++)
 				{
-					npoints_out = atoi(record.c[5]);
+					NA = atoi(record.c[3]);
+					if (NA == 2)
+					{
+						throw exception((string("NA = 2 for Kalbach-Mann doesn't supported ") + line).c_str());
+					}
+					npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
 					EA_par[i].resize(npoints_out);
 
 					for (int k = 0; k < EA_par[i].size(); k++)
@@ -189,7 +200,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
 				{
 					int c = 0, c1 = 0; //counters
 					NA = atoi(record.c[3]);
-					npoints_out = atoi(record.c[5]);
+					npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
 					EA_par[i].resize(npoints_out);
 
 					for (int k = 0; k < EA_par[i].size(); k++)
@@ -207,7 +218,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
 						for (int ii = 0; ii < NA + 1; ii++)
 						{
 							EA_par[i][j][ii + 1] = mcEndfRecord::ParseValue(record.c[c], 11);
-							if (c % 5 == 0)
+							if (c % 5 == 0 && j!=npoints_out - 1)
 							{
 								getline(is, line, '\n');
 								::memcpy(&record, line.c_str(), 80);
