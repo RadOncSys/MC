@@ -25,10 +25,10 @@ struct mcEndfRecord
 	// (где степнь указана нестандартно после знака +/-).
 	static double ParseValue(const char* s, int n);
 
-	static double iStrCrop(const char* s, int n) {
+	static int iStrCrop(const char* s, int n) {
 		std::string s1 = s;
 		s1.erase(n);
-		double f = std::stoi(s1);
+		int f = std::stoi(s1);
 		return f;
 	}
 };
@@ -70,6 +70,9 @@ public:
 
 	void dump(std::ostream& os) const;
 
+	//Интерполяция мультиплетности
+	double getMulti(double kE);
+
 	// Количество пар энергия падающей частицы / мультиплетность
 	int n_energypoints;
 
@@ -103,6 +106,8 @@ public:
 
 enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma };
 
+std::string typeof(int i);
+
 class mcEndfProduct
 {
 public:
@@ -113,8 +118,6 @@ public:
 
 	//Type of product
 	particle_type product_type;
-
-	std::string typeof(int i);
 
 	int ZAP;
 

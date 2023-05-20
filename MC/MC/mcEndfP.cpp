@@ -256,7 +256,7 @@ mcEndfProduct::~mcEndfProduct()
 	}
 }
 
-std::string mcEndfProduct::typeof(int i)
+std::string typeof(int i)
 {
 	{
 		switch (i) {
@@ -404,6 +404,31 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	
 }
 
+double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
+{
+	int i = 0;
+	for (i = 0; i < Energies.size(); i++)
+		if (Energies[i] > kE)
+			break;
+	double multiplicity = 0;
+	if (i > 0)
+		switch (interpolationType)
+		{
+		case 2: //lin-lin
+			multiplicity = (kE - Energies[i - 1]) / (Energies[i] - Energies[i - 1]) * (Multiplicities[i] - Multiplicities[i - 1]) + Multiplicities[i - 1];
+			break;
+		case 3: //lin-log
+			multiplicity = (log(kE) - log(Energies[i - 1])) / (log(Energies[i]) - log(Energies[i - 1])) * (Multiplicities[i] - Multiplicities[i - 1]) + Multiplicities[i - 1];
+			break;
+		case 4:
+			multiplicity = exp((kE - Energies[i - 1]) / (Energies[i] - Energies[i - 1]) * (log(Multiplicities[i]) - log(Multiplicities[i - 1])) + log(Multiplicities[i - 1]));
+			break;
+		default:
+			multiplicity = (kE - Energies[i - 1]) / (Energies[i] - Energies[i - 1]) * (Multiplicities[i] - Multiplicities[i - 1]) + Multiplicities[i - 1];
+		}
+	return multiplicity;
+}
+
 
 mcEndfP::mcEndfP()
 {
@@ -522,7 +547,7 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 	os << endl;
 	for (int i = 0; i < Products.size(); i++)
 	{
-		os << "Product - \t" << Products[i]->typeof(Products[i]->product_type) << "\t #" << i + 1 << endl;
+		os << "Product - \t" << typeof(Products[i]->product_type) << "\t #" << i + 1 << endl;
 		if (Products[i]->product_type == 5)
 			os << "Nucleous with:" << endl << "A = \t" << Products[i]->ZAP % 1000 << endl << "Z = \t" << Products[i]->ZAP / 1000 << endl << endl;
 		Products[i]->EANuclearCrossSections[0]->dump(os);	
