@@ -20,8 +20,8 @@ void testproton() {
 
 	//Testing incedent energy of proton, MeV
 	double kE = 67.5 * 1000000;
-	rng1.init(33, 97);
-	rng2.init(33, 97);
+	rng1.init(55, 97);
+	rng2.init(40, 97);
 
 	//cout << "Getmulti = " << elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE) << endl;
 	for (int p_i = 0; p_i < 10; p_i++)

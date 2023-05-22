@@ -73,6 +73,14 @@ public:
 	//Интерполяция мультиплетности
 	double getMulti(double kE);
 
+	//Дыумерная интерполяция f_0
+	double interf_0(double kE);
+
+	//Интерполяция f_0 для пары энергия-энергия вылета
+	double getf_0(int IN, double Eout);
+
+	//Интерполяция 
+
 	// Количество пар энергия падающей частицы / мультиплетность
 	int n_energypoints;
 
@@ -99,12 +107,27 @@ public:
 	//Трехмерный вектор с энерго-угловыми параметрами
 	std::vector<std::vector<std::vector<double>>> EA_par;
 
+	//EA_par parameters for Kalbach-Mann:
+	//EA_par[i][j][k], where i - identify incedent energy
+	//						 j - identify outer energy
+	//					and  k - identify corresponding parameter
+	//Exactly if NA = 1 then [i][j][0] keeps E_out (from incedent E_i to E_out)
+	//						 [i][j][1] keeps f_0 (total emission probability from E_i to E_out)
+	//						 [i][j][2] keeps "r" (special parameter)
+	// if NA = 2 then added  [i][j][3] keeps "a" (second special parameter)
+	//For Legandre representation i, j and k have the same meaning and
+	//						 [i][j][0] keeps E_out
+	//						 [i][j][1] keeps f_0
+	//						 [i][j][2] keeps f_1
+	//							...
+	//						 [i][j][NA+1] keeps f_NA
+
 	// Точки
 	std::vector<double> Energies;
 	std::vector<double> Multiplicities;
 };
 
-enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma };
+enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma, electron };
 
 std::string typeof(int i);
 
@@ -122,6 +145,9 @@ public:
 	int ZAP;
 
 	double AWP;
+
+	//Закон представления распределения
+	int LAW;
 
 	// Энерго-угловые сечения в зависимости от энергии налетающих протонов
 	std::vector<mcEndfEANuclearCrossSectionTable*> EANuclearCrossSections;

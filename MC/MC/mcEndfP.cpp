@@ -305,9 +305,11 @@ void mcEndfProduct::Load(std::istream& is)
 
 		if (!is_multiplicity_read)
 		{
-			//long double test = atof(record.c[0]);
 			ZAP = round(mcEndfRecord::ParseValue(record.c[0], 11));
 			AWP = mcEndfRecord::ParseValue(record.c[1], 11);
+			LAW = mcEndfRecord::iStrCrop(record.c[3], 11);
+			if (LAW != 1)
+				throw exception("This LAW doesn't supported");
 
 			switch (ZAP) {
 			
@@ -328,6 +330,10 @@ void mcEndfProduct::Load(std::istream& is)
 					break;
 				case 0:
 					product_type = particle_type::gamma;
+					break;
+				case 1000:    //dont know real electron ZAP
+				case -1000:
+					product_type = particle_type::electron;
 					break;
 				default:
 					product_type = particle_type::recoils;
@@ -404,6 +410,56 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	
 }
 
+double mcEndfEANuclearCrossSectionTable::interf_0(double kE)
+{
+	//f(e, e') = f(ei, e') + (e - ei)/(ei+1 - ei)*(f(ei+1, e') - f(ei,e'))
+	int i = 0;
+	vector<double> f_0;
+	double Norm = 0;
+	for (i = 0; i < Energies.size(); i++)
+	{
+		if (Energies[i] > kE)
+			break;
+	}
+	i--;
+	int size = max(EA_par[i].size(), EA_par[i + 1].size());
+	if (EA_par[i].size() < EA_par[i + 1].size())
+	{
+		for (int ii = 0; ii < size; ii++)
+		{
+			if (ii == 0)
+				f_0[ii] = EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, EA_par[i][ii][0]) - EA_par[i][ii][1]);
+		}  //ÏÐÎÄÎËÆÈÒÜ ÊÓÌÓËßÒÈÂÍÓÞ ÃÈÑÒÎÃÐÀÌÌÓ F0
+	}
+	return 0;
+}
+
+double mcEndfEANuclearCrossSectionTable::getf_0(int IN, double Eout)
+{
+	int i = 0;
+	for (i = 0; i < Energies.size(); i++)
+		if (EA_par[IN][i][0] > Eout)
+			break;
+	double f_0 = 0;
+	if (i > 0)
+		switch (interpolationType)
+		{
+		case 2: //lin-lin
+			f_0 = (Eout - EA_par[IN][i - 1][0]) / (EA_par[IN][i][0] - EA_par[IN][i - 1][0]) * (EA_par[IN][i][1] - EA_par[IN][i - 1][1]) + EA_par[IN][i - 1][1];
+			break;
+		case 3: //lin-log
+			f_0 = (log(Eout) - log(EA_par[IN][i][0])) / (log(EA_par[IN][i][0]) - log(EA_par[IN][i - 1][0])) * (EA_par[IN][i][1] - EA_par[IN][i - 1][1]) + EA_par[IN][i - 1][1];
+			break;
+		case 4: //log-log
+			f_0 = exp((Eout - EA_par[IN][i][0]) / (EA_par[IN][i][0] - EA_par[IN][i - 1][0]) * (log(EA_par[IN][i][1]) - log(EA_par[IN][i - 1][1])) + log(EA_par[IN][i - 1][1]));
+			break;
+		default:  //undefined -> lin-lin
+			f_0 = (Eout - EA_par[IN][i - 1][0]) / (EA_par[IN][i][0] - EA_par[IN][i - 1][0]) * (EA_par[IN][i][1] - EA_par[IN][i - 1][1]) + EA_par[IN][i - 1][1];
+		}
+	else throw exception("Interpolation range break");
+	return f_0;
+}
+
 double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
 {
 	int i = 0;
@@ -420,12 +476,13 @@ double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
 		case 3: //lin-log
 			multiplicity = (log(kE) - log(Energies[i - 1])) / (log(Energies[i]) - log(Energies[i - 1])) * (Multiplicities[i] - Multiplicities[i - 1]) + Multiplicities[i - 1];
 			break;
-		case 4:
+		case 4: //log-log
 			multiplicity = exp((kE - Energies[i - 1]) / (Energies[i] - Energies[i - 1]) * (log(Multiplicities[i]) - log(Multiplicities[i - 1])) + log(Multiplicities[i - 1]));
 			break;
-		default:
+		default: //undefined -> lin-lin
 			multiplicity = (kE - Energies[i - 1]) / (Energies[i] - Energies[i - 1]) * (Multiplicities[i] - Multiplicities[i - 1]) + Multiplicities[i - 1];
 		}
+	else throw exception("Interpolation range break");
 	return multiplicity;
 }
 
