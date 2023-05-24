@@ -73,8 +73,11 @@ public:
 	//Интерполяция мультиплетности
 	double getMulti(double kE);
 
-	//Дыумерная интерполяция f_0
-	double interf_0(double kE);
+	//Розыгрыш f_0 и r
+	double** playpar(double kE, int id);
+
+	//Розыгрыш косинуса угла рассеяния
+	double playmu(double kE, double** pars, int id);
 
 	//Интерполяция f_0 для пары энергия-энергия вылета
 	double getf_0(int IN, double Eout);

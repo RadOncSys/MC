@@ -19,7 +19,7 @@ void testproton() {
 	//elementData.dumpTotalCrossections(std::cout);
 
 	//Testing incedent energy of proton, MeV
-	double kE = 67.5 * 1000000;
+	double kE = 62.5 * 1000000;
 	rng1.init(55, 97);
 	rng2.init(40, 97);
 
@@ -56,22 +56,29 @@ void testproton() {
 		{
 			Multi_[i][0] /= Norm;
 		}
-		for (int ii = 0; ii < Multi_.size(); ii++)
-		{
-			if (r1 < Multi_[ii][0])
-			{
-				cout << "#" << p_i + 1 << endl;
-				if (Multi_[ii][1] > 1 && Multi_[ii][1] < 2) 
-					if (r2 > Multi_[ii][1] - 1)
-						cout << "One ";		
-					else cout << "Two ";
-				if (Multi_[ii][1] > 2)
-					if (r2 > Multi_[ii][1] - 2)
-						cout << "Two ";
-					else cout << "Three ";
-				cout << typeof(Multi_[ii][2]) << " is out." << endl;
-				break;
-			}
-		}
+		//for (int ii = 0; ii < Multi_.size(); ii++)
+		//{
+		//	if (r1 < Multi_[ii][0])
+		//	{
+		//		cout << "#" << p_i + 1 << endl;
+		//		if (Multi_[ii][1] > 1 && Multi_[ii][1] < 2) 
+		//			if (r2 > Multi_[ii][1] - 1)
+		//				cout << "One ";		
+		//			else cout << "Two ";
+		//		if (Multi_[ii][1] > 2)
+		//			if (r2 > Multi_[ii][1] - 2)
+		//				cout << "Two ";
+		//			else cout << "Three ";
+		//		cout << typeof(Multi_[ii][2]) << " is out." << endl;
+		//		break;
+		//	}
+		//}
+	}
+	for (int i = 0; i < 15; i++)
+	{
+		double** pars = elementData.Products[72]->EANuclearCrossSections[0]->playpar(kE, i);
+		//cout << "particle was emitted with energy =\t" << pars[0][0] << ", f_0 =\t" << pars[1][0];// << " and r =\t" << pars[2] << endl;
+		cout << elementData.Products[72]->EANuclearCrossSections[0]->playmu(kE, pars, i);
+		cout << endl;
 	}
 }

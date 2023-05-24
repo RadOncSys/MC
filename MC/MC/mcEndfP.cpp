@@ -3,6 +3,8 @@
 #include <fstream>
 #include <filesystem>
 #include <iostream>
+#include "mcRng.h"
+#include <random>
 
 using namespace std;
 
@@ -410,28 +412,232 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	
 }
 
-double mcEndfEANuclearCrossSectionTable::interf_0(double kE)
+double mcEndfEANuclearCrossSectionTable::playmu(double kE, double** pars, int id)
+{
+	mcRng rng;
+	rng.init(3 * id + 1, id + 10);
+	double SIGN = rng.rnd();
+	double mu = rng.rnd();
+
+	if (LANG == 1) //LEGANDRE REPRESENTATION
+	{
+		if (SIGN > 0.5)
+			return mu;
+		else return -mu;
+	}
+	else if (LANG == 2) //KALLBACH-MANN REPRESENTATION
+	{
+		// йюй днярюрэ AWR Х ZA дкъ ондяверю юрнлмнцн х люяянбнцн мнлепю йнлоюсмд ъдпю х йнмевмнцн ъдпю
+		// йнцдю щрн асдер ядекюмн ядекюрэ пюявер оюпюлерпю "Ю" х онярпнхрэ йслйкърхбмсч цхярнцпюллс
+	}
+}
+
+double** mcEndfEANuclearCrossSectionTable::playpar(double kE, int id)
 {
 	//f(e, e') = f(ei, e') + (e - ei)/(ei+1 - ei)*(f(ei+1, e') - f(ei,e'))
-	int i = 0;
-	vector<double> f_0;
-	double Norm = 0;
+	int i = 0, c = 0, iii = 0;
+	int pi = 0;
+	//double r = double(rand()) / RAND_MAX; 
+	vector<vector<double>> f_0;
+	mcRng rng;
+	rng.init(10 + id, 2 * id);
+	double r = rng.rnd();
 	for (i = 0; i < Energies.size(); i++)
 	{
 		if (Energies[i] > kE)
 			break;
 	}
 	i--;
-	int size = max(EA_par[i].size(), EA_par[i + 1].size());
-	if (EA_par[i].size() < EA_par[i + 1].size())
+	int maxsize = max(EA_par[i].size(), EA_par[i + 1].size());
+	int minsize = min(EA_par[i].size(), EA_par[i + 1].size());
+	vector<double> Eout;
+	vector<double> r_par;
+	//vector<vector<double>> f_l (2);
+	
+	if (LANG == 2) //KALLBACH-MANN REPRESENTATION
 	{
-		for (int ii = 0; ii < size; ii++)
+		double** output = new double*[3];
+		for (int i = 0; i < 3; i++)
 		{
-			if (ii == 0)
-				f_0[ii] = EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, EA_par[i][ii][0]) - EA_par[i][ii][1]);
-		}  //опнднкфхрэ йслскърхбмсч цхярнцпюллс F0
+			output[i] = new double[1];
+		}
+
+		if (EA_par[i].size() > EA_par[i + 1].size())
+		{
+			for (int ii = 0; ii < maxsize; ii++)
+			{
+				Eout.push_back(EA_par[i][ii][0]);
+				r_par.push_back(EA_par[i][ii][2]);
+			}
+			for (c = 0; c < minsize; c++)
+			{
+				if (EA_par[i + 1][c][0] > Eout.back())
+					break;
+			}
+			for (iii = c; iii < minsize; iii++)
+			{
+				Eout.push_back(EA_par[i + 1][iii][0]);
+				r_par.push_back(EA_par[i + 1][iii][2]);
+			}
+			f_0.resize(Eout.size());
+			for (int ii = 0; ii < Eout.size(); ii++)
+			{
+				f_0[ii].resize(4);
+				f_0[ii][1] = Eout[ii];
+				f_0[ii][3] = r_par[ii];
+				if (ii < maxsize)
+				{
+					f_0[ii][2] = EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, Eout[ii]) - EA_par[i][ii][1]);
+					if (ii == 0)
+						f_0[ii][0] = EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, Eout[ii]) - EA_par[i][ii][1]);
+					else f_0[ii][0] = f_0[ii - 1][0] + EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, EA_par[i][ii][0]) - EA_par[i][ii][1]);
+				}
+				else
+				{
+					f_0[ii][2] = (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * getf_0(i + 1, Eout[ii]);
+					f_0[ii][0] = f_0[ii - 1][0] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * getf_0(i + 1, Eout[ii]);
+				}
+			}
+			for (int ii = 0; ii < f_0.size(); ii++)
+				f_0[ii][0] /= f_0[f_0.size() - 1][0];
+			for (pi = 0; pi < f_0.size(); pi++)
+				if (f_0[pi][0] > r)
+					break;
+		}
+		else if (EA_par[i].size() <= EA_par[i + 1].size())						
+		{																		
+			for (int ii = 0; ii < maxsize; ii++)
+			{
+				Eout.push_back(EA_par[i + 1][ii][0]);
+				r_par.push_back(EA_par[i + 1][ii][2]);
+			}
+			f_0.resize(Eout.size());
+			for (int ii = 0; ii < Eout.size(); ii++)
+			{
+				if (ii < minsize)
+				{
+					f_0[ii].resize(4);
+					f_0[ii][1] = Eout[ii];
+					f_0[ii][2] = getf_0(i, Eout[ii]) + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (EA_par[i + 1][ii][1] - getf_0(i, Eout[ii]));
+					f_0[ii][3] = r_par[ii];
+					if (ii == 0)
+						f_0[ii][0] = getf_0(i, Eout[ii]) + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (EA_par[i + 1][ii][1] - getf_0(i, Eout[ii]));
+					else f_0[ii][0] = f_0[ii - 1][0] + getf_0(i, Eout[ii]) + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (EA_par[i + 1][ii][1] - getf_0(i, Eout[ii]));
+				}
+				else
+				{
+					f_0[ii].resize(4);
+					f_0[ii][1] = Eout[ii];
+					f_0[ii][3] = r_par[ii];
+					f_0[ii][2] = (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * EA_par[i + 1][ii][1];
+					f_0[ii][0] = f_0[ii - 1][0] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * EA_par[i + 1][ii][1];
+				}
+			}
+			for (int ii = 0; ii < f_0.size(); ii++)
+				f_0[ii][0] /= f_0[f_0.size() - 1][0];
+			for (pi = 0; pi < f_0.size(); pi++)
+				if (f_0[pi][0] > r)
+					break;
+		}
+		if (pi != 0)
+		{
+			output[0][0] = f_0[pi - 1][1] + (f_0[pi][1] - f_0[pi - 1][1]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);
+			output[1][0] = f_0[pi - 1][2] + (f_0[pi][2] - f_0[pi - 1][2]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);
+			output[2][0] = f_0[pi - 1][3] + (f_0[pi][3] - f_0[pi - 1][3]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);
+		}
+		else for (int iii = 0; iii < 3; iii++)
+			output[iii][0] = 0;
+		return output;
 	}
-	return 0;
+	else if (LANG == 1) //LEGANDRE REPRESENTATION
+	{
+		bool imax = true;
+		double** output = new double* [2];
+		output[0] = new double[1];
+		output[1] = new double[1]; //if NA > 0 expand this array and use vector f_l (declared in the beginning of the fuction) to make Legandre polinom
+
+		if (EA_par[i].size() > EA_par[i + 1].size())
+		{
+			for (int ii = 0; ii < maxsize; ii++)
+			{
+				Eout.push_back(EA_par[i][ii][0]);
+			}
+			for (c = 0; c < minsize; c++)
+			{
+				if (EA_par[i + 1][c][0] > Eout.back())
+					break;
+			}
+			for (iii = c; iii < minsize; iii++)
+			{
+				Eout.push_back(EA_par[i + 1][iii][0]);
+			}
+			f_0.resize(Eout.size());
+			for (int ii = 0; ii < Eout.size(); ii++)
+			{
+				f_0[ii].resize(3);
+				f_0[ii][1] = Eout[ii];
+				if (ii < maxsize)
+				{
+					f_0[ii][2] = EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, Eout[ii]) - EA_par[i][ii][1]);
+					if (ii == 0)
+						f_0[ii][0] = EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, Eout[ii]) - EA_par[i][ii][1]);
+					else f_0[ii][0] = f_0[ii - 1][0] + EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, EA_par[i][ii][0]) - EA_par[i][ii][1]);
+				}
+				else
+				{
+					f_0[ii][2] = (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * getf_0(i + 1, Eout[ii]);
+					f_0[ii][0] = f_0[ii - 1][0] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * getf_0(i + 1, Eout[ii]);
+				}
+			}
+			for (int ii = 0; ii < f_0.size(); ii++)
+				f_0[ii][0] /= f_0[f_0.size() - 1][0];
+			for (pi = 0; pi < f_0.size(); pi++)
+				if (f_0[pi][0] > r)
+					break;
+		}
+		else if (EA_par[i].size() <= EA_par[i + 1].size())
+		{
+			imax = false;
+			for (int ii = 0; ii < maxsize; ii++)
+			{
+				Eout.push_back(EA_par[i + 1][ii][0]);
+			}
+			f_0.resize(Eout.size());
+			for (int ii = 0; ii < Eout.size(); ii++)
+			{
+				if (ii < minsize)
+				{
+					f_0[ii].resize(3);
+					f_0[ii][1] = Eout[ii];
+					f_0[ii][2] = getf_0(i, Eout[ii]) + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (EA_par[i + 1][ii][1] - getf_0(i, Eout[ii]));
+					if (ii == 0)
+						f_0[ii][0] = getf_0(i, Eout[ii]) + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (EA_par[i + 1][ii][1] - getf_0(i, Eout[ii]));
+					else f_0[ii][0] = f_0[ii - 1][0] + getf_0(i, Eout[ii]) + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (EA_par[i + 1][ii][1] - getf_0(i, Eout[ii]));
+				}
+				else
+				{
+					f_0[ii].resize(3);
+					f_0[ii][1] = Eout[ii];
+					f_0[ii][2] = (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * EA_par[i + 1][ii][1];
+					f_0[ii][0] = f_0[ii - 1][0] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * EA_par[i + 1][ii][1];
+				}
+			}
+			for (int ii = 0; ii < f_0.size(); ii++)
+				f_0[ii][0] /= f_0[f_0.size() - 1][0];
+			for (pi = 0; pi < f_0.size(); pi++)
+				if (f_0[pi][0] > r)
+					break;
+		}
+
+		if (pi != 0)
+		{
+			output[0][0] = f_0[pi - 1][1] + (f_0[pi][1] - f_0[pi - 1][1]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);
+			output[1][0] = f_0[pi - 1][2] + (f_0[pi][2] - f_0[pi - 1][2]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);
+		}
+		else for (int iii = 0; iii < 1; iii++)
+			output[iii][0] = 0;
+		return output;
+	}
 }
 
 double mcEndfEANuclearCrossSectionTable::getf_0(int IN, double Eout)
