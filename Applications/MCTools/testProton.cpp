@@ -74,11 +74,13 @@ void testproton() {
 		//	}
 		//}
 	}
-	for (int i = 0; i < 15; i++)
+	mcRng rng;
+	rng.init(33, 97);
+	for (int i = 0; i < 100; i++)
 	{
-		double** pars = elementData.Products[72]->EANuclearCrossSections[0]->playpar(kE, i);
-		//cout << "particle was emitted with energy =\t" << pars[0][0] << ", f_0 =\t" << pars[1][0];// << " and r =\t" << pars[2] << endl;
-		cout << elementData.Products[72]->EANuclearCrossSections[0]->playmu(kE, pars, i);
+		double** pars = elementData.Products[0]->EANuclearCrossSections[0]->playpar(rng, kE);
+		//cout << "particle was emitted with energy =\t" << pars[0][0] << ", f_0 =\t" << pars[1][0];// << " and r =\t" << pars[2][0] << endl;
+		cout << elementData.Products[0]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[0]->product_type, rng);
 		cout << endl;
 	}
 }

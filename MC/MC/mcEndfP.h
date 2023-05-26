@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "mcRng.h"
 
 // Структура стрроки ENDF файла
 struct mcEndfRecord
@@ -74,13 +75,17 @@ public:
 	double getMulti(double kE);
 
 	//Розыгрыш f_0 и r
-	double** playpar(double kE, int id);
+	double** playpar(mcRng& rng, double kE);
 
 	//Розыгрыш косинуса угла рассеяния
-	double playmu(double kE, double** pars, int id);
+	double playmu(double kE, double** pars, int ptype, mcRng& rng);
 
 	//Интерполяция f_0 для пары энергия-энергия вылета
 	double getf_0(int IN, double Eout);
+
+	int ZA_nucl;
+
+	double AWR_nucl;
 
 	//Интерполяция 
 
@@ -131,8 +136,6 @@ public:
 };
 
 enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma, electron };
-
-std::string typeof(int i);
 
 class mcEndfProduct
 {
