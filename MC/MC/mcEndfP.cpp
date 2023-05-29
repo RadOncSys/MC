@@ -545,7 +545,9 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE)
 		if (Energies[i] > kE)
 			break;
 	}
-	i--;
+	if (i == Energies.size())
+		i -= 2;
+	else i--;
 	int maxsize = max(EA_par[i].size(), EA_par[i + 1].size());
 	int minsize = min(EA_par[i].size(), EA_par[i + 1].size());
 	vector<double> Eout;
@@ -637,14 +639,20 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE)
 				if (f_0[pi][0] > r)
 					break;
 		}
-		if (pi != 0)
+		if (pi == 0) for (int iii = 0; iii < 3; iii++)
+			output[iii][0] = 0;
+		else if (pi >= f_0.size())
+		{
+			output[0][0] = f_0[f_0.size() - 1][1];
+			output[1][0] = f_0[f_0.size() - 1][2];
+			output[2][0] = f_0[f_0.size() - 1][3];
+		}
+		else if (pi != 0)
 		{
 			output[0][0] = f_0[pi - 1][1] + (f_0[pi][1] - f_0[pi - 1][1]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);	//Eout
 			output[1][0] = f_0[pi - 1][2] + (f_0[pi][2] - f_0[pi - 1][2]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);	//f_0
 			output[2][0] = f_0[pi - 1][3] + (f_0[pi][3] - f_0[pi - 1][3]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);	//r
 		}
-		else for (int iii = 0; iii < 3; iii++)
-			output[iii][0] = 0;
 		return output;
 	}
 	else if (LANG == 1) //LEGANDRE REPRESENTATION
@@ -727,13 +735,19 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE)
 					break;
 		}
 
-		if (pi != 0)
+		if (pi == 0) 
+			for (int iii = 0; iii < 1; iii++)
+				output[iii][0] = 0;
+		else if (pi >= f_0.size())
+		{
+			output[0][0] = f_0[f_0.size() - 1][1];
+			output[1][0] = f_0[f_0.size() - 1][2];
+		}
+		else if (pi != 0)
 		{
 			output[0][0] = f_0[pi - 1][1] + (f_0[pi][1] - f_0[pi - 1][1]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);
 			output[1][0] = f_0[pi - 1][2] + (f_0[pi][2] - f_0[pi - 1][2]) / (f_0[pi][0] - f_0[pi - 1][0]) * (r - f_0[pi - 1][0]);
 		}
-		else for (int iii = 0; iii < 1; iii++)
-			output[iii][0] = 0;
 		return output;
 	}
 }
@@ -741,9 +755,11 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE)
 double mcEndfEANuclearCrossSectionTable::getf_0(int IN, double Eout)
 {
 	int i = 0;
-	for (i = 0; i < Energies.size(); i++)
+	for (i = 0; i < EA_par[IN].size(); i++)
 		if (EA_par[IN][i][0] > Eout)
 			break;
+	if (i == EA_par[IN].size())
+		i--;
 	double f_0 = 0;
 	if (i > 0)
 		switch (interpolationType)
@@ -771,6 +787,8 @@ double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
 		if (Energies[i] > kE)
 			break;
 	double multiplicity = 0;
+	if (i = Energies.size())
+		i--;
 	if (i > 0)
 		switch (interpolationType)
 		{

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include "mcRng.h"
+#include "mcScoreTest.h"
 
 
 using namespace std;
@@ -19,12 +20,12 @@ void testproton() {
 	//elementData.dumpTotalCrossections(std::cout);
 
 	//Testing incedent energy of proton, MeV
-	double kE = 62.5 * 1000000;
+	double kE = 150 * 1000000;
 	rng1.init(55, 97);
 	rng2.init(40, 97);
 
 	//cout << "Getmulti = " << elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE) << endl;
-	for (int p_i = 0; p_i < 10; p_i++)
+	/*for (int p_i = 0; p_i < 10; p_i++)
 	{
 		vector<vector<double>> Multi_;
 		Multi_.resize(6);
@@ -55,7 +56,7 @@ void testproton() {
 		for (int i = 0; i < Multi_.size(); i++)
 		{
 			Multi_[i][0] /= Norm;
-		}
+		}*/
 		//for (int ii = 0; ii < Multi_.size(); ii++)
 		//{
 		//	if (r1 < Multi_[ii][0])
@@ -73,14 +74,28 @@ void testproton() {
 		//		break;
 		//	}
 		//}
-	}
+	//}
 	mcRng rng;
 	rng.init(33, 97);
-	for (int i = 0; i < 100; i++)
+	mcSpectrum A;
+	A.init_inEn(kE);
+	A.init_ptype(particle_type::proton);
+	double** pars;
+	double mu;
+	for (int i = 0; i < 1000; i++)
 	{
-		double** pars = elementData.Products[0]->EANuclearCrossSections[0]->playpar(rng, kE);
-		//cout << "particle was emitted with energy =\t" << pars[0][0] << ", f_0 =\t" << pars[1][0];// << " and r =\t" << pars[2][0] << endl;
-		cout << elementData.Products[0]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[0]->product_type, rng);
-		cout << endl;
+		//n
+		pars = elementData.Products[0]->EANuclearCrossSections[0]->playpar(rng, kE);
+		mu = elementData.Products[0]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[0]->product_type, rng);
+		A.fill(pars[0][0], elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[0]->product_type);
+		//p
+		pars = elementData.Products[1]->EANuclearCrossSections[0]->playpar(rng, kE);
+		mu = elementData.Products[1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[1]->product_type, rng);
+		A.fill(pars[0][0], elementData.Products[1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[1]->product_type);
+		//gamma
+		pars = elementData.Products[72]->EANuclearCrossSections[0]->playpar(rng, kE);
+		mu = elementData.Products[72]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[72]->product_type, rng);
+		A.fill(pars[0][0], elementData.Products[72]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[72]->product_type);
 	}
+	A.dump(std::cout);
 }

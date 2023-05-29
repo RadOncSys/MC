@@ -215,6 +215,7 @@
     <ClInclude Include="mcScoreSpectraFluenceSphere.h" />
     <ClInclude Include="mcScoreSphereFluence.h" />
     <ClInclude Include="mcScoreSphereMatrix.h" />
+    <ClInclude Include="mcScoreTest.h" />
     <ClInclude Include="mcScoreTrack.h" />
     <ClInclude Include="mcSource.h" />
     <ClInclude Include="mcSourceAcceleratedBeam.h" />
@@ -317,6 +318,7 @@
     <ClCompile Include="mcScoreSpectraFluenceSphere.cpp" />
     <ClCompile Include="mcScoreSphereFluence.cpp" />
     <ClCompile Include="mcScoreSphereMatrix.cpp" />
+    <ClCompile Include="mcScoreTest.cpp" />
     <ClCompile Include="mcScoreTrack.cpp" />
     <ClCompile Include="mcSource.cpp" />
     <ClCompile Include="mcSourceAcceleratedBeam.cpp" />
