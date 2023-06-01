@@ -67,7 +67,7 @@ class mcEndfEANuclearCrossSectionTable
 public:
 	void mLoad(std::istream& is);
 	
-	void Load(std::istream& is);
+	void Load(std::istream& is, int LAW);
 
 	void dump(std::ostream& os) const;
 
@@ -180,6 +180,12 @@ public:
 
 	// Сечения ядерных реакций в зависимости от энергии падающей частицы
 	mcEndfCrossSectionTable NuclearCrossSections;
+
+	// Сечения реакций (p,n) MF = 3 MT = 50
+	mcEndfCrossSectionTable Neutron0CrossSection;
+
+	// Сечения реакций (p,n) MF = 3 MT = 51
+	mcEndfCrossSectionTable Neutron1CrossSection;
 
 	std::vector<mcEndfProduct*> Products;
 

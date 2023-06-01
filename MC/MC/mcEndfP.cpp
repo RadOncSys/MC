@@ -113,7 +113,7 @@ void mcEndfEANuclearCrossSectionTable::mLoad(istream& is)
 	}
 }
 
-void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
+void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 {
 	string line;
 	mcEndfRecord record;
@@ -126,123 +126,183 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is)
 	//чтение энерго-угловых параметров
 	getline(is, line, '\n');
 
-	if (LANG == 2)
-		while (!is.fail())
-		{
-
-			if (line.size() < 80)
-				throw exception((string("Wrong ENDF line length ") + line).c_str());
-			::memcpy(&record, line.c_str(), 80);
-
-			if (!is_ea_read)
+	if (LAW == 1)
+	{
+		if (LANG == 2)
+			while (!is.fail())
 			{
-				n_energypoints = atoi(record.c[0]);
-				ninterpolations = atoi(record.c[1]);
-				EA_par.resize(n_energypoints);
-				getline(is, line, '\n');
-				is_ea_read = true;
-			}
-			else
-			{
-				for (i = 0; i < n_energypoints; i++)
+
+				if (line.size() < 80)
+					throw exception((string("Wrong ENDF line length ") + line).c_str());
+				::memcpy(&record, line.c_str(), 80);
+
+				if (!is_ea_read)
 				{
-					NA = atoi(record.c[3]);
-					if (NA == 2)
-					{
-						throw exception((string("NA = 2 for Kalbach-Mann doesn't supported ") + line).c_str());
-					}
-					npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
-					EA_par[i].resize(npoints_out);
-
-					for (int k = 0; k < EA_par[i].size(); k++)
-						EA_par[i][k].resize(3);
-
-					for (int j = 0; j < npoints_out; j++)
-					{
-						if (j % 2 == 0)
-						{
-							getline(is, line, '\n');
-							::memcpy(&record, line.c_str(), 80);
-						}
-						EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3], 11);
-						EA_par[i][j][1] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 1], 11);
-						EA_par[i][j][2] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 2], 11);
-					}
-					if (pointCount < n_energypoints - 1)
-					{
-						getline(is, line, '\n');
-						::memcpy(&record, line.c_str(), 80);
-					}
-					pointCount++;
+					n_energypoints = atoi(record.c[0]);
+					ninterpolations = atoi(record.c[1]);
+					EA_par.resize(n_energypoints);
+					getline(is, line, '\n');
+					is_ea_read = true;
 				}
-			}
-			if (pointCount == n_energypoints)
-				break;
-		}
-	else if (LANG == 1)
-		while (!is.fail())
-		{
-
-			if (line.size() < 80)
-				throw exception((string("Wrong ENDF line length ") + line).c_str());
-			::memcpy(&record, line.c_str(), 80);
-
-			if (!is_ea_read)
-			{
-				n_energypoints = atoi(record.c[0]);
-				ninterpolations = atoi(record.c[1]);
-				EA_par.resize(n_energypoints);
-				getline(is, line, '\n');
-				is_ea_read = true;
-			}
-			else
-			{
-				for (i = 0; i < n_energypoints; i++)
+				else
 				{
-					int c = 0, c1 = 0; //counters
-					NA = atoi(record.c[3]);
-					npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
-					EA_par[i].resize(npoints_out);
-
-					for (int k = 0; k < EA_par[i].size(); k++)
-						EA_par[i][k].resize(NA + 2);
-
-					for (int j = 0; j < npoints_out; j++)
+					for (i = 0; i < n_energypoints; i++)
 					{
-						if (j == 0)
+						NA = atoi(record.c[3]);
+						if (NA == 2)
 						{
-							getline(is, line, '\n');
-							::memcpy(&record, line.c_str(), 80);
+							throw exception((string("NA = 2 for Kalbach-Mann doesn't supported ") + line).c_str());
 						}
-						EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[c1], 11);
-						c = c1 + 1;
-						for (int ii = 0; ii < NA + 1; ii++)
+						npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
+						EA_par[i].resize(npoints_out);
+
+						for (int k = 0; k < EA_par[i].size(); k++)
+							EA_par[i][k].resize(3);
+
+						for (int j = 0; j < npoints_out; j++)
 						{
-							EA_par[i][j][ii + 1] = mcEndfRecord::ParseValue(record.c[c], 11);
-							if (c % 5 == 0 && j!=npoints_out - 1)
+							if (j % 2 == 0)
 							{
 								getline(is, line, '\n');
 								::memcpy(&record, line.c_str(), 80);
-								c = 0;
 							}
-							else
-								c++;
+							EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3], 11);
+							EA_par[i][j][1] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 1], 11);
+							EA_par[i][j][2] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 2], 11);
 						}
-						c1 = c;
+						if (pointCount < n_energypoints - 1)
+						{
+							getline(is, line, '\n');
+							::memcpy(&record, line.c_str(), 80);
+						}
+						pointCount++;
 					}
-					if (pointCount < n_energypoints - 1)
-					{
-						getline(is, line, '\n');
-						::memcpy(&record, line.c_str(), 80);
-					}
-					pointCount++;
 				}
+				if (pointCount == n_energypoints)
+					break;
 			}
-			if (pointCount == n_energypoints)
-				break;
-		}
-	else
-		throw exception("This LANG type isn't supported by this code");
+		else if (LANG == 1)
+			while (!is.fail())
+			{
+
+				if (line.size() < 80)
+					throw exception((string("Wrong ENDF line length ") + line).c_str());
+				::memcpy(&record, line.c_str(), 80);
+
+				if (!is_ea_read)
+				{
+					n_energypoints = atoi(record.c[0]);
+					ninterpolations = atoi(record.c[1]);
+					EA_par.resize(n_energypoints);
+					getline(is, line, '\n');
+					is_ea_read = true;
+				}
+				else
+				{
+					for (i = 0; i < n_energypoints; i++)
+					{
+						int c = 0, c1 = 0; //counters
+						NA = atoi(record.c[3]);
+						npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
+						EA_par[i].resize(npoints_out);
+
+						for (int k = 0; k < EA_par[i].size(); k++)
+							EA_par[i][k].resize(NA + 2);
+
+						for (int j = 0; j < npoints_out; j++)
+						{
+							if (j == 0)
+							{
+								getline(is, line, '\n');
+								::memcpy(&record, line.c_str(), 80);
+							}
+							EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[c1], 11);
+							c = c1 + 1;
+							for (int ii = 0; ii < NA + 1; ii++)
+							{
+								EA_par[i][j][ii + 1] = mcEndfRecord::ParseValue(record.c[c], 11);
+								if (c % 5 == 0 && j != npoints_out - 1)
+								{
+									getline(is, line, '\n');
+									::memcpy(&record, line.c_str(), 80);
+									c = 0;
+								}
+								else
+									c++;
+							}
+							c1 = c;
+						}
+						if (pointCount < n_energypoints - 1)
+						{
+							getline(is, line, '\n');
+							::memcpy(&record, line.c_str(), 80);
+						}
+						pointCount++;
+					}
+				}
+				if (pointCount == n_energypoints)
+					break;
+			}
+		else throw exception(("This LANG type is abcent for LAW = " + std::to_string(LAW) + ".").c_str());
+	}
+	else if (LAW == 2)
+	{
+		if (LANG != 12)
+			throw exception(("This LANG type is abcent for LAW = " + std::to_string(LAW) + ".").c_str());
+		else if (LANG == 12)
+			while (!is.fail())
+			{
+				if (line.size() < 80)
+					throw exception((string("Wrong ENDF line length ") + line).c_str());
+				::memcpy(&record, line.c_str(), 80);
+
+				if (!is_ea_read)
+				{
+					n_energypoints = atoi(record.c[0]);
+					ninterpolations = atoi(record.c[1]);
+					EA_par.resize(n_energypoints);
+					getline(is, line, '\n');
+					is_ea_read = true;
+				}
+				else
+				{
+					for (i = 0; i < n_energypoints; i++)
+					{
+						NA = atoi(record.c[3]);
+						if (NA == 2)
+						{
+							throw exception((string("NA = 2 for Kalbach-Mann doesn't supported ") + line).c_str());
+						}
+						npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
+						EA_par[i].resize(npoints_out);
+
+						for (int k = 0; k < EA_par[i].size(); k++)
+							EA_par[i][k].resize(3);
+
+						for (int j = 0; j < npoints_out; j++)
+						{
+							if (j % 2 == 0)
+							{
+								getline(is, line, '\n');
+								::memcpy(&record, line.c_str(), 80);
+							}
+							EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3], 11);
+							EA_par[i][j][1] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 1], 11);
+							EA_par[i][j][2] = mcEndfRecord::ParseValue(record.c[(j % 2) * 3 + 2], 11);
+						}
+						if (pointCount < n_energypoints - 1)
+						{
+							getline(is, line, '\n');
+							::memcpy(&record, line.c_str(), 80);
+						}
+						pointCount++;
+					}
+				}
+				if (pointCount == n_energypoints)
+					break;
+			}
+	}
+	else throw exception("This LAW type doesn't supported by this code");
 }
 
 mcEndfProduct::mcEndfProduct()
@@ -309,9 +369,6 @@ void mcEndfProduct::Load(std::istream& is)
 			ZAP = round(mcEndfRecord::ParseValue(record.c[0], 11));
 			AWP = mcEndfRecord::ParseValue(record.c[1], 11);
 			LAW = mcEndfRecord::iStrCrop(record.c[3], 11);
-			if (LAW != 1)
-				throw exception("This LAW doesn't supported");
-
 			switch (ZAP) {
 			
 				case 1:
@@ -345,7 +402,7 @@ void mcEndfProduct::Load(std::istream& is)
 		}
 		else
 		{
-			energyangle->Load(is);
+			energyangle->Load(is, LAW);
 			EANuclearCrossSections.push_back(energyangle);
 			break;																
 		}
@@ -881,15 +938,48 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			NuclearCrossSections.Load(isEndf);
 		}
 
+		// Сечения (p,n) MT = 50 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')
+		{
+			Neutron0CrossSection.Load(isEndf);
+		}
+
+		// Сечения (p,n) MT = 51 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+		{
+			Neutron1CrossSection.Load(isEndf);
+		}
+
 		// Энерго-угловые распределения
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' && 
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
 				 int NK = atoi(record.c[4]);
 				 int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
 				 double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				for (int i = 0; i < NK; i++)
+				{
+					auto product = new mcEndfProduct();
+					product->Load(isEndf);
+					Products.push_back(product);
+					Products[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+					Products[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+				}
+			}
+		}
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) реакции MT = 50, 51
+		{
+			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+			{
+				int NK = atoi(record.c[4]);
+				int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				for (int i = 0; i < NK; i++)
 				{
 					auto product = new mcEndfProduct();

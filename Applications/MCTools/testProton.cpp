@@ -19,10 +19,10 @@ void testproton() {
 	elementData.Load(fname.c_str(), element);
 	//elementData.dumpTotalCrossections(std::cout);
 
-	//Testing incedent energy of proton, MeV
-	double kE = 150 * 1000000;
-	rng1.init(55, 97);
-	rng2.init(40, 97);
+	//Testing incedent energy of proton, eV
+	double kE = 100 * 1000000;
+	/*rng1.init(55, 97);
+	rng2.init(40, 97);*/
 
 	//cout << "Getmulti = " << elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE) << endl;
 	/*for (int p_i = 0; p_i < 10; p_i++)
