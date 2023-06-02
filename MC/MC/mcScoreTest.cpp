@@ -39,10 +39,10 @@ void mcSpectrum::fill(double Eout, double weight, int p_type)
 	{
 		energy_resized = true;
 		if (inEn / 1000000 <= 10)
-			Energies.resize(1000);
+			Energies.resize(100);
 		else if (inEn / 1000000 <= 50)
-			Energies.resize(2000);
-		else Energies.resize(4000);
+			Energies.resize(200);
+		else Energies.resize(400);
 		Energies[0] = 0;
 		for (int i = 1; i < Energies.size(); i++)
 			Energies[i] = Energies[i - 1] + (inEn / Energies.size());

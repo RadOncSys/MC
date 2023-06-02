@@ -41,6 +41,8 @@ public:
 	void Load(std::istream& is);
 	void dump(std::ostream& os) const;
 
+	double get_sigma(double kE);
+
 	// Количество пар энергия падающей частицы / сечение
 	int npoints;
 
@@ -115,6 +117,9 @@ public:
 	//Трехмерный вектор с энерго-угловыми параметрами
 	std::vector<std::vector<std::vector<double>>> EA_par;
 
+	std::vector<double> EA_Epoints;
+	
+	//LAW = 1:
 	//EA_par parameters for Kalbach-Mann:
 	//EA_par[i][j][k], where i - identify incedent energy
 	//						 j - identify outer energy
@@ -129,6 +134,10 @@ public:
 	//						 [i][j][2] keeps f_1
 	//							...
 	//						 [i][j][NA+1] keeps f_NA
+	//LAW = 2:
+	//EA_par[i][j][0] keeps incident energy of i-th proton (incedent particle)
+	//EA_par[i][j][1] keeps cosine of scattering j-th angle
+	//EA_par[i][j][2] keeps p(mu) - differential probability to scatter at this j-th angle (for LANG = 12)
 
 	// Точки
 	std::vector<double> Energies;
@@ -188,6 +197,9 @@ public:
 	mcEndfCrossSectionTable Neutron1CrossSection;
 
 	std::vector<mcEndfProduct*> Products;
+
+	//MT = 50, 51; MF = 6;
+	std::vector<mcEndfProduct*> EmittedNeutrons;
 
 	// Загрузка одного файла сечений
 	void Load(const char* fname, const char* ename);
