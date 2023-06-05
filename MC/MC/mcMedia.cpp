@@ -194,7 +194,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
 
 	// ENDF
-	auto dbData = std::make_unique<std::vector<mcEndfP>>();
+	auto dbData = std::make_unique<std::vector<std::shared_ptr<mcEndfP>>>();
 
 	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
@@ -215,8 +215,8 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 
 		// База данных изотопа
 		//mcCSNuclear csForElement;
-		mcEndfP csForElement;
-		csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
+		auto csForElement = std::make_shared<mcEndfP>();
+		csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 
 		//ifstream isIcru(entry.path().c_str());
 		dbData->push_back(csForElement);
