@@ -23,7 +23,11 @@ public:
 	//Espectrum[2] - gamma
 	//ESpectrum[i][j] - E * n for corresponding particle, j is from 0 to 150 (MeV)
 	vector<vector<double>> ESpectrum;
+
+	vector<double> Energies;
 	
+	bool energy_resized = false;
+
 	//Ёнегри€ налетающих частиц
 	double inEn;
 

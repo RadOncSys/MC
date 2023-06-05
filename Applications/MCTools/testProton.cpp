@@ -15,14 +15,15 @@ void testproton() {
 	fname += ".dat";
 
 	mcRng rng1, rng2;
+	rng1.init(21, 48);
 	mcEndfP elementData;
 	elementData.Load(fname.c_str(), element);
 	//elementData.dumpTotalCrossections(std::cout);
 
-	//Testing incedent energy of proton, MeV
-	double kE = 150 * 1000000;
-	rng1.init(55, 97);
-	rng2.init(40, 97);
+	//Testing incedent energy of proton, eV
+	double kE = 100 * 1000000;
+	/*rng1.init(55, 97);
+	rng2.init(40, 97);*/
 
 	//cout << "Getmulti = " << elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE) << endl;
 	/*for (int p_i = 0; p_i < 10; p_i++)
@@ -82,20 +83,29 @@ void testproton() {
 	A.init_ptype(particle_type::proton);
 	double** pars;
 	double mu;
-	for (int i = 0; i < 1000; i++)
+	double sigma = elementData.NuclearCrossSections.get_sigma(kE) * pow(10, -24);
+	double ro = 7.874; // g/cm^3
+	double const Na = 6.022 * pow(10, 23);
+	double macro = ro * Na / 56 * sigma;
+	double t = 7.5; // cm
+	double probability = macro * t;
+	for (int i = 0; i < 100000; i++)
 	{
-		//n
-		pars = elementData.Products[0]->EANuclearCrossSections[0]->playpar(rng, kE);
-		mu = elementData.Products[0]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[0]->product_type, rng);
-		A.fill(pars[0][0], elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[0]->product_type);
-		//p
-		pars = elementData.Products[1]->EANuclearCrossSections[0]->playpar(rng, kE);
-		mu = elementData.Products[1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[1]->product_type, rng);
-		A.fill(pars[0][0], elementData.Products[1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[1]->product_type);
-		//gamma
-		pars = elementData.Products[72]->EANuclearCrossSections[0]->playpar(rng, kE);
-		mu = elementData.Products[72]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[72]->product_type, rng);
-		A.fill(pars[0][0], elementData.Products[72]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[72]->product_type);
+		if (probability > rng.rnd())
+		{
+			//n
+			pars = elementData.Products[0]->EANuclearCrossSections[0]->playpar(rng, kE);
+			mu = elementData.Products[0]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[0]->product_type, rng);
+			A.fill(pars[0][0], elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[0]->product_type);
+			//p
+			pars = elementData.Products[1]->EANuclearCrossSections[0]->playpar(rng, kE);
+			mu = elementData.Products[1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[1]->product_type, rng);
+			A.fill(pars[0][0], elementData.Products[1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[1]->product_type);
+			//gamma
+			pars = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playpar(rng, kE);
+			mu = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[elementData.Products.size() - 1]->product_type, rng);
+			A.fill(pars[0][0], elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[elementData.Products.size() - 1]->product_type);
+		}
 	}
 	A.dump(std::cout);
 }
