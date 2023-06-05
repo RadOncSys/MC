@@ -4,6 +4,40 @@
 #include "mcPhysicsCommon.h"
 //#include <math.h>
 
+//Необходимо задать конкретную формулу соответствующим с макросом, например:
+#ifndef InverseRadiationLength
+#define InverseRadiationLength InverseRadiationLength_DahlApproximation
+#endif InverseRadiationLength
+
+// Величина обратная радиационной длине вещества 
+// c атомной массой A [г/моль],
+// и зарядом ядра (атомным номером) Z (в единицах заряда электрона)
+// вычисленная в приближении Dahl'a
+// rpp-2006-book.pdf 27.4.1 p.264 (eq.27.22)
+// совпадает с формулой Tsai'я (27.20) с точностью лучше 2.5%, за исключением гелия (5%)
+// в 1/(g/cm^2)
+double InverseRadiationLength_DahlApproximation(const double A, const double Z)
+{
+	return Z * (Z + 1) * log(287 / sqrt(Z)) / (716.4 * A);
+}
+
+// Величина обратная радиационной длине вещества состоящего из n элементов.
+// Для i-го элемента 0<=i<n
+// w[i] - относительный массовый(?) вес 
+// A[i] - атомная масса A [г/моль],
+// Z[i]	- заряд ядра (атомный номер)
+// rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
+// Для расчёта радиационной длины отдельного элемента вызывает
+// InverseRadiationLength (принятое приближение)
+// в 1/(g/cm^2)
+double InverseRadiationLength(const double* A, const double* Z, const double* w, const int n)
+{
+	double s = 0;
+	for (int i = 0; i < n; i++)
+		s += InverseRadiationLength(A[i], Z[i]) * w[i];
+	return s;
+}
+
 // Возвращает rms радиус ядра в фм (1E-13 см)
 // см. Wilson, et al 1991 rp1257.pdf 4.5.2 (eq.4.84,4.85) с исправлениями:
 // предполагаем, что в формуле 4.84 ошибка - лишний корень
@@ -126,6 +160,21 @@ const double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 	return dEdxStragglingGaussVarianceConstPart_;
 };
 
+// генерирует и возвращает величину радиационной длины сложного вещества 
+// rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
+// для расчёта радиационной длины отдельного элемента вызывает InverseRadiationLength 
+// (принятое приближение (в версии 2007 года это приближение Dahl'а))
+// в см!!!
+const double mcMediumProton::gRadiationLength()
+{
+	radLength = 0.0;
+	for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+		radLength += InverseRadiationLength(el->atomicMass, el->atomicNumber) * el->partsByNumber * el->atomicMass;
+	}
+	radLength = AtomicWeight() / (radLength * density_);
+	return radLength;
+}
+
 // Вычисляет коэффициенты линейной аппроксимации для каждого диапазона s по двум точкам ax+b,
 void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
 {
@@ -247,6 +296,7 @@ void mcMediumProton::read(istream& is)
 
 	// Данные загрузили, но надо ещё и расчитать недостающие
 	gdEdxStragglingGaussVarianceConstPart();
+	gRadiationLength();
 	gSigmaInelastic();
 
 	status_ = LOADED;

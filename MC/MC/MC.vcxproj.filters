@@ -349,6 +349,9 @@
     <ClInclude Include="mcEndfP.h">
       <Filter>Media</Filter>
     </ClInclude>
+    <ClInclude Include="mcScoreTest.h">
+      <Filter>Score</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -648,5 +651,6 @@
     <ClCompile Include="mcEndfP.cpp">
       <Filter>Media</Filter>
     </ClCompile>
+    <ClCompile Include="mcScoreTest.cpp" />
   </ItemGroup>
 </Project>
