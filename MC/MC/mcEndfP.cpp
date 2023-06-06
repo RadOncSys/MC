@@ -541,16 +541,17 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, double** pars, int pt
 		}
 
 		epsa = kE / 1000000 * AWR_nucl / (AWR_nucl + 0.99862); //Need to use AWR of incident particle instead of "0.99862"
-		int AA = ZA_nucl % 1000, AC = ZA_nucl % 1000 + 1, AB = AC - Ap;
-		int ZA = ZA_nucl / 1000, ZC = ZA / 1000 + 1, ZB = ZC - Zp;
-		int NA = AA - ZA, NC = AC - ZC, NB = AB - ZB;
-		Sa = 15.68 * (AC - AA) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NA - ZA) * (NA - ZA) / AA) - 18.56 * (pow(AC, 2 / 3) - pow(AA, 2 / 3)) +
-			33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, 4 / 3) - (NA - ZA) * (NA - ZA) / pow(AA, 4 / 3)) - 0.717 * (ZC * ZC / pow(AC, 1 / 3) - ZA * ZA / pow(AA, 1 / 3)) +
+		double AA = ZA_nucl % 1000, AC = ZA_nucl % 1000 + 1, AB = AC - Ap;
+		double ZA = ZA_nucl / 1000, ZC = ZA + 1, ZB = ZC - Zp;
+		double NA = AA - ZA, NC = AC - ZC, NB = AB - ZB;
+		double kf1 = 4.0 / 3.0, kf2 = 2.0 / 3.0, kf3 = 1.0 / 3.0;
+		Sa = 15.68 * (AC - AA) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NA - ZA) * (NA - ZA) / AA) - 18.56 * (pow(AC, kf2) - pow(AA, kf2)) +
+			33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NA - ZA) * (NA - ZA) / pow(AA, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZA * ZA / pow(AA, kf3)) +
 			1.211 * (ZC * ZC / AC - ZA * ZA / AA); // - Ia	
 
 		epsb = pars[0][0] / 1000000 * (AWR_nucl + 0.99862) / (AWR_nucl + 0.99862 - Ap); // AWRB = AWRA + AWRa - AWRb; in formula (p.138): AWRB + AWRb = AWRA + AWR(proton)
-		Sb = 15.68 * (AC - AB) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NB - ZB) * (NB - ZB) / AB) - 18.56 * (pow(AC, 2 / 3) - pow(AB, 2 / 3)) +
-			33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, 4 / 3) - (NB - ZB) * (NB - ZB) / pow(AB, 4 / 3)) - 0.717 * (ZC * ZC / pow(AC, 1 / 3) - ZB * ZB / pow(AB, 1 / 3)) +
+		Sb = 15.68 * (AC - AB) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NB - ZB) * (NB - ZB) / AB) - 18.56 * (pow(AC, kf2) - pow(AB, kf2)) +
+			33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NB - ZB) * (NB - ZB) / pow(AB, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZB * ZB / pow(AB, kf3)) +
 			1.211 * (ZC * ZC / AC - ZB * ZB / AB); // - Ib
 
 		ea = epsa + Sa;
@@ -953,6 +954,34 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron1CrossSection.Load(isEndf);
 		}
 
+		// Сечения (p,n) MT = 52 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+		{
+			Neutron2CrossSection.Load(isEndf);
+		}
+
+		// Сечения (p,n) MT = 53 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+		{
+			Neutron3CrossSection.Load(isEndf);
+		}
+
+		// Сечения (p,n) MT = 54 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+		{
+			Neutron4CrossSection.Load(isEndf);
+		}
+
+		// Сечения (p,n) MT = 55 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+		{
+			Neutron5CrossSection.Load(isEndf);
+		}
+
 		// Энерго-угловые распределения
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' && 
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
@@ -974,7 +1003,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) реакции MT = 50, 51
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) реакции MT = 50 MF = 6
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -993,7 +1022,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')  // (p,n) реакции MT = 50, 51
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')  // (p,n) реакции MT = 51 MF = 6
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -1008,12 +1037,87 @@ void mcEndfP::Load(const char* fname, const char* ename)
 					EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
 					EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
 				}
-			}
+			 }
 		}
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')  // (p,n) реакции MT = 52 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						EmittedNeutrons.push_back(neutron);
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					}
+				}
+			 }
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')  // (p,n) реакции MT = 53 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						EmittedNeutrons.push_back(neutron);
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					}
+				}
+			 }
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')  // (p,n) реакции MT = 54 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						EmittedNeutrons.push_back(neutron);
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					}
+				}
+			 }
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')  // (p,n) реакции MT = 55 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						EmittedNeutrons.push_back(neutron);
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					}
+				}
+			 }
 
 		getline(isEndf, line, '\n');
 	}
-	cout << "END";
 }
 
 void mcEndfP::Clear()

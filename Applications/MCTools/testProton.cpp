@@ -88,7 +88,7 @@ void testproton() {
 	double const Na = 6.022 * pow(10, 23);
 	double macro = ro * Na / 56 * sigma;
 	double t = 7.5; // cm
-	double probability = macro * t;
+	double probability = 1 - exp(-macro * t);
 	for (int i = 0; i < 100000; i++)
 	{
 		if (probability > rng.rnd())
@@ -96,15 +96,15 @@ void testproton() {
 			//n
 			pars = elementData.Products[0]->EANuclearCrossSections[0]->playpar(rng, kE);
 			mu = elementData.Products[0]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[0]->product_type, rng);
-			A.fill(pars[0][0], elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[0]->product_type);
+			A.fill(pars[0][0], elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE), mu, elementData.Products[0]->product_type, rng);
 			//p
 			pars = elementData.Products[1]->EANuclearCrossSections[0]->playpar(rng, kE);
 			mu = elementData.Products[1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[1]->product_type, rng);
-			A.fill(pars[0][0], elementData.Products[1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[1]->product_type);
+			A.fill(pars[0][0], elementData.Products[1]->EANuclearCrossSections[0]->getMulti(kE), mu, elementData.Products[1]->product_type, rng);
 			//gamma
 			pars = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playpar(rng, kE);
 			mu = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[elementData.Products.size() - 1]->product_type, rng);
-			A.fill(pars[0][0], elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[elementData.Products.size() - 1]->product_type);
+			A.fill(pars[0][0], elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->getMulti(kE), mu, elementData.Products[elementData.Products.size() - 1]->product_type, rng);
 		}
 	}
 	A.dump(std::cout);

@@ -12,7 +12,7 @@ class mcSpectrum
 {
 public:
 	//ћетод заполн€ющий одну €чейку спектра
-	void fill(double Eout, double weight, int p_type);
+	void fill(double Eout, double weight, double mu, int p_type, mcRng& rng);
 
 	//¬ывод спектра
 	void dump(std::ostream& os) const;
@@ -23,6 +23,8 @@ public:
 	//Espectrum[2] - gamma
 	//ESpectrum[i][j] - E * n for corresponding particle, j is from 0 to 150 (MeV)
 	vector<vector<double>> ESpectrum;
+
+	vector<vector<double>> AngSpectrum;
 
 	vector<double> Energies;
 	

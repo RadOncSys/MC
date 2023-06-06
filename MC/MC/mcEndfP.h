@@ -196,6 +196,18 @@ public:
 	// Сечения реакций (p,n) MF = 3 MT = 51
 	mcEndfCrossSectionTable Neutron1CrossSection;
 
+	// Сечения реакций (p,n) MF = 3 MT = 52
+	mcEndfCrossSectionTable Neutron2CrossSection;					//СДЕЛАТЬ VECTOR ДЛЯ MT = 50 - 90
+
+	// Сечения реакций (p,n) MF = 3 MT = 53
+	mcEndfCrossSectionTable Neutron3CrossSection;
+
+	// Сечения реакций (p,n) MF = 3 MT = 54
+	mcEndfCrossSectionTable Neutron4CrossSection;
+
+	// Сечения реакций (p,n) MF = 3 MT = 55
+	mcEndfCrossSectionTable Neutron5CrossSection;
+
 	std::vector<mcEndfProduct*> Products;
 
 	//MT = 50, 51; MF = 6;
