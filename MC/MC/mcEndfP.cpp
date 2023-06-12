@@ -7,6 +7,8 @@
 
 using namespace std;
 
+double Legandre(int NL, double* a, double mu);
+
 double mcEndfRecord::ParseValue(const char* s, int n)
 {
 	std::string s1 = s;
@@ -77,7 +79,6 @@ void mcEndfEANuclearCrossSectionTable::mLoad(istream& is)
 	mcEndfRecord record;
 	int pointCount = 0;
 	bool is_e_points_read = false;
-
 	getline(is, line, '\n');
 
 	while (!is.fail())
@@ -122,7 +123,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 	getline(is, line, '\n');
 	::memcpy(&record, line.c_str(), 80);
 	if (LAW == 1)
-		LANG = atoi(record.c[2]);
+		LANG.push_back(atoi(record.c[2]));
 
 	//чтение энерго-угловых параметров
 	getline(is, line, '\n');
@@ -134,7 +135,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 	}
 	if (LAW == 1)
 	{
-		if (LANG == 2)
+		if (LANG[0] == 2)
 			while (!is.fail())
 			{
 
@@ -189,7 +190,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 				if (pointCount == n_energypoints)
 					break;
 			}
-		else if (LANG == 1)
+		else if (LANG[0] == 1)
 			while (!is.fail())
 			{
 
@@ -253,39 +254,61 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 				if (pointCount == n_energypoints)
 					break;
 			}
-		else throw exception(("This LANG type is abcent for LAW = " + std::to_string(LAW) + ".").c_str());
+		else throw exception(("This LANG = " + std::to_string(LANG[0]) + " type is abcent for LAW = " + std::to_string(LAW) + ".").c_str());
 	}
 	else if (LAW == 2)
 	{
 		//counter
 		int c = 0;
-		EA_par[c].resize(3);
 		while (!is.fail())
 		{
 			getline(is, line, '\n');
 			::memcpy(&record, line.c_str(), 80);
-			LANG = atoi(record.c[2]);
-			if (LANG != 12)
-				throw exception(("This LANG type is abcent for LAW = " + std::to_string(LAW) + ".").c_str());
+			LANG.push_back(atoi(record.c[2]));
+			if (LANG[c] == 14)
+				throw exception(("This LANG = " + std::to_string(LANG[c]) + " type is abcent for LAW = " + std::to_string(LAW) + ".").c_str());
 			
 			npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
-			EA_par[c].resize(npoints_out);
+			if (LANG[c] == 12)
+				EA_par[c].resize(npoints_out);
+			else if (LANG[c] == 0)
+				EA_par[c].resize(npoints_out + 1);
 			double incEn = mcEndfRecord::ParseValue(record.c[1], 11);
-			for (int jj = 0; jj < npoints_out; jj++)
+			if (LANG[c] == 12)
 			{
-				if (jj % 3 == 0)
+				for (int jj = 0; jj < npoints_out; jj++)
 				{
-					getline(is, line, '\n');
-					::memcpy(&record, line.c_str(), 80);
+					if (jj % 3 == 0)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+					}
+					EA_par[c][jj].push_back(incEn);
+					EA_par[c][jj].push_back(mcEndfRecord::ParseValue(record.c[(2 * jj) % 6], 11));
+					EA_par[c][jj].push_back(mcEndfRecord::ParseValue(record.c[(2 * jj + 1) % 6], 11));
 				}
-				EA_par[c][jj].push_back(incEn);
-				EA_par[c][jj].push_back(mcEndfRecord::ParseValue(record.c[(2 * jj) % 6], 11));
-				EA_par[c][jj].push_back(mcEndfRecord::ParseValue(record.c[(2 * jj + 1) % 6], 11));
+				c++;
+				if (c == n_energypoints)
+					break;
 			}
-			c++;
-			if (c == n_energypoints)
-				break;
+			else if (LANG[c] == 0)
+			{
+				EA_par[c][0].push_back(incEn);
+				for (int jj = 0; jj < EA_par[c].size() - 1; jj++)
+				{
+					if (jj % 6 == 0)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+					}
+					EA_par[c][jj + 1].push_back(mcEndfRecord::ParseValue(record.c[jj % 6], 11));
+				}
+				c++;
+				if (c == n_energypoints)
+					break;
+			}
 		}
+		iLang++;
 	}
 	else if (LAW == 4)
 	{
@@ -345,7 +368,6 @@ void mcEndfProduct::Load(std::istream& is)
 	int pointCount = 0;
 
 	auto energyangle = new mcEndfEANuclearCrossSectionTable();
-
 	mcEndfRecord record;
 
 	while (!is.fail())
@@ -429,7 +451,7 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	{
 		os << i << "\t" << Energies[i] << "\t" << Multiplicities[i] << endl;
 	}
-	if (LANG == 2)
+	if (LANG[0] == 2)
 	{
 		os << "---------------------KALBACH-MAHN REPRESENTATION------------------" << endl;
 		for (int i = 0; i < n_energypoints; i++)
@@ -443,7 +465,7 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 		}
 		os << endl;
 	}
-	else if (LANG == 1)
+	else if (LANG[0] == 1)
 	{
 		os << "---------------------LEGANDRE REPRESENTATION------------------" << endl;
 		for (int i = 0; i < n_energypoints; i++)
@@ -469,7 +491,7 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	
 }
 
-double mcEndfEANuclearCrossSectionTable::playmu(double kE, double** pars, int ptype, mcRng& rng)
+double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** pars, int ptype, mcRng& rng)
 {
 	int pi = 0;
 	double SIGN = rng.rnd();
@@ -478,120 +500,182 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, double** pars, int pt
 	const double C1 = 0.04, C2 = 0.0000018, C3 = 0.00000067,
 		Et1 = 130/* MeV*/, Et3 = 41/*MeV*/;
 	double Ma = 0, mb = 0;
-
-	
-	if (LANG == 1) //LEGANDRE REPRESENTATION
+	if (LAW == 1)
 	{
-		if (SIGN > 0.5)
-			return mur;
-		else return -mur;
+		if (LANG[0] == 1) //LEGANDRE REPRESENTATION
+		{
+			if (SIGN > 0.5)
+				return mur;
+			else return -mur;
+		}
+		else if (LANG[0] == 2) //KALLBACH-MANN REPRESENTATION
+		{
+			double a = 0; // kallbach-mann parameter
+			double epsa = 0, epsb = 0, Sa = 0, Sb = 0;
+			double ea = 0, eb = 0;
+			int Zp, Ap;
+
+			switch (1) {								//Need to use type of incedent particle instead of "1"
+			case 0: Ma = 1;
+				break;
+			case 1: Ma = 1;
+				break;
+			case 2: Ma = 1;
+				break;
+			case 3: throw exception("Triton doesn't supported. See ENDF manual p.139");
+				break;
+			case 4: Ma = 0;
+				break;
+			case 5: throw exception("Recoils doesn't supported. See ENDF manual p.139");
+				break;
+			case 6: throw exception("Gammas is using another code. See ENDF manual p.139");
+				break;
+			default: throw exception("Unknown product particle. See ENDF manual p.139");
+				break;
+			}
+			switch (ptype) {
+			case 0: mb = 0.5;
+				Ap = 1;
+				Zp = 0;
+				break;
+			case 1: mb = 1;
+				Ap = 1;
+				Zp = 1;
+				break;
+			case 2: mb = 1;
+				Zp = 1;
+				Ap = 2;
+				break;
+			case 3: mb = 1;
+				Zp = 1;
+				Ap = 3;
+				break;
+			case 4: mb = 2;
+				Zp = 2;
+				Ap = 4;
+				break;
+			case 5: throw exception("Recoils doesn't supported. See ENDF manual p.139");
+				break;
+			case 6: throw exception("Gammas is using another code. See ENDF manual p.139");
+				break;
+			default: throw exception("Unknown product particle. See ENDF manual p.139");
+				break;
+			}
+
+			epsa = kE / 1000000 * AWR_nucl / (AWR_nucl + 0.99862); //Need to use AWR of incident particle instead of "0.99862"
+			double AA = ZA_nucl % 1000, AC = ZA_nucl % 1000 + 1, AB = AC - Ap;
+			double ZA = ZA_nucl / 1000, ZC = ZA + 1, ZB = ZC - Zp;
+			double NA = AA - ZA, NC = AC - ZC, NB = AB - ZB;
+			double kf1 = 4.0 / 3.0, kf2 = 2.0 / 3.0, kf3 = 1.0 / 3.0;
+			Sa = 15.68 * (AC - AA) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NA - ZA) * (NA - ZA) / AA) - 18.56 * (pow(AC, kf2) - pow(AA, kf2)) +
+				33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NA - ZA) * (NA - ZA) / pow(AA, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZA * ZA / pow(AA, kf3)) +
+				1.211 * (ZC * ZC / AC - ZA * ZA / AA); // - Ia	
+
+			epsb = pars[0][0] / 1000000 * (AWR_nucl + 0.99862) / (AWR_nucl + 0.99862 - Ap); // AWRB = AWRA + AWRa - AWRb; in formula (p.138): AWRB + AWRb = AWRA + AWR(proton)
+			Sb = 15.68 * (AC - AB) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NB - ZB) * (NB - ZB) / AB) - 18.56 * (pow(AC, kf2) - pow(AB, kf2)) +
+				33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NB - ZB) * (NB - ZB) / pow(AB, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZB * ZB / pow(AB, kf3)) +
+				1.211 * (ZC * ZC / AC - ZB * ZB / AB); // - Ib
+
+			ea = epsa + Sa;
+			eb = epsb + Sb;
+
+			double R1 = min(ea, Et1);
+			double R3 = min(ea, Et3);
+			a = C1 * R1 * eb / ea + C2 * pow(R1 * eb / ea, 3) + C3 * pow(R3 * eb / ea, 4) * Ma * mb;
+
+			vector<double> mu;
+			vector<double> f;
+			f.resize(41);
+
+			for (int i = -20; i < 21; i++)
+			{
+				mu.push_back(i * 0.05);
+				if (i == -20)
+					f[i + 20] = a * pars[1][0] / 2 / sinh(a) * (cosh(a * mu[i + 20]) + pars[2][0] * sinh(a * mu[i + 20]));
+				else f[i + 20] = f[i + 19] + a * pars[1][0] / 2 / sinh(a) * (cosh(a * mu[i + 20]) + pars[2][0] * sinh(a * mu[i + 20]));
+			}
+			for (int i = 0; i < f.size(); i++)
+			{
+				f[i] /= f[f.size() - 1];
+			}
+			for (pi = 0; pi < f.size(); pi++)
+			{
+				if (f[pi] > r)
+					break;
+			}
+			double output;
+			if (pi == 0)
+				output = -1;
+			else if (pi >= mu.size())
+				output = 1;
+			else output = mu[pi - 1] + (mu[pi] - mu[pi - 1]) / (f[pi] - f[pi - 1]) * (r - f[pi - 1]);
+			return output;
+		}
 	}
-	else if (LANG == 2) //KALLBACH-MANN REPRESENTATION
+	else if (LAW == 2 && pars[0][0] == 0)
 	{
-		double a = 0; // kallbach-mann parameter
-		double epsa = 0, epsb = 0, Sa = 0, Sb = 0;
-		double ea = 0, eb = 0;
-		int Zp, Ap;
-
-		switch (1) {								//Need to use type of incedent particle instead of "1"
-		case 0: Ma = 1;
-			break;
-		case 1: Ma = 1;
-			break;
-		case 2: Ma = 1;
-			break;
-		case 3: throw exception("Triton doesn't supported. See ENDF manual p.139");
-			break;
-		case 4: Ma = 0;
-			break;
-		case 5: throw exception("Recoils doesn't supported. See ENDF manual p.139");
-			break;
-		case 6: throw exception("Gammas is using another code. See ENDF manual p.139");
-			break;
-		default: throw exception("Unknown product particle. See ENDF manual p.139");
-			break;
-		}
-		switch (ptype) {
-		case 0: mb = 0.5;
-			Ap = 1;
-			Zp = 0;
-			break;
-		case 1: mb = 1;
-			Ap = 1;
-			Zp = 1;
-			break;
-		case 2: mb = 1;
-			Zp = 1;
-			Ap = 2;
-			break;
-		case 3: mb = 1;
-			Zp = 1;
-			Ap = 3;
-			break;
-		case 4: mb = 2;
-			Zp = 2;
-			Ap = 4;
-			break;
-		case 5: throw exception("Recoils doesn't supported. See ENDF manual p.139");
-			break;
-		case 6: throw exception("Gammas is using another code. See ENDF manual p.139");
-			break;
-		default: throw exception("Unknown product particle. See ENDF manual p.139");
-			break;
-		}
-
-		epsa = kE / 1000000 * AWR_nucl / (AWR_nucl + 0.99862); //Need to use AWR of incident particle instead of "0.99862"
-		int AA = ZA_nucl % 1000, AC = ZA_nucl % 1000 + 1, AB = AC - Ap;
-		int ZA = ZA_nucl / 1000, ZC = ZA / 1000 + 1, ZB = ZC - Zp;
-		int NA = AA - ZA, NC = AC - ZC, NB = AB - ZB;
-		Sa = 15.68 * (AC - AA) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NA - ZA) * (NA - ZA) / AA) - 18.56 * (pow(AC, 2 / 3) - pow(AA, 2 / 3)) +
-			33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, 4 / 3) - (NA - ZA) * (NA - ZA) / pow(AA, 4 / 3)) - 0.717 * (ZC * ZC / pow(AC, 1 / 3) - ZA * ZA / pow(AA, 1 / 3)) +
-			1.211 * (ZC * ZC / AC - ZA * ZA / AA); // - Ia	
-
-		epsb = pars[0][0] / 1000000 * (AWR_nucl + 0.99862) / (AWR_nucl + 0.99862 - Ap); // AWRB = AWRA + AWRa - AWRb; in formula (p.138): AWRB + AWRb = AWRA + AWR(proton)
-		Sb = 15.68 * (AC - AB) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NB - ZB) * (NB - ZB) / AB) - 18.56 * (pow(AC, 2 / 3) - pow(AB, 2 / 3)) +
-			33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, 4 / 3) - (NB - ZB) * (NB - ZB) / pow(AB, 4 / 3)) - 0.717 * (ZC * ZC / pow(AC, 1 / 3) - ZB * ZB / pow(AB, 1 / 3)) +
-			1.211 * (ZC * ZC / AC - ZB * ZB / AB); // - Ib
-
-		ea = epsa + Sa;
-		eb = epsb + Sb;
-
-		double R1 = min(ea, Et1);
-		double R3 = min(ea, Et3);
-		a = C1 * R1 * eb / ea + C2 * pow(R1 * eb / ea, 3) + C3 * pow(R3 * eb / ea, 4) * Ma * mb;
-
-		vector<double> mu;
-		vector<double> f;
-		f.resize(41);
-
-		for (int i = -20; i < 21; i++)
+		int interpol = 0;
+		for (interpol = 0; interpol < EA_par.size(); interpol++)
 		{
-			mu.push_back(i * 0.05);
-			if (i == -20)
-				f[i + 20] = a * pars[1][0] / 2 / sinh(a) * (cosh(a * mu[i + 20]) + pars[2][0] * sinh(a * mu[i + 20]));
-			else f[i + 20] = f[i + 19] + a * pars[1][0] / 2 / sinh(a) * (cosh(a * mu[i + 20]) + pars[2][0] * sinh(a * mu[i + 20]));
-		}
-		for (int i = 0; i < f.size(); i++)
-		{
-			f[i] /= f[f.size() - 1];
-		}
-		for (pi = 0; pi < f.size(); pi++)
-		{
-			if (f[pi] > r)
+			if (EA_par[interpol][0][0] > kE)
 				break;
 		}
-		double output;
-		if (pi == 0)
-			output = -1;
-		else if (pi >= mu.size())
-			output = 1;
-		else output = mu[pi - 1] + (mu[pi] - mu[pi - 1]) / (f[pi] - f[pi - 1]) * (r - f[pi - 1]);
-		return output;
+		if (interpol != EA_par.size())
+		{
+			if (LANG[interpol] == 0)
+			{
+				vector<double> mu;
+				vector<double> p;
+				double* a;
+				int SIZE = EA_par[interpol].size();
+				a = new double[SIZE];
+				for (int i = 0; i < EA_par[interpol].size(); i++)
+				{
+					a[i] = EA_par[interpol][i][0];
+				}
+				for (int i = -20; i < 21; i++)
+					mu.push_back(i * 0.05);
+				p.resize(mu.size());
+				for (int i = 0; i < mu.size(); i++)
+				{
+					if (i == 0)
+						p[i] = (Legandre(EA_par[interpol].size(), a, mu[i]));
+					else p[i] = p[i - 1] + (Legandre(EA_par[interpol].size(), a, mu[i]));
+				}
+				for (int i = 0; i < mu.size(); i++)
+				{
+					p[i] /= p[p.size() - 1];
+				}
+			}
+		}
+		else 
+		{
+
+		}
 	}
 }
 
-double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE)
+double Legandre(int NL, double* a, double mu)
 {
+	double output = 0.5;
+	for (double j = 1.0; j < NL; j++)
+		output += pow(mu, j) * a[int(j)] * (2.0 * j + 1.0) / 2.0;
+	return output;
+}
+
+
+double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LAW)
+{
+	if (LAW == 2)
+	{
+		double** output = new double* [1];
+		for (int i = 0; i < 1; i++)
+		{
+			output[i] = new double[1];
+		}
+		output[0][0] = 0;
+		return output;
+	}
 	//f(e, e') = f(ei, e') + (e - ei)/(ei+1 - ei)*(f(ei+1, e') - f(ei,e'))
 	int i = 0, c = 0, iii = 0;
 	int pi = 0;
@@ -612,7 +696,7 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE)
 	vector<double> r_par;
 	//vector<vector<double>> f_l (2);
 	
-	if (LANG == 2) //KALLBACH-MANN REPRESENTATION
+	if (LANG[0] == 2) //KALLBACH-MANN REPRESENTATION
 	{
 		double** output = new double*[3];
 		for (int i = 0; i < 3; i++)
@@ -713,7 +797,7 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE)
 		}
 		return output;
 	}
-	else if (LANG == 1) //LEGANDRE REPRESENTATION
+	else if (LANG[0] == 1) //LEGANDRE REPRESENTATION
 	{
 		bool imax = true;
 		double** output = new double* [2];
@@ -845,7 +929,7 @@ double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
 		if (Energies[i] > kE)
 			break;
 	double multiplicity = 0;
-	if (i = Energies.size())
+	if (i == Energies.size())
 		i--;
 	if (i > 0)
 		switch (interpolationType)
@@ -953,6 +1037,34 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron1CrossSection.Load(isEndf);
 		}
 
+		// Сечения (p,n) MT = 52 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
+		{
+			Neutron2CrossSection.Load(isEndf);
+		}
+
+		// Сечения (p,n) MT = 53 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
+		{
+			Neutron3CrossSection.Load(isEndf);
+		}
+
+		// Сечения (p,n) MT = 54 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
+		{
+			Neutron4CrossSection.Load(isEndf);
+		}
+
+		// Сечения (p,n) MT = 55 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
+		{
+			Neutron5CrossSection.Load(isEndf);
+		}
+
 		// Энерго-угловые распределения
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' && 
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
@@ -974,7 +1086,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) реакции MT = 50, 51
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) реакции MT = 50 MF = 6
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -985,15 +1097,18 @@ void mcEndfP::Load(const char* fname, const char* ename)
 				{
 					auto neutron = new mcEndfProduct();
 					neutron->Load(isEndf);
-					EmittedNeutrons.push_back(neutron);
-					EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-					EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					if (neutron->product_type == 0)
+					{
+						EmittedNeutrons.push_back(neutron);
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					}
 				}
 			}
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')  // (p,n) реакции MT = 50, 51
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')  // (p,n) реакции MT = 51 MF = 6
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -1004,16 +1119,106 @@ void mcEndfP::Load(const char* fname, const char* ename)
 				{
 					auto neutron = new mcEndfProduct();
 					neutron->Load(isEndf);
-					EmittedNeutrons.push_back(neutron);
-					EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-					EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					if (neutron->product_type == 0)
+					{
+						EmittedNeutrons.push_back(neutron);
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+					}
 				}
-			}
+			 }
 		}
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')  // (p,n) реакции MT = 52 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						if (neutron->product_type == 0)
+						{
+							EmittedNeutrons.push_back(neutron);
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+						}
+					}
+				}
+			 }
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')  // (p,n) реакции MT = 53 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						if (neutron->product_type == 0)
+						{
+							EmittedNeutrons.push_back(neutron);
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+						}
+					}
+				}
+			 }
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')  // (p,n) реакции MT = 54 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						if (neutron->product_type == 0)
+						{
+							EmittedNeutrons.push_back(neutron);
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+						}
+					}
+				}
+			 }
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')  // (p,n) реакции MT = 55 MF = 6
+			{
+				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+				{
+					int NK = atoi(record.c[4]);
+					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+					for (int i = 0; i < NK; i++)
+					{
+						auto neutron = new mcEndfProduct();
+						neutron->Load(isEndf);
+						if (neutron->product_type == 0)
+						{
+							EmittedNeutrons.push_back(neutron);
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+						}
+					}
+				}
+			 }
 
 		getline(isEndf, line, '\n');
 	}
-	cout << "END";
 }
 
 void mcEndfP::Clear()

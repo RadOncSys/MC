@@ -77,10 +77,10 @@ public:
 	double getMulti(double kE);
 
 	//Розыгрыш f_0 и r
-	double** playpar(mcRng& rng, double kE);
+	double** playpar(mcRng& rng, double kE, int LAW);
 
 	//Розыгрыш косинуса угла рассеяния
-	double playmu(double kE, double** pars, int ptype, mcRng& rng);
+	double playmu(double kE, int LAW, double** pars, int ptype, mcRng& rng);
 
 	//Интерполяция f_0 для пары энергия-энергия вылета
 	double getf_0(int IN, double Eout);
@@ -98,7 +98,9 @@ public:
 	int npoints_out;
 
 	//LANG (= 1 - представление Лежандра, = 2 - представление Кальбаха-Манна)
-	int LANG;
+	std::vector<int> LANG;
+
+	int iLang;
 
 	//Количество угловых параметров
 	int NA;
@@ -121,7 +123,7 @@ public:
 	
 	//LAW = 1:
 	//EA_par parameters for Kalbach-Mann:
-	//EA_par[i][j][k], where i - identify incedent energy
+	//EA_par[i][j][k], where i - identify incident energy
 	//						 j - identify outer energy
 	//					and  k - identify corresponding parameter
 	//Exactly if NA = 1 then [i][j][0] keeps E_out (from incedent E_i to E_out)
@@ -135,9 +137,18 @@ public:
 	//							...
 	//						 [i][j][NA+1] keeps f_NA
 	//LAW = 2:
-	//EA_par[i][j][0] keeps incident energy of i-th proton (incedent particle)
-	//EA_par[i][j][1] keeps cosine of scattering j-th angle
-	//EA_par[i][j][2] keeps p(mu) - differential probability to scatter at this j-th angle (for LANG = 12)
+	// LANG = 12:
+	// EA_par[i][j][0] keeps incident energy of i-th proton (incedent particle)
+	// EA_par[i][j][1] keeps cosine of scattering j-th angle
+	// EA_par[i][j][2] keeps p(mu) - differential probability to scatter at this j-th angle (for LANG = 12)
+	// LANG = 0: (Legandre coefficients)
+	// EA_par[i][0][0] keeps incident energy of i-th proton (incedent particle)
+	// EA_par[i][1][0] keeps a_1
+	// EA_par[i][2][0] keeps a_2
+	//			...
+	// EA_par[i][NL][0] keeps a_NL
+	// 
+	//
 
 	// Точки
 	std::vector<double> Energies;
@@ -196,9 +207,21 @@ public:
 	// Сечения реакций (p,n) MF = 3 MT = 51
 	mcEndfCrossSectionTable Neutron1CrossSection;
 
+	// Сечения реакций (p,n) MF = 3 MT = 52
+	mcEndfCrossSectionTable Neutron2CrossSection;					//СДЕЛАТЬ VECTOR ДЛЯ MT = 50 - 90
+
+	// Сечения реакций (p,n) MF = 3 MT = 53
+	mcEndfCrossSectionTable Neutron3CrossSection;
+
+	// Сечения реакций (p,n) MF = 3 MT = 54
+	mcEndfCrossSectionTable Neutron4CrossSection;
+
+	// Сечения реакций (p,n) MF = 3 MT = 55
+	mcEndfCrossSectionTable Neutron5CrossSection;
+
 	std::vector<mcEndfProduct*> Products;
 
-	//MT = 50, 51; MF = 6;
+	//MT = 50, 51...; MF = 6;
 	std::vector<mcEndfProduct*> EmittedNeutrons;
 
 	// Загрузка одного файла сечений

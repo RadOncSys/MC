@@ -9,7 +9,7 @@
 using namespace std;
 
 void testproton() {
-	const char* element = "Fe056";
+	const char* element = "Be009";
 	std::string fname("../data/ENDFP/p-");
 	fname += element;
 	fname += ".dat";
@@ -21,7 +21,7 @@ void testproton() {
 	//elementData.dumpTotalCrossections(std::cout);
 
 	//Testing incedent energy of proton, eV
-	double kE = 100 * 1000000;
+	double kE = 2.2 * 1000000;
 	/*rng1.init(55, 97);
 	rng2.init(40, 97);*/
 
@@ -88,23 +88,23 @@ void testproton() {
 	double const Na = 6.022 * pow(10, 23);
 	double macro = ro * Na / 56 * sigma;
 	double t = 7.5; // cm
-	double probability = macro * t;
+	double probability = 1 - exp(-macro * t);
 	for (int i = 0; i < 100000; i++)
 	{
 		if (probability > rng.rnd())
 		{
 			//n
-			pars = elementData.Products[0]->EANuclearCrossSections[0]->playpar(rng, kE);
-			mu = elementData.Products[0]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[0]->product_type, rng);
-			A.fill(pars[0][0], elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[0]->product_type);
+			pars = elementData.EmittedNeutrons[0]->EANuclearCrossSections[0]->playpar(rng, kE, elementData.EmittedNeutrons[0]->LAW);
+			mu = elementData.EmittedNeutrons[0]->EANuclearCrossSections[0]->playmu(kE, elementData.EmittedNeutrons[0]->LAW, pars, elementData.EmittedNeutrons[0]->product_type, rng);
+			A.fill(pars[0][0], elementData.Products[0]->EANuclearCrossSections[0]->getMulti(kE), mu, elementData.Products[0]->product_type, rng);
 			//p
-			pars = elementData.Products[1]->EANuclearCrossSections[0]->playpar(rng, kE);
-			mu = elementData.Products[1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[1]->product_type, rng);
-			A.fill(pars[0][0], elementData.Products[1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[1]->product_type);
+			pars = elementData.Products[1]->EANuclearCrossSections[0]->playpar(rng, kE, elementData.Products[1]->LAW);
+			mu = elementData.Products[1]->EANuclearCrossSections[0]->playmu(kE, elementData.Products[1]->LAW, pars, elementData.Products[1]->product_type, rng);
+			A.fill(pars[0][0], elementData.Products[1]->EANuclearCrossSections[0]->getMulti(kE), mu, elementData.Products[1]->product_type, rng);
 			//gamma
-			pars = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playpar(rng, kE);
-			mu = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playmu(kE, pars, elementData.Products[elementData.Products.size() - 1]->product_type, rng);
-			A.fill(pars[0][0], elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->getMulti(kE), elementData.Products[elementData.Products.size() - 1]->product_type);
+			pars = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playpar(rng, kE, elementData.Products[elementData.Products.size() - 1]->LAW);
+			mu = elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->playmu(kE, elementData.Products[elementData.Products.size() - 1]->LAW, pars, elementData.Products[elementData.Products.size() - 1]->product_type, rng);
+			A.fill(pars[0][0], elementData.Products[elementData.Products.size() - 1]->EANuclearCrossSections[0]->getMulti(kE), mu, elementData.Products[elementData.Products.size() - 1]->product_type, rng);
 		}
 	}
 	A.dump(std::cout);
