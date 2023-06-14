@@ -56,12 +56,12 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("TI700ICRU");
 		media.addName("STEEL700ICRU");
 		media.addName("CU700ICRU");
+		media.addName("HE700ICRU");
+		media.addName("MYLAR700ICRU");
 
 		//media.addName("C60");
 		//media.addName("NAI700ICRU");
 		//media.addName("SI700ICRU");
-		//media.addName("MYLAR700ICRU");
-		//media.addName("HE700ICRU");
 		//media.addName("170C700ICRU");
 		//media.addName("226C700ICRU");
 		//media.addName("BE700ICRU");
