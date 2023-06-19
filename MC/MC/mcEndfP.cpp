@@ -433,14 +433,18 @@ void mcEndfCrossSectionTable::dump(std::ostream& os) const
 		os << Energies[i] << "\t" << Values[i] << endl;
 }
 
-double mcEndfCrossSectionTable::get_sigma(double kE)
+double mcEndfCrossSectionTable::get_lambda(double kE, double rho, double A)
 {
+	const double Na = 6.022; //multiply by 10^23 was taken into account, when convert barns into cm^2 at "return"
 	int i = 0;
 	for (i = 0; i < Energies.size(); i++)
 		if (Energies[i] > kE)
 			break;
+	if (i == Energies.size())
+		i--;
 	i--;
-	return Values[i]; //сделать интерпол€цию
+	double _sigma = (Values[i + 1] - Values[i]) / (Energies[i + 1] - Energies[i]) * (kE - Energies[i]) + Values[i];
+	return 1 / (rho * _sigma * Na / A / 10);
 }
 
 void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const

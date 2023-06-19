@@ -4,15 +4,15 @@
 #include <filesystem>
 #include "mcRng.h"
 #include "mcScoreTest.h"
-
+#include "mcTransport.h"
 
 using namespace std;
 
 void testproton() {
-	const char* element = "Be009";
+	const char* element = "O016";
 	std::string fname("../data/ENDFP/p-");
 	fname += element;
-	fname += ".dat";
+	fname += ".tendl";
 
 	mcRng rng1, rng2;
 	rng1.init(21, 48);
@@ -21,7 +21,7 @@ void testproton() {
 	//elementData.dumpTotalCrossections(std::cout);
 
 	//Testing incedent energy of proton, eV
-	double kE = 2.2 * 1000000;
+	double kE = 70 * 1000000;
 	/*rng1.init(55, 97);
 	rng2.init(40, 97);*/
 
@@ -83,12 +83,18 @@ void testproton() {
 	A.init_ptype(particle_type::proton);
 	double** pars;
 	double mu;
-	double sigma = elementData.NuclearCrossSections.get_sigma(kE) * pow(10, -24);
-	double ro = 7.874; // g/cm^3
-	double const Na = 6.022 * pow(10, 23);
-	double macro = ro * Na / 56 * sigma;
+	double ro = 1.00; // g/cm^3
+	double lambda = elementData.NuclearCrossSections.get_lambda(kE, ro, 16);
+	vector<double> inteructDist;
+	double meantointeruct = 0;
+	for (int i = 0; i < 1000000; i++)
+	{
+		inteructDist.push_back(mcTransport::HowManyMFPs(rng) * lambda);
+		meantointeruct += inteructDist[i];
+	}
+	meantointeruct /= inteructDist.size();
 	double t = 7.5; // cm
-	double probability = 1 - exp(-macro * t);
+	double probability = 1 - exp(-t / lambda);
 	for (int i = 0; i < 100000; i++)
 	{
 		if (probability > rng.rnd())

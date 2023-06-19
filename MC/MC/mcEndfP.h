@@ -41,7 +41,7 @@ public:
 	void Load(std::istream& is);
 	void dump(std::ostream& os) const;
 
-	double get_sigma(double kE);
+	double get_lambda(double kE, double rho, double A);
 
 	// Количество пар энергия падающей частицы / сечение
 	int npoints;
