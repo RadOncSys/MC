@@ -9,6 +9,7 @@
 #include "../../mc/mc/mcMediumXE.h"
 #include "../../mc/mc/mcThread.h"
 #include "../../mc/mc/mcVRMLDumper.h"
+#include "../../MC/MC/mcPhysics.h"
 
 #include <fstream>
 #include <time.h>
@@ -77,6 +78,14 @@ int _tmain(int argc, _TCHAR* argv [])
 		XPRNode paramsDoc, geometryDoc;
 		XmlParseReaderBase::CreateXPRDocumentFromFile(argv[1], paramsDoc);
 		XmlParseReaderBase::CreateXPRDocumentFromFile(argv[2], geometryDoc);
+
+		const mcPhysics* phys = media.getPhysics(3);
+		const mcMedium* med = media.getMedium(3, 0);
+		double freepath = 0;
+		for (int i = 0; i < 1000; i++)
+		{
+			freepath = phys->MeanFreePath(70, *med, 1.00);
+		}
 
 		//
 		// Геометрические модули
