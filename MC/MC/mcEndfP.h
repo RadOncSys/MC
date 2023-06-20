@@ -85,6 +85,8 @@ public:
 	//»нтерпол€ци€ f_0 дл€ пары энерги€-энерги€ вылета
 	double getf_0(int IN, double Eout);
 
+	double integrate_f0(mcRng& rng, double kE);
+
 	int ZA_nucl;
 
 	double AWR_nucl;

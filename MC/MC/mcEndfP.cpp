@@ -898,6 +898,92 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LA
 	}
 }
 
+double mcEndfEANuclearCrossSectionTable::integrate_f0(mcRng& rng, double kE)
+{
+	//f(e, e') = f(ei, e') + (e - ei)/(ei+1 - ei)*(f(ei+1, e') - f(ei,e'))
+	int i = 0, c = 0, iii = 0;
+	int pi = 0;
+	vector<vector<double>> f_0;
+	double r = rng.rnd();
+	for (i = 0; i < EA_Epoints.size(); i++)
+	{
+		if (EA_Epoints[i] > kE)
+			break;
+	}
+	if (i == EA_Epoints.size())
+		i -= 2;
+	else i--;
+	int maxsize = max(EA_par[i].size(), EA_par[i + 1].size());
+	int minsize = min(EA_par[i].size(), EA_par[i + 1].size());
+	vector<double> Eout;
+	vector<double> r_par;
+	//vector<vector<double>> f_l (2);
+
+	if (LANG[0] == 2) //KALLBACH-MANN REPRESENTATION
+	{
+		if (EA_par[i].size() > EA_par[i + 1].size())
+		{
+			for (int ii = 0; ii < maxsize; ii++)
+			{
+				Eout.push_back(EA_par[i][ii][0]);
+			}
+			for (c = 0; c < minsize; c++)
+			{
+				if (EA_par[i + 1][c][0] > Eout.back())
+					break;
+			}
+			for (iii = c; iii < minsize; iii++)
+			{
+				Eout.push_back(EA_par[i + 1][iii][0]);
+			}
+			f_0.resize(Eout.size());
+			for (int ii = 0; ii < Eout.size(); ii++)
+			{
+				f_0[ii].resize(2);
+				f_0[ii][1] = Eout[ii];
+				if (ii < maxsize)
+				{
+					f_0[ii][0] = EA_par[i][ii][1] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (getf_0(i + 1, Eout[ii]) - EA_par[i][ii][1]);
+				}
+				else
+				{
+					f_0[ii][0] = f_0[ii - 1][0] + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * getf_0(i + 1, Eout[ii]);
+				}
+			}
+		}
+		else if (EA_par[i].size() <= EA_par[i + 1].size())
+		{
+			for (int ii = 0; ii < maxsize; ii++)
+			{
+				Eout.push_back(EA_par[i + 1][ii][0]);
+			}
+			f_0.resize(Eout.size());
+			for (int ii = 0; ii < Eout.size(); ii++)
+			{
+				if (ii < minsize)
+				{
+					f_0[ii].resize(2);
+					f_0[ii][1] = Eout[ii];
+					f_0[ii][0] = getf_0(i, Eout[ii]) + (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * (EA_par[i + 1][ii][1] - getf_0(i, Eout[ii]));
+				}
+				else
+				{
+					f_0[ii].resize(2);
+					f_0[ii][1] = Eout[ii];
+					f_0[ii][0] = (kE - Energies[i]) / (Energies[i + 1] - Energies[i]) * EA_par[i + 1][ii][1];
+				}
+			}
+		}
+		
+	}
+	double S = 0;
+	for (int i = 0; i < f_0.size() - 1; i++)
+	{
+		S += (f_0[i + 1][0] + f_0[i][0]) / 2 * (f_0[i + 1][1] - f_0[i][1]);
+	}
+	return S;
+}
+
 double mcEndfEANuclearCrossSectionTable::getf_0(int IN, double Eout)
 {
 	int i = 0;
@@ -1248,6 +1334,10 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 	os << "Dump EA proton crossections for element = \t" << ElementName << " with \t" << Products.size() << " products." << endl;
 	os << "---------------------------------------------------------------" << endl;
 	os << endl;
+
+	mcRng rng1;
+	rng1.init(23, 71);
+
 	for (int i = 0; i < Products.size(); i++)
 	{
 		os << "Product - \t" << typeof(Products[i]->product_type) << "\t #" << i + 1 << endl;
@@ -1255,6 +1345,7 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 			os << "Nucleous with:" << endl << "A = \t" << Products[i]->ZAP % 1000 << endl << "Z = \t" << Products[i]->ZAP / 1000 << endl << endl;
 		Products[i]->EANuclearCrossSections[0]->dump(os);	
 	}
+	double** a = Products[0]->EANuclearCrossSections[0]->playpar(rng1, 70000000, Products[0]->LAW);
 }
 
 
