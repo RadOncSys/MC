@@ -82,7 +82,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		mcRng rng1;
 		rng1.init(21, 38);
 		const mcPhysics* phys = media.getPhysics(3);
-		const mcMedium* med = media.getMedium(3, 0);
+		const mcMedium* med = media.getMedium(3, 7);
 		std::vector<double> freepath;
 		double meantointeruct = 0;
 		for (int i = 0; i < 1000000; i++)
