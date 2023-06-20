@@ -79,13 +79,19 @@ int _tmain(int argc, _TCHAR* argv [])
 		XmlParseReaderBase::CreateXPRDocumentFromFile(argv[1], paramsDoc);
 		XmlParseReaderBase::CreateXPRDocumentFromFile(argv[2], geometryDoc);
 
+		mcRng rng1;
+		rng1.init(21, 38);
 		const mcPhysics* phys = media.getPhysics(3);
 		const mcMedium* med = media.getMedium(3, 0);
-		double freepath = 0;
-		for (int i = 0; i < 1000; i++)
+		std::vector<double> freepath;
+		double meantointeruct = 0;
+		for (int i = 0; i < 1000000; i++)
 		{
-			freepath = phys->MeanFreePath(70, *med, 1.00);
+			freepath.push_back(phys->MeanFreePath(70, *med, 1.00));
+			freepath[i] *= mcTransport::HowManyMFPs(rng1);
+			meantointeruct += freepath[i];
 		}
+		meantointeruct /= freepath.size();
 
 		//
 		// Геометрические модули
