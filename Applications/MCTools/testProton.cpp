@@ -84,7 +84,7 @@ void testproton() {
 	double** pars;
 	double mu;
 	double ro = 1.00; // g/cm^3
-	double lambda = elementData.NuclearCrossSections.get_lambda(kE, ro, 16);
+	double lambda = elementData.NuclearCrossSections.get_lambda(kE, ro, 18);
 	vector<double> inteructDist;
 	double meantointeruct = 0;
 	for (int i = 0; i < 1000000; i++)
