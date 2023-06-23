@@ -231,6 +231,7 @@
     <ClInclude Include="mcSourceUniformCone.h" />
     <ClInclude Include="mcSourceXrayBeam.h" />
     <ClInclude Include="mcSourceXraySigmaR.h" />
+    <ClInclude Include="mcSpline.h" />
     <ClInclude Include="mcThread.h" />
     <ClInclude Include="mcTransport.h" />
     <ClInclude Include="mcTransportAxialSymmetricSplitter.h" />

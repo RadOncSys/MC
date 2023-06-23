@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <iostream>
 #include <random>
+#include "mcSpline.h"
 
 using namespace std;
 
@@ -898,6 +899,34 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LA
 	}
 }
 
+double lagrange(double xp, vector<vector<double>> f) {
+	double intp = 0;
+	int n = f.size();
+	for (int i = 0; i < n; i++) {
+		double m = 1;
+		for (int j = 0; j < n; j++) {
+			if (i != j)
+				m = m * (xp - f[j][1]) / (f[i][1] - f[j][1]);
+		}
+		m = m * f[i][0];
+		intp = intp + m;
+	}
+	return intp;
+}
+
+double LinearInt(double X, vector<vector<double>> f)
+{
+	int i = 0;
+	for (i = 0; i < f.size(); i++)
+		if (f[i][1] > X)
+			break;
+	if (i >= f.size())
+		i -= 2;
+	else i--;
+	double output = f[i][0] + (f[i + 1][0] - f[i][0]) / (f[i + 1][1] - f[i][1]) * (X - f[i][1]);
+	return output;
+}
+
 double mcEndfEANuclearCrossSectionTable::integrate_f0(mcRng& rng, double kE)
 {
 	//f(e, e') = f(ei, e') + (e - ei)/(ei+1 - ei)*(f(ei+1, e') - f(ei,e'))
@@ -976,10 +1005,29 @@ double mcEndfEANuclearCrossSectionTable::integrate_f0(mcRng& rng, double kE)
 		}
 		
 	}
-	double S = 0;
-	for (int i = 0; i < f_0.size() - 1; i++)
+	vector<double> E, F;
+	for (int i = 0; i < f_0.size(); i++)
 	{
-		S += (f_0[i + 1][0] + f_0[i][0]) / 2 * (f_0[i + 1][1] - f_0[i][1]);
+		E.push_back(f_0[i][1]);
+		F.push_back(f_0[i][0]);
+	}
+	vector<SplineSet> cs = spline(E, F);
+	double S = 0;
+	vector<vector<double>> f1;
+	f1.resize(1000);
+	double Eh = 0;
+	double h = f_0[f_0.size() - 1][1] / f1.size();
+	for (int i = 0; i < f1.size(); i++)
+	{
+		f1[i].resize(2);
+		f1[i][1] = Eh;
+		f1[i][0] = CountSpline(cs, f1[i][1]);
+		Eh += h;
+		cout << f1[i][1] << "\t" << f1[i][0] << endl;
+	}
+	for (int i = 1; i < f1.size() - 1; i += 2)
+	{
+		S += h / 3 * (f1[i - 1][0] + 4 * f1[i][0] + f1[i + 1][0]);
 	}
 	return S;
 }

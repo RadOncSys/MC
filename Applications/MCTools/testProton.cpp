@@ -6,10 +6,11 @@
 #include "mcScoreTest.h"
 #include "mcTransport.h"
 
+
 using namespace std;
 
 void testproton() {
-	const char* element = "Pb207";
+	const char* element = "Fe056";
 	std::string fname("../data/ENDFP/p-");
 	fname += element;
 	fname += ".dat";
@@ -20,8 +21,9 @@ void testproton() {
 	elementData.Load(fname.c_str(), element);
 	//elementData.dumpTotalCrossections(std::cout);
 	//Testing incedent energy of proton, eV
-	double kE = 70 * 1000000;
+	double kE = 72 * 1000000;
 	double I1 = elementData.Products[0]->EANuclearCrossSections[0]->integrate_f0(rng1, kE);
+	cout << "1";
 	/*rng1.init(55, 97);
 	rng2.init(40, 97);*/
 
@@ -83,8 +85,9 @@ void testproton() {
 	A.init_ptype(particle_type::proton);
 	double** pars;
 	double mu;
-	double ro = 11.34; // g/cm^3
-	double lambda = elementData.NuclearCrossSections.get_lambda(kE, ro, 207.19);
+	double ro = 1.00; // g/cm^3
+	double lambda = elementData.NuclearCrossSections.get_lambda(kE, ro, 18);
+	double Sigma = 1 / lambda;
 	vector<double> inteructDist;
 	double meantointeruct = 0;
 	for (int i = 0; i < 1000000; i++)
