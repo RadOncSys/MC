@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="mcBrachySource.h" />
     <ClInclude Include="mcClinicalElectronBeam.h" />
     <ClInclude Include="mcCSNuclear.h" />
     <ClInclude Include="mcDefs.h" />
@@ -261,6 +262,7 @@
     <ClInclude Include="ProfileProcessor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mcBrachySource.cpp" />
     <ClCompile Include="mcClinicalElectronBeam.cpp" />
     <ClCompile Include="mcCSNuclear.cpp" />
     <ClCompile Include="mcEndfP.cpp" />
