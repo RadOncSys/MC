@@ -898,17 +898,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 			for (auto n1 : node.Nodes)
 			{
 				if (_wcsicmp(n1.Name.c_str(), L"type") == 0)
-				{
 					radTypeName = n1.Text;
-					for (auto n2 : n1.Nodes)
-					{
-						if (_wcsicmp(n2.Name.c_str(), L"isotope") == 0)
-						{
-							isotope = _wcsicmp(n2.Text.c_str(), L"C60") == 0 ? mc_isotope_t::C60 :
-								_wcsicmp(n2.Text.c_str(), L"IR192") == 0 ? mc_isotope_t::IR192 : mc_isotope_t::UNKNOWN;
-						}
-					}
-				}
 				else if (_wcsicmp(n1.Name.c_str(), L"energy") == 0)
 					energy = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"spectrum") == 0)
@@ -917,6 +907,11 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 					ewidth = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"awidth") == 0)
 					awidth = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"isotope") == 0)
+				{
+					isotope = _wcsicmp(n1.Text.c_str(), L"C60") == 0 ? mc_isotope_t::C60 :
+						_wcsicmp(n1.Text.c_str(), L"IR192") == 0 ? mc_isotope_t::IR192 : mc_isotope_t::UNKNOWN;
+				}
 			}
 			if (node.Nodes.size() > 0)
 				isRadiationDefined = true;
@@ -1092,7 +1087,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	}
 	else if (_wcsicmp(radTypeName.c_str(), L"brachy") == 0)
 	{
-		source = new mcBrachySource(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), d / 2, h, isotope);
+		source = new mcBrachySource(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), radius, h, isotope);
 	}
 	else if (_wcsicmp(radTypeName.c_str(), L"clinical_electron_beam") == 0)
 	{

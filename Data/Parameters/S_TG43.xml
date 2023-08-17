@@ -1,28 +1,34 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <!--
-Симуляция сферически симметричной системы, состоящей из 
-шаровидного источника С-60 и сферической вольфрамовой защиты вокруг.
-Эксперимент предложен Дмитрием Граниным для сравнения GEANT4 - MC (EGS4).
+В качестве материала выбираем золото как ближайший к иридию материал из имеющихся в PEGS4
 -->
 
 <input>
-  <simulation nhistories="1000000" nbanches="100">
+  <simulation nhistories="10000000" nbanches="100">
   </simulation>
 
   <options>
-    <vrmlfile>SphertShield.wrl</vrmlfile>
-    <statfile>SphertShield.dat</statfile>
-    <transCutoff_elec unit="MeV" ecat ="2.0"/>
+    <vrmlfile>brachy.wrl</vrmlfile>
+    <statfile>brachy.dat</statfile>
+    <transCutoff_elec unit="MeV" ecat ="0.2"/>
   </options>
 
-  <source name="sphere_C60" module="Source" trackparticles="false">
-    <radiation type="c60_sphere" />
-    <position unit="cm" x="0" y="0" z="0" />
+  <!-- 
+  Источник
+  -->
+  <source name="brachy_source" module="Source" trackparticles="false">
+    <radiation type="brachy" isotope="IR192" />
+    <position unit="cm" x="0" y="0" z="-0.18" />
     <direction x="0" y="0" z="1" />
-    <core radius="2.0" />
+    <core radius="0.03" h="0.36"/>
   </source>
 
-  <score type="fluence_sphere" module="Trap" />
+  <!-- 
+  Скоринг
+  -->
+  <score type="rz" module="Phantom">
+    <size unit="cm" nr="101" nz="101" rmax="10.1" zmin="-0.05" zmax="10.05"/>
+  </score>
 
 </input>

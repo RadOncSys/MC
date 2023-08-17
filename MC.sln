@@ -18,6 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{D377A3E0-4D7E-47DD-996C-5A6F928D821B}"
 	ProjectSection(SolutionItems) = preProject
 		Data\AcceleratorSimulator.pegs4dat = Data\AcceleratorSimulator.pegs4dat
+		Data\gmora.pegs4dat = Data\gmora.pegs4dat
 		Data\neutron.dat = Data\neutron.dat
 		Data\proton.dat = Data\proton.dat
 		Data\vrmlview.zip = Data\vrmlview.zip

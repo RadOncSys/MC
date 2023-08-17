@@ -59,19 +59,19 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("HE700ICRU");
 		media.addName("MYLAR700ICRU");
 
-		//media.addName("C60");
+		media.addName("C60");
 		//media.addName("NAI700ICRU");
 		//media.addName("SI700ICRU");
 		//media.addName("170C700ICRU");
 		//media.addName("226C700ICRU");
 		//media.addName("BE700ICRU");
 		//media.addName("TA700ICRU");
-		//media.addName("AU700ICRU");
+		media.addName("AU700ICRU");
 
 		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
-		//media.initProtonFromFiles("../data/proton.dat", "../data/PSTAR", "../data/ICRU63");
-		media.initProtonFromFiles("../data/proton.dat", "../data/ENDFP");
-		media.initNeutronFromFile("../data/neutron.dat");
+		////media.initProtonFromFiles("../data/proton.dat", "../data/PSTAR", "../data/ICRU63");
+		//media.initProtonFromFiles("../data/proton.dat", "../data/ENDFP");
+		//media.initNeutronFromFile("../data/neutron.dat");
 
 		// Pars input files
 		XPRNode paramsDoc, geometryDoc;
@@ -242,17 +242,30 @@ int _tmain(int argc, _TCHAR* argv [])
 			for (i = 0; i < (int) mm.size(); i++)
 			{
 				mcMediumXE* m = (mcMediumXE*) mm[i];
-				m->transCutoff_elec = ecut;
+				m->transCutoff_elec = m->eventCutoff_elec;
+
+				//   этому моменту среда уже имеет значение, прочитанное в PEGS4.
+				// ћы не можем назначать значение меньше.
+				// ¬ противном случае, помимо сомнительности точности расчетов, 
+				// возникают фатальные ошибки вычислений.
+				if(ecut > m->transCutoff_elec)
+					m->transCutoff_elec = ecut;
+				else
+				{
+					// ѕредупреждаем пользовател€ о нарушении его пожеланий
+					cout << "Requested ECAT for material " << m->name_
+						<< " is lower PEGS4 value.Keep PEGS4 ecut = " << m->transCutoff_elec << endl;
+				}
 
 				// Test: ручное отключение транспорта электронов в коллиматоре
 				//if(m->name_ == "W700ICRU")
 				//	m->transCutoff_elec = 100.0;
 
-				// HACK!! ƒо решени€ вопроса прив€зки ECUT к модулю принудительно назначаем его
-				// дл€ воды и воздуха 0.3 ћэ¬, как наиболее практичного дл€ транспорта в среде.
-				if (m->name_ == "H2O700ICRU" || m->name_ == "AIR700ICRU" ||
-					m->name_ == "LUNG700ICRU" || m->name_ == "ICRPBONE700ICRU")
-					m->transCutoff_elec = 0.3;
+				//// HACK!! ƒо решени€ вопроса прив€зки ECUT к модулю принудительно назначаем его
+				//// дл€ воды и воздуха 0.3 ћэ¬, как наиболее практичного дл€ транспорта в среде.
+				//if (m->name_ == "H2O700ICRU" || m->name_ == "AIR700ICRU" ||
+				//	m->name_ == "LUNG700ICRU" || m->name_ == "ICRPBONE700ICRU")
+				//	m->transCutoff_elec = 0.3;
 			}
 		}
 
