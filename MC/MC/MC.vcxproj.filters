@@ -355,6 +355,9 @@
     <ClInclude Include="mcBrachySource.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="mcScoreBrachy.h">
+      <Filter>Score</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcScore.cpp">
@@ -657,6 +660,9 @@
     <ClCompile Include="mcScoreTest.cpp" />
     <ClCompile Include="mcBrachySource.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreBrachy.cpp">
+      <Filter>Score</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

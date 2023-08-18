@@ -201,6 +201,7 @@
     <ClInclude Include="mcScoreBeamFluence2.h" />
     <ClInclude Include="mcScoreBeamFluenceSubsource.h" />
     <ClInclude Include="mcScoreBeamFluenceXY.h" />
+    <ClInclude Include="mcScoreBrachy.h" />
     <ClInclude Include="mcScoreConicalRZ.h" />
     <ClInclude Include="mcScoreEnergyFluence.h" />
     <ClInclude Include="mcScoreEnergySpectrum.h" />
@@ -305,6 +306,7 @@
     <ClCompile Include="mcScoreBeamFluence2.cpp" />
     <ClCompile Include="mcScoreBeamFluenceSubsource.cpp" />
     <ClCompile Include="mcScoreBeamFluenceXY.cpp" />
+    <ClCompile Include="mcScoreBrachy.cpp" />
     <ClCompile Include="mcScoreConicalRZ.cpp" />
     <ClCompile Include="mcScoreEnergyFluence.cpp" />
     <ClCompile Include="mcScoreEnergySpectrum.cpp" />

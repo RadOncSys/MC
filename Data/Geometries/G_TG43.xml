@@ -47,7 +47,7 @@
       <position unit="cm" x="0" y="0" z="0" />
       <normal x="0" y="0" z="1" />
       <xaxis x="1" y="0" z="0" />
-      <size unit="cm" radius="20.0"/>
+      <size unit="cm" radius="40.0"/>
     </module>
   </module>
 </accelerator>

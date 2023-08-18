@@ -1,39 +1,39 @@
-#include "mcScoreMatrixRZ.h"
+#include "mcScoreBrachy.h"
 #include "mcGeometry.h"
 #include "mcTransport.h"
 #include <float.h>
 
-mcScoreMatrixRZ::mcScoreMatrixRZ(const char* module_name, int nThreads, int nr, int nz, double rmax, double zmin, double zmax)
+mcScoreBrachy::mcScoreBrachy(const char* module_name, int nThreads)
 	:mcScore(module_name, nThreads)
 {
-	m_nr = nr;
-	m_nz = nz;
-	m_rmax = rmax;
+	m_nr = 201;
+	m_nz = 201;
+	m_rmax = 10.05;
 	m_rm2 = m_rmax * m_rmax;
 	m_rstep = m_rmax / m_nr;
-	m_zmin = zmin;
-	m_zmax = zmax;
+	m_zmin = -0.025;
+	m_zmax = 10.025;
 	m_zstep = (m_zmax - m_zmin) / m_nz;
 
 	int len = nThreads * m_nr * m_nz;
 	m_MAll = new double[len];
 	memset(m_MAll, 0, len * sizeof(double));
-	m_M = new double*[nThreads];
+	m_M = new double* [nThreads];
 	m_M[0] = m_MAll;
 	for (int i = 1; i < nThreads_; i++)
 		m_M[i] = m_M[i - 1] + m_nr * m_nz;
 }
 
-mcScoreMatrixRZ::~mcScoreMatrixRZ()
+mcScoreBrachy::~mcScoreBrachy()
 {
 	if (m_MAll) delete[] m_MAll;
 	if (m_M) delete[] m_M;
 }
 
-void mcScoreMatrixRZ::ScoreFluence(const mcParticle& particle)
+void mcScoreBrachy::ScoreFluence(const mcParticle& particle)
 { }
 
-void mcScoreMatrixRZ::ScorePoint(double edep
+void mcScoreBrachy::ScorePoint(double edep
 	, int iThread
 	, const mcRegionReference& region
 	, mc_particle_t pt
@@ -53,7 +53,7 @@ void mcScoreMatrixRZ::ScorePoint(double edep
 	scoreEnergyInVoxel(iThread, ir, iz, edep);
 }
 
-void mcScoreMatrixRZ::ScoreLine(double edep
+void mcScoreBrachy::ScoreLine(double edep
 	, int iThread
 	, const mcRegionReference& region
 	, mc_particle_t pt
@@ -145,7 +145,7 @@ void mcScoreMatrixRZ::ScoreLine(double edep
 		while ((vz12 - pz1) * v > DBL_EPSILON)
 		{
 			if (isOrto) {
-				ir = int(((vz12 + vz1)*0.5).lengthXY() / m_rstep);
+				ir = int(((vz12 + vz1) * 0.5).lengthXY() / m_rstep);
 				scoreEnergyInVoxel(iThread, ir, iz, eddens * (vz12 - vz1).length());
 				break;
 			}
@@ -156,7 +156,7 @@ void mcScoreMatrixRZ::ScoreLine(double edep
 
 			// Вычисляем индекс кольца более надежным способом.
 			// Из-за проблемы округления на границе в противном случае возникают сбои индексов.
-			ir = int(((pz2 + pz1)*0.5).lengthXY() / m_rstep);
+			ir = int(((pz2 + pz1) * 0.5).lengthXY() / m_rstep);
 			scoreEnergyInVoxel(iThread, ir, iz, eddens * (pz2 - pz1).length());
 
 			pz1 = pz2;
@@ -168,58 +168,58 @@ void mcScoreMatrixRZ::ScoreLine(double edep
 	}
 }
 
-void mcScoreMatrixRZ::scoreEnergyInVoxel(int iThread, int ir, int iz, double edep)
+void mcScoreBrachy::scoreEnergyInVoxel(int iThread, int ir, int iz, double edep)
 {
 	if (iThread >= nThreads_)
-		throw std::exception("mcScoreMatrixRZ::scoreEnergyInVoxel: thread exceed container size");
+		throw std::exception("mcScoreBrachy::scoreEnergyInVoxel: thread exceed container size");
 
 	if (ir < m_nr && iz >= 0 && iz < m_nz) {
-		m_M[iThread][ir*m_nz + iz] += edep;
+		m_M[iThread][ir * m_nz + iz] += edep;
 		etotal_[iThread] += edep;
 	}
 }
 
-void mcScoreMatrixRZ::CE2D()
+void mcScoreBrachy::CE2D()
 {
 	if (dconverted_)
-		throw std::exception("mcScoreMatrixRZ::CE2D: Already converted to dose");
+		throw std::exception("mcScoreBrachy::CE2D: Already converted to dose");
 	dconverted_ = true;
 	for (int iz = 0; iz < m_nz; iz++)
 	{
 		for (int ir = 0; ir < m_nr; ir++)
 		{
-			double r1 = ir*m_rstep;
+			double r1 = ir * m_rstep;
 			double r2 = r1 + m_rstep;
-			double vol = PI * (r2*r2 - r1*r1)*m_zstep;
+			double vol = PI * (r2 * r2 - r1 * r1) * m_zstep;
 			for (int i = 0; i < nThreads_; i++)
-				m_M[i][ir*m_nz + iz] /= vol;
+				m_M[i][ir * m_nz + iz] /= vol;
 		}
 	}
 }
 
-double mcScoreMatrixRZ::Dose(int iThread, int ir, int iz) const
+double mcScoreBrachy::Dose(int iThread, int ir, int iz) const
 {
 	if (iThread >= nThreads_)
-		throw std::exception("mcScoreMatrixRZ::Dose: thread exceed container size");
+		throw std::exception("mcScoreBrachy::Dose: thread exceed container size");
 	else if (iz < 0 || iz >= m_nz || ir < 0 || ir >= m_nr)
 		return 0;
-	return m_M[iThread][ir*m_nz + iz];
+	return m_M[iThread][ir * m_nz + iz];
 }
 
-double mcScoreMatrixRZ::Dose(int ir, int iz) const
+double mcScoreBrachy::Dose(int ir, int iz) const
 {
 	double f = 0;
 	if (iz >= 0 && iz < m_nz && ir >= 0 && ir < m_nr)
 	{
 		for (int i = 0; i < nThreads_; i++)
-			f += m_M[i][ir*m_nz + iz];
+			f += m_M[i][ir * m_nz + iz];
 	}
 	return f;
 }
 
-void mcScoreMatrixRZ::dumpVRML(ostream& os) const
+void mcScoreBrachy::dumpVRML(ostream& os) const
 {
-	os << "# mcScoreMatrixRZ Score: " << name_ << endl;
+	os << "# mcScoreBrachy Score: " << name_ << endl;
 	if (transport_ == nullptr)
 	{
 		os << "# Transport not set. Dump not possible!" << endl;
@@ -231,7 +231,7 @@ void mcScoreMatrixRZ::dumpVRML(ostream& os) const
 	int da = 15; // шаг по углу 15 градусов
 	double mPi = PI / 180;
 
-	os << "# mcScoreMatrixRZ Score: " << name_ << endl;
+	os << "# mcScoreBrachy Score: " << name_ << endl;
 	os << "Shape {" << endl;
 	os << "  appearance Appearance {" << endl;
 	os << "    material Material {" << endl;
@@ -247,7 +247,8 @@ void mcScoreMatrixRZ::dumpVRML(ostream& os) const
 	{
 		double z = m_zmin + iz * m_zstep;
 		// Концентрические круги
-		for (ir = 1; ir <= m_nr; ir++) {
+		for (ir = 1; ir <= m_nr; ir++) 
+		{
 			// Рисуем только линии на поверхности цилиндра детектирующей матрицы
 			if (iz == 0 || iz == m_nz || ir == m_nr)
 			{
@@ -261,27 +262,7 @@ void mcScoreMatrixRZ::dumpVRML(ostream& os) const
 				}
 			}
 		}
-		//// Радиусы
-		//for(it=0; it<360; it+=da) {
-		//  geomVector3D p = geomVector3D(0, 0, z) * mttow;
-		//  os << "        " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
-		//  p = geomVector3D(m_rmax*sin(mPi*it), m_rmax*cos(mPi*it), z) * mttow;
-		//  os << "        " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
-		//  count++;
-		//}
 	}
-
-	//// Линии вдоль оси цилиндра
-	//for(ir=1; ir<=m_nr; ir++) {
-	//  double r = m_rstep * ir;
-	//  for(it=0; it<360; it+=da) {
-	//    geomVector3D p = geomVector3D(r*sin(mPi*it), r*cos(mPi*it), m_zmin) * mttow;
-	//    os << "        " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
-	//    p = geomVector3D(r*sin(mPi*it), r*cos(mPi*it), m_zmax) * mttow;
-	//    os << "        " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
-	//    count++;
-	//  }
-	//}
 
 	os << "      ]" << endl;
 	os << "    }" << endl;
@@ -294,26 +275,29 @@ void mcScoreMatrixRZ::dumpVRML(ostream& os) const
 	os << "}" << endl;
 }
 
-void mcScoreMatrixRZ::dumpStatistic(ostream& os) const
+void mcScoreBrachy::dumpStatistic(ostream& os) const
 {
 	int ir, iz;
-	int nr = Nr();
-	int nz = Nz();
-	double rmax = MaxR();
-	double zmin = MinZ();
-	double zmax = MaxZ();
-	double rstep = StepR();
-	double zstep = StepZ();
-
 	mcScore::dumpStatistic(os);
 
-	if (dconverted_)
-		os << "Dose matrix" << endl;
-	else
-		os << "Energy deposition matrix" << endl;
+	if (!dconverted_)
+		throw std::exception("mcScoreBrachy::dumpStatistic: Energy deposition must be converted to Dose before dump statistic");
 
-	os << "NR\tNz\tRMAX\tZ1\tZ2" << endl;
-	os << nr << '\t' << nz << '\t' << rmax << '\t' << zmin << '\t' << zmax << endl << endl;
+	// Создаем массив для установки матрицы F(r,thetta)
+
+	//int len = nThreads * m_nr * m_nz;
+	//m_MAll = new double[len];
+	//memset(m_MAll, 0, len * sizeof(double));
+	//m_M = new double* [nThreads];
+	//m_M[0] = m_MAll;
+	//for (int i = 1; i < nThreads_; i++)
+	//	m_M[i] = m_M[i - 1] + m_nr * m_nz;
+
+
+
+
+	//os << "NR\tNz\tRMAX\tZ1\tZ2" << endl;
+	//os << nr << '\t' << nz << '\t' << rmax << '\t' << zmin << '\t' << zmax << endl << endl;
 
 	//for( iz=0; iz < nz; iz++ )
 	//	os << '\t' << zmin + (double(iz) + 0.5) * zstep;
@@ -329,14 +313,14 @@ void mcScoreMatrixRZ::dumpStatistic(ostream& os) const
 	//}
 
 	// this code - for save transpose matrix
-	for (ir = 0; ir < nr; ir++)
-		os << '\t' << (double(ir) + 0.5) * rstep;
+	for (ir = 0; ir < m_nr; ir++)
+		os << '\t' << (double(ir) + 0.5) * m_rstep;
 	os << endl;
 
-	for (iz = 0; iz < nz; iz++)
+	for (iz = 0; iz < m_nz; iz++)
 	{
-		os << zmin + (double(iz) + 0.5) * zstep;
-		for (ir = 0; ir < nr; ir++)
+		os << m_zmin + (double(iz) + 0.5) * m_zstep;
+		for (ir = 0; ir < m_nr; ir++)
 			os << '\t' << Dose(ir, iz);
 		os << endl;
 	}

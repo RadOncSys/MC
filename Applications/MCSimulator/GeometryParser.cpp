@@ -31,6 +31,7 @@
 #include "../../mc/mc/mcScoreBeamFluence.h"
 #include "../../mc/mc/mcScoreBeamFluence2.h"
 #include "../../mc/mc/mcScoreMatrixRZ.h"
+#include "../../mc/mc/mcScoreBrachy.h"
 #include "../../mc/mc/mcScoreConicalRZ.h"
 #include "../../mc/mc/mcScoreBeamFluenceXY.h"
 #include "../../mc/mc/mcScorePhaseSpaceConcentrator.h"
@@ -732,6 +733,12 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	else if (_wcsicmp(scoreType.c_str(), L"rz") == 0)
 	{
 		score = new mcScoreMatrixRZ(scoreModule.c_str(), nThreads, nr, nz, rmax, zmin, zmax);
+	}
+
+	// Параметры брахитерапевтического источника по протоколу TG-43
+	else if (_wcsicmp(scoreType.c_str(), L"brachy") == 0)
+	{
+		score = new mcScoreBrachy(scoreModule.c_str(), nThreads);
 	}
 
 	// 3D дозовое распределение в веерной RZ геометрии
