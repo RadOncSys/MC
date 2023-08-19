@@ -27,8 +27,8 @@
   <!-- 
   Скоринг
   -->
-  <score type="rz" module="Phantom">
-    <size unit="cm" nr="101" nz="101" rmax="10.1" zmin="-0.05" zmax="10.05"/>
+  <score type="brachy" module="Phantom">
+    <size unit="cm" length="0.36"/>
   </score>
 
 </input>

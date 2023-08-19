@@ -1,18 +1,23 @@
 #include "mcScoreBrachy.h"
 #include "mcGeometry.h"
 #include "mcTransport.h"
+#include "ProfileProcessor.h"
 #include <float.h>
 
-mcScoreBrachy::mcScoreBrachy(const char* module_name, int nThreads)
-	:mcScore(module_name, nThreads)
+mcScoreBrachy::mcScoreBrachy(const char* module_name, int nThreads, double sourceLength)
+	:mcScore(module_name, nThreads), L_(sourceLength)
 {
-	m_nr = 201;
-	m_nz = 201;
-	m_rmax = 10.05;
+	// Учитывая что в статистике может применяться сглаживание не стоит важную область делать пограничной.
+	// Поэтому в ее сборе частично заходим в область отрицательных Z.
+	// Сетку по Z подбираем так, чтобы не нужно было интерполировать.
+
+	m_nr = 320;
+	m_nz = 441;
+	m_rmax = 16;
 	m_rm2 = m_rmax * m_rmax;
 	m_rstep = m_rmax / m_nr;
-	m_zmin = -0.025;
-	m_zmax = 10.025;
+	m_zmin = -11.025;
+	m_zmax = 11.025;
 	m_zstep = (m_zmax - m_zmin) / m_nz;
 
 	int len = nThreads * m_nr * m_nz;
@@ -285,43 +290,122 @@ void mcScoreBrachy::dumpStatistic(ostream& os) const
 
 	// Создаем массив для установки матрицы F(r,thetta)
 
-	//int len = nThreads * m_nr * m_nz;
-	//m_MAll = new double[len];
-	//memset(m_MAll, 0, len * sizeof(double));
-	//m_M = new double* [nThreads];
-	//m_M[0] = m_MAll;
-	//for (int i = 1; i < nThreads_; i++)
-	//	m_M[i] = m_M[i - 1] + m_nr * m_nz;
+	auto D = std::make_unique<std::vector<std::vector<double>>>(m_nr, std::vector<double>(m_nz, 0));
+	auto& dref = *D.get();
+	for (ir = 0; ir < m_nr; ir++)
+		for (iz = 0; iz < m_nz; iz++)
+			dref[ir][iz] = Dose(ir, iz);
 
+	auto F = ProfileProcessor::SmoothSG2D(dref);
+	auto& fref = *F.get();
 
+	// g(r)
+	double r_t[] = { 0.1, 0.2, 0.3, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+	int nr = sizeof(r_t) / sizeof(double);
 
+	os << "Radial dose function, g(r)" << endl;
+	os << "--------------------------" << endl;
+	os << "r[cm]\tg(r)" << endl;
 
-	//os << "NR\tNz\tRMAX\tZ1\tZ2" << endl;
-	//os << nr << '\t' << nz << '\t' << rmax << '\t' << zmin << '\t' << zmax << endl << endl;
+	int idz0 = int(-m_zmin / m_zstep);
+	int idr = int(1.0 / m_rstep - 0.5);
+	double f = 1.0 / m_rstep - idr - 0.5;
+	double gr0 = fref[idz0][idr] * (1 - f) + fref[idz0][idr + 1] * f;
+	double G0 = 2 * atan(L_ / 2) / L_;
 
-	//for( iz=0; iz < nz; iz++ )
-	//	os << '\t' << zmin + (double(iz) + 0.5) * zstep;
+	for (ir = 0; ir < nr; ir++)
+	{
+		// По радиусу придется интерполировать, так как он начинается с 0
+		// и нужные точки оказываются между пикселами.
+		double r = r_t[ir];
+		idr = int(r / m_rstep - 0.5);
+		f = r / m_rstep - idr - 0.5;
+		double G = 2 * atan(L_ / (2 * r)) / (L_ * r);
+		double gr = ((fref[idz0][idr] * (1 - f) + fref[idz0][idr + 1] * f) / gr0) * (G0 / G);
+		os << r << "\t" << gr;
+		gr = ((dref[idz0][idr] * (1 - f) + dref[idz0][idr + 1] * f) / gr0) * (G0 / G);
+		os << r << "\t" << gr << endl;
+	}
+	os << std::endl;
+
+	// Шаблоны самплинга двумерной функции анизотропии F(r, theta)
+	double fr_t[] = { 0, 0.25, 0.5, 1, 2, 3, 5 };
+	double fa_t[] = { 0, 1, 2, 3, 5, 7, 9, 12, 15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90, 105, 120, 130, 135, 140, 145, 150, 155, 160, 165, 168, 171, 173, 175	};
+
+	int nfrt = sizeof(fr_t) / sizeof(double);
+	int nfat = sizeof(fa_t) / sizeof(double);
+
+	os << "2D anisotropy function, F(r, thetta)" << endl;
+	os << "------------------------------------" << endl;
+	os << std::endl;
+
+	for (ir = 0; ir < nfrt; ir++)
+		os << '\t' << fr_t[ir] << '\t' << fr_t[ir];
+	os << std::endl;
+
+	for (iz = 0; iz < nfat; iz++)
+	{
+		double a = PI * fa_t[iz] / 180;
+		os << fa_t[iz];
+
+		for (ir = 0; ir < nfrt; ir++)
+		{
+			double r = fr_t[ir];
+			double x = r * cos(a);
+			double y = r * sin(a);
+
+			double G = (atan((x + L_ / 2) / r) - atan((x + L_ / 2) / r)) / r;
+			double G0 = 2 * atan(L_ / (2 * r)) / r;
+
+			// D0
+			int idy0 = int(r / m_rstep - 0.5);
+			f = r / m_rstep - idr - 0.5;
+			double d0 = ((fref[idz0][idy0] * (1 - f) + fref[idz0][idy0 + 1] * f) / gr0) * (G0 / G);
+
+			// D
+			int idx = int((x - m_zmin) / m_zstep - 0.5);
+			int idy = int(r / m_rstep);
+
+			double d00 = fref[idy][idx];
+			double d10 = fref[idy][idx + 1];
+			double d01 = fref[idy + 1][idx];
+			double d11 = fref[idy + 1][idx + 1];
+
+			double fx = (x - (m_zmin + (idx + 0.5) * m_zstep)) / m_zstep;
+			double fy = (y - ((idy + 0.5) * m_rstep)) / m_rstep;
+
+			double d = (d00 * (1 - fx) + d10 * fx) * (1 - fy) + (d01 * (1 - fx) + d11 * fx) * fy;
+
+			double frt = (d * G0) / (d0 * G);
+
+			// Сглаженная величина
+			os << "\t" << frt;
+
+			// Оригинальная величина
+			d00 = dref[idy][idx];
+			d10 = dref[idy][idx + 1];
+			d01 = dref[idy + 1][idx];
+			d11 = dref[idy + 1][idx + 1];
+
+			d = (d00 * (1 - fx) + d10 * fx) * (1 - fy) + (d01 * (1 - fx) + d11 * fx) * fy;
+			d0 = ((dref[idz0][idr] * (1 - f) + dref[idz0][idr + 1] * f) / gr0) * (G0 / G);
+			frt = (d * G0) / (d0 * G);
+			
+			os << "\t" << frt;
+		}
+		os << std::endl;
+	}
+
+	//// this code - for save transpose matrix
+	//for (ir = 0; ir < m_nr; ir++)
+	//	os << '\t' << (double(ir) + 0.5) * m_rstep;
 	//os << endl;
 
-	//for( ir=0; ir < nr; ir++ )
+	//for (iz = 0; iz < m_nz; iz++)
 	//{
-	//	os << (double(ir) + 0.5) * rstep;
-
-	//    for( iz=0; iz < nz; iz++ )
-	//	    os << '\t' << m[ir*nz + iz];
-	//    os << endl;
+	//	os << m_zmin + (double(iz) + 0.5) * m_zstep;
+	//	for (ir = 0; ir < m_nr; ir++)
+	//		os << '\t' << Dose(ir, iz);
+	//	os << endl;
 	//}
-
-	// this code - for save transpose matrix
-	for (ir = 0; ir < m_nr; ir++)
-		os << '\t' << (double(ir) + 0.5) * m_rstep;
-	os << endl;
-
-	for (iz = 0; iz < m_nz; iz++)
-	{
-		os << m_zmin + (double(iz) + 0.5) * m_zstep;
-		for (ir = 0; ir < m_nr; ir++)
-			os << '\t' << Dose(ir, iz);
-		os << endl;
-	}
 }

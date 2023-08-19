@@ -552,6 +552,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	double ecut = 0;
 	int nr_s = 0;
 	double rmax_s = 0, tmax = 0;
+	double length = 0;	// длина брахи источника
 	double H = 0;
 	double d_iz = 0;
 	double psx = 0, psy = 0, psz = 0;
@@ -615,6 +616,8 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 					r1 = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"rmax") == 0)
 					rmax = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"length") == 0)
+					length = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"zmin") == 0)
 					zmin = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"zmax") == 0)
@@ -738,7 +741,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	// Параметры брахитерапевтического источника по протоколу TG-43
 	else if (_wcsicmp(scoreType.c_str(), L"brachy") == 0)
 	{
-		score = new mcScoreBrachy(scoreModule.c_str(), nThreads);
+		score = new mcScoreBrachy(scoreModule.c_str(), nThreads, length);
 	}
 
 	// 3D дозовое распределение в веерной RZ геометрии

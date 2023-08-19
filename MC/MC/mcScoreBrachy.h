@@ -16,7 +16,7 @@
 class mcScoreBrachy : public mcScore
 {
 public:
-	mcScoreBrachy(const char* module_name, int nThreads);
+	mcScoreBrachy(const char* module_name, int nThreads, double sourceLength);
 
 	virtual ~mcScoreBrachy();
 
@@ -57,10 +57,11 @@ public:
 	double	Dose(int ir, int iz) const;
 
 protected:
-	int     m_nr, m_nz;     // число вокселов по радиусу (m_nr) и по z (m_nz)
-	double  m_rmax, m_rm2;  // m_rm2 - квадрат максимального радиуса
-	double  m_zmin, m_zmax;
-	double  m_rstep, m_zstep;
+	int m_nr, m_nz;			// число вокселов по радиусу (m_nr) и по z (m_nz)
+	double m_rmax, m_rm2;	// m_rm2 - квадрат максимального радиуса
+	double m_zmin, m_zmax;
+	double m_rstep, m_zstep;
+	double L_;
 	double* m_MAll;
 	double** m_M;
 };
