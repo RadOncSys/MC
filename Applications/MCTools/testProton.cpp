@@ -10,7 +10,7 @@
 using namespace std;
 
 void testproton() {
-	const char* element = "Fe056";
+	const char* element = "O016";
 	std::string fname("../data/ENDFP/p-");
 	fname += element;
 	fname += ".dat";
@@ -22,8 +22,20 @@ void testproton() {
 	//elementData.dumpTotalCrossections(std::cout);
 	//Testing incedent energy of proton, eV
 	double kE = 72 * 1000000;
-	double I1 = elementData.Products[0]->EANuclearCrossSections[0]->integrate_f0(rng1, kE);
-	cout << "1";
+	//double I1 = elementData.Products[0]->EANuclearCrossSections[0]->integrate_f0(rng1, kE);
+	double** pars;
+	double mu;
+	mcRng rng;
+	rng.init(33, 97);
+	for (int i = 0; i < 100; i++)
+	{
+		pars = elementData.Products[29]->EANuclearCrossSections[0]->playpar(rng, kE, elementData.Products[29]->LAW);
+		cout << pars[0][0] << "  " << pars[1][0] << "  ";// << pars[2][0] << endl;
+		mu = elementData.Products[29]->EANuclearCrossSections[0]->playmu(kE, elementData.Products[29]->LAW, pars, elementData.Products[29]->product_type, rng);
+		cout << mu;
+		cout << endl;
+	}
+	cout << endl;
 	/*rng1.init(55, 97);
 	rng2.init(40, 97);*/
 
@@ -78,26 +90,26 @@ void testproton() {
 		//	}
 		//}
 	//}
-	mcRng rng;
-	rng.init(33, 97);
-	mcSpectrum A;
-	A.init_inEn(kE);
-	A.init_ptype(particle_type::proton);
-	double** pars;
-	double mu;
-	double ro = 1.00; // g/cm^3
-	double lambda = elementData.NuclearCrossSections.get_lambda(kE, ro, 18);
-	double Sigma = 1 / lambda;
-	vector<double> inteructDist;
-	double meantointeruct = 0;
-	for (int i = 0; i < 1000000; i++)
-	{
-		inteructDist.push_back(mcTransport::HowManyMFPs(rng) * lambda);				//ÇÀÄÀ×À ÂÀËÈÄÀÖÈÈ #1 äëÿ Âîäû - ðåøåíà
-		meantointeruct += inteructDist[i];
-	}
-	meantointeruct /= inteructDist.size();
-	double t = 7.5; // cm
-	double probability = 1 - exp(-t / lambda);
+				//mcRng rng;
+				//rng.init(33, 97);
+				//mcSpectrum A;
+				//A.init_inEn(kE);
+				//A.init_ptype(particle_type::proton);
+				//double** pars;
+				//double mu;
+				//double ro = 1.00; // g/cm^3
+				//double lambda = elementData.NuclearCrossSections.get_lambda(kE, ro, 18);
+				//double Sigma = 1 / lambda;
+				//vector<double> inteructDist;
+				//double meantointeruct = 0;
+				//for (int i = 0; i < 1000000; i++)
+				//{
+				//	inteructDist.push_back(mcTransport::HowManyMFPs(rng) * lambda);				//ÇÀÄÀ×À ÂÀËÈÄÀÖÈÈ #1 äëÿ Âîäû - ðåøåíà
+				//	meantointeruct += inteructDist[i];
+				//}
+				//meantointeruct /= inteructDist.size();
+				//double t = 7.5; // cm
+				//double probability = 1 - exp(-t / lambda);
 	//for (int i = 0; i < 100000; i++)
 	//{
 	//	if (probability > rng.rnd())
