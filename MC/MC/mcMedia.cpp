@@ -13,6 +13,7 @@
 #include "../geometry/text.h"
 #include <fstream>
 #include <filesystem>
+#include <ctype.h>
 
 namespace fs = std::filesystem;
 
@@ -186,6 +187,23 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 	if (is.fail())
 		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
 	initProtonDeDxFromStream(is);
+	
+	
+	//TablicaMendeleeva H = Loaded O = Loaded
+	//for (media1:media_last)
+	//protons_->elements_->
+	Mendeleev Table;
+	Table.init();
+
+	for (int i = 0; i < xes_.size(); i++)
+		for (int j = 0; j < xes_[i]->elements_.size(); j++)
+		{
+			if (Table.isNecessary[xes_[i]->elements_[j].atomicNumber] == false)
+				Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
+		}
+	cout << endl;
+	
+
 
 	// Объект, в который сначала закачиваем всю баз данных сечений
 	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
@@ -194,7 +212,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
 
 	// ENDF
-	auto dbData = std::make_unique<std::vector<mcEndfP>>();
+	vector<mcEndfP> dbData;
 
 	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
@@ -207,20 +225,41 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		string ext = fs::path(entry.path()).extension().string();
 		std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
 
-		if(std::toupper(fname[0]) != 'P' || ext != ".TENDL")
+		if(std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
 		// Метку атомного элемента берем из имени файла.
 		string elementName = std::string(&fname[2]);
+		string AtNum = elementName;
+		int Z;
+
+		for (int i = 0; i < AtNum.size(); i++)
+		{
+			if (isalpha(AtNum[i]))
+			{
+				AtNum.erase(i, AtNum.size() - i);
+				Z = stoi(AtNum);
+				break;
+			}
+		}
+		cout << endl;
 
 		// База данных изотопа
 		//mcCSNuclear csForElement;
 		mcEndfP csForElement;
-		csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
-
+		if (Table.isNecessary[Z])
+		{
+			csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
+			dbData.push_back(csForElement);
+		}
 		//ifstream isIcru(entry.path().c_str());
-		dbData->push_back(csForElement);
 	}
+	initProtonCSFromVector(&dbData);
+}
+
+void mcMedia::initProtonCSFromVector(std::vector<mcEndfP>* dbData)
+{
+
 }
 
 void mcMedia::initNeutronFromStream(istream& is)
@@ -302,4 +341,13 @@ const mcMedium* mcMedia::getMedium(int ptype, int idx) const
 		return neutrons_[idx];
 	else
 		return xes_[idx];
+}
+
+void Mendeleev::init()
+{
+	for (int i = 0; i < 119; i++)
+	{
+		isNecessary.push_back(false);
+		isLoad.push_back(false);
+	}
 }

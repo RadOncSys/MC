@@ -325,10 +325,10 @@ mcEndfProduct::mcEndfProduct()
 
 mcEndfProduct::~mcEndfProduct()
 {
-	for (int i = 0; i < EANuclearCrossSections.size(); i++)
+	/*for (int i = 0; i < EANuclearCrossSections.size(); i++)
 	{
 		delete EANuclearCrossSections[i];
-	}
+	}*/
 }
 
 std::string typeof(int i)
@@ -1091,10 +1091,10 @@ mcEndfP::mcEndfP()
 
 mcEndfP::~mcEndfP()
 {
-	for (int i = 0; i < Products.size(); i++)
+	/*for (int i = 0; i < Products.size(); i++)
 	{
 		delete Products[i];
-	}
+	}*/
 }
 
 void mcEndfP::Load(const char* fname, const char* ename)
@@ -1128,6 +1128,15 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		{
 			if (line.find(beginSeparator) != string::npos)
 				isInData = true;
+			TotalCrossSections.isEmpty = true;
+			NuclearCrossSections.isEmpty = true;
+			Neutron0CrossSection.isEmpty = true;
+			Neutron1CrossSection.isEmpty = true;
+			Neutron2CrossSection.isEmpty = true;
+			Neutron3CrossSection.isEmpty = true;
+			Neutron4CrossSection.isEmpty = true;
+			Neutron5CrossSection.isEmpty = true;
+		
 		}
 
 		// Последняя строка файла. Прерываем не дожидаясь ошибки.
@@ -1143,11 +1152,12 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		// Используем только MF=3 (сечения реакций) / MT=5 (сумма всех реакций за исключением отдельно оговоренных)
 		// и     MF=6 (энерго-угловые распределени) / MT=5
 
-		// Сечения суммы эластичных рассеяний и ядерных реакций
+		// Сечения суммы эластичных рассеяний и ядерных реакций		
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' && 
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
 		{
 			TotalCrossSections.Load(isEndf);
+			TotalCrossSections.isEmpty = false;
 		}
 
 		// Сечения ядерных реакций
@@ -1155,6 +1165,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
 		{
 			NuclearCrossSections.Load(isEndf);
+			NuclearCrossSections.isEmpty = false;
 		}
 
 		// Сечения (p,n) MT = 50 
@@ -1162,6 +1173,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')
 		{
 			Neutron0CrossSection.Load(isEndf);
+			Neutron0CrossSection.isEmpty = false;
 		}
 
 		// Сечения (p,n) MT = 51 
@@ -1169,6 +1181,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
 		{
 			Neutron1CrossSection.Load(isEndf);
+			Neutron1CrossSection.isEmpty = false;
 		}
 
 		// Сечения (p,n) MT = 52 
@@ -1176,6 +1189,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
 		{
 			Neutron2CrossSection.Load(isEndf);
+			Neutron2CrossSection.isEmpty = false;
 		}
 
 		// Сечения (p,n) MT = 53 
@@ -1183,6 +1197,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
 		{
 			Neutron3CrossSection.Load(isEndf);
+			Neutron3CrossSection.isEmpty = false;
 		}
 
 		// Сечения (p,n) MT = 54 
@@ -1190,6 +1205,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
 		{
 			Neutron4CrossSection.Load(isEndf);
+			Neutron4CrossSection.isEmpty = false;
 		}
 
 		// Сечения (p,n) MT = 55 
@@ -1197,6 +1213,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
 		{
 			Neutron5CrossSection.Load(isEndf);
+			Neutron5CrossSection.isEmpty = false;
 		}
 
 		// Энерго-угловые распределения

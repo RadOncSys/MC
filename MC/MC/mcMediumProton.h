@@ -28,7 +28,7 @@ private:
 public:
 	// не зависимая от энергии и пути часть Гауссовой вариации (sigma^2) dE/dx
 	double dEdxStragglingGaussVarianceConstPart_;
-
+	
 	//// Transport:
 	double radLength;          // Radiation length, [cm](!)
 

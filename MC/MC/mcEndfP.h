@@ -43,6 +43,9 @@ public:
 
 	double get_lambda(double kE, double rho, double A);
 
+	//Статус, показывающий не пуста ли таблица
+	bool isEmpty;
+
 	// Количество пар энергия падающей частицы / сечение
 	int npoints;
 

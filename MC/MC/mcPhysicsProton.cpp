@@ -41,7 +41,6 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 {
 	const mcMediumProton& m = (const mcMediumProton&)med;
 	double e_dep = 0;
-
 	// VK
 	// Определить размер шага, на который происходит транспорт и занести его в step
 	// Определить потери энергии на этом шаге 
