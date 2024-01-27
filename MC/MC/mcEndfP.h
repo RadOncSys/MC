@@ -160,7 +160,7 @@ public:
 	std::vector<double> Multiplicities;
 };
 
-enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma, electron };
+enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gammas, electron };
 
 class mcEndfProduct
 {

@@ -201,7 +201,6 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 			if (Table.isNecessary[xes_[i]->elements_[j].atomicNumber] == false)
 				Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
 		}
-	cout << endl;
 	
 
 
@@ -242,7 +241,6 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 				break;
 			}
 		}
-		cout << endl;
 
 		// База данных изотопа
 		//mcCSNuclear csForElement;
@@ -259,7 +257,11 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 
 void mcMedia::initProtonCSFromVector(std::vector<mcEndfP>* dbData)
 {
-
+	for (int i = 0; i < protons_.size(); i++)
+	{
+		((mcMediumProton*)protons_[i])->ENDFdata = *dbData;
+	}
+	cout << endl;
 }
 
 void mcMedia::initNeutronFromStream(istream& is)

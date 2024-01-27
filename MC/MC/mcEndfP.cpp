@@ -400,7 +400,7 @@ void mcEndfProduct::Load(std::istream& is)
 					product_type = particle_type::alpha;
 					break;
 				case 0:
-					product_type = particle_type::gamma;
+					product_type = particle_type::gammas;
 					break;
 				case 1000:    //dont know real electron ZAP
 				case -1000:

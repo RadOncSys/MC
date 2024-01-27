@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #pragma once
 
+#include "mcEndfP.h"
 #include "mcMedium.h"
 #include "mcDefs.h"
 
@@ -42,4 +43,6 @@ public:
 	vector<double> dedx1_proto;
 
 	double transCutoff_proto;		// Energy cutoff for proton transport
+
+	vector<mcEndfP> ENDFdata;
 };
