@@ -17,6 +17,7 @@ public:
 
 	const double kEmax(void)const { return (double)dedx1_proto.size(); }
 	virtual void read(istream& is);
+	void createDB();
 	const double AtomicWeight() const;	// Атомный вес среды, г/моль
 
 private:

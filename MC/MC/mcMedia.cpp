@@ -188,7 +188,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
 	initProtonDeDxFromStream(is);
 	
-	
+
 	//TablicaMendeleeva H = Loaded O = Loaded
 	//for (media1:media_last)
 	//protons_->elements_->
@@ -201,7 +201,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 			if (Table.isNecessary[xes_[i]->elements_[j].atomicNumber] == false)
 				Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
 		}
-	
+
 
 
 	// Объект, в который сначала закачиваем всю баз данных сечений
@@ -224,7 +224,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		string ext = fs::path(entry.path()).extension().string();
 		std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
 
-		if(std::toupper(fname[0]) != 'P' || ext != ".DAT")
+		if (std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
 		// Метку атомного элемента берем из имени файла.
@@ -260,8 +260,8 @@ void mcMedia::initProtonCSFromVector(std::vector<mcEndfP>* dbData)
 	for (int i = 0; i < protons_.size(); i++)
 	{
 		((mcMediumProton*)protons_[i])->ENDFdata = *dbData;
+		((mcMediumProton*)protons_[i])->createDB();
 	}
-	cout << endl;
 }
 
 void mcMedia::initNeutronFromStream(istream& is)

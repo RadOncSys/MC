@@ -2,7 +2,10 @@
 #include "../geometry/text.h"
 #include <iostream>
 #include "mcPhysicsCommon.h"
+#include "mcEndfP.h"
 //#include <math.h>
+
+string CLEARFROMALPHA(string x);
 
 // Возвращает rms радиус ядра в фм (1E-13 см)
 // см. Wilson, et al 1991 rp1257.pdf 4.5.2 (eq.4.84,4.85) с исправлениями:
@@ -74,6 +77,50 @@ double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE)
 	return sigmaTL;
 }
 
+double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDF->size(); i++)
+	{
+		if (CLEARFROMALPHA(ENDF->at(i).ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;
+		//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDF->at(i).NuclearCrossSections.isEmpty)
+		return SIGMA;
+	if (kE <= ENDF->at(i).NuclearCrossSections.Energies[0])
+		return SIGMA;
+	else
+	{
+		for (int j = 0; j < ENDF->at(i).NuclearCrossSections.Energies.size(); j++)
+			if (kE < ENDF->at(i).NuclearCrossSections.Energies[j])
+			{
+				if (j == 0)
+					break;
+				SIGMA = ENDF->at(i).NuclearCrossSections.Values[j - 1] + 
+					(kE - ENDF->at(i).NuclearCrossSections.Energies[j - 1]) *
+					(ENDF->at(i).NuclearCrossSections.Values[j] - ENDF->at(i).NuclearCrossSections.Values[j - 1]) /
+					(ENDF->at(i).NuclearCrossSections.Energies[j] - ENDF->at(i).NuclearCrossSections.Energies[j - 1]);
+				break;
+			}
+	}
+	return SIGMA;
+}
+
 mcMediumProton::mcMediumProton(void)
 	:transCutoff_proto(1.0)
 {
@@ -133,7 +180,7 @@ void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
 	a.assign(n, 0.0); b.assign(n, 0.0); // очищаем вектора, устанавливаем размер
 	for (int i = 0; i < n - 1; i++) {
 		a[i] = s[i + 1] - s[i]; // делим на (i+1) - (i)
-		b[i] = s[i] - a[i] * i;
+		b[i] = s[i];
 	}
 	//экстраполяция в область больших значений - с коэффициентами предыдущей ячейки
 	a[n - 1] = a[n - 2];
@@ -250,4 +297,29 @@ void mcMediumProton::read(istream& is)
 	gSigmaInelastic();
 
 	status_ = LOADED;
+}
+
+void mcMediumProton::createDB()
+{
+	double S;
+	vector<double>sigma_endf;
+
+	for (int i = 0; i < kEmax(); i++) {
+		S = 0.0; // длина свободного пробега
+		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata);
+		}
+		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
+		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+	}
+	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
+	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
+}
+
+string CLEARFROMALPHA (string x)
+{
+	for (int i = 0; i < x.length(); i++)
+		if (x[i] > '9')
+			x.erase(i, 1);
+	return x;
 }
