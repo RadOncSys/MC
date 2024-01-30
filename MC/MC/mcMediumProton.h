@@ -26,6 +26,7 @@ private:
 	//--------------------------------
 	const double gdEdxStragglingGaussVarianceConstPart();	// генерирует и возвращает постоянную (по энергии и пути) часть вариации Гаусссова приближения разброса dE/dx. 
 	const void	 gSigmaInelastic(int Ap = 1, int Zp = 1);	// генерирует величину сечения неупругого взаимодействия
+	const double gRadiationLength();
 
 public:
 	// не зависимая от энергии и пути часть Гауссовой вариации (sigma^2) dE/dx
