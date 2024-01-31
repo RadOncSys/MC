@@ -4,6 +4,39 @@
 #include "mcPhysicsCommon.h"
 #include "mcEndfP.h"
 //#include <math.h>
+//���������� ������ ���������� ������� ��������������� � ��������, ��������:
+#ifndef InverseRadiationLength
+#define InverseRadiationLength InverseRadiationLength_DahlApproximation
+#endif InverseRadiationLength
+
+// �������� �������� ������������ ����� �������� 
+// c ������� ������ A [�/����],
+// � ������� ���� (������� �������) Z (� �������� ������ ���������)
+// ����������� � ����������� Dahl'a
+// rpp-2006-book.pdf 27.4.1 p.264 (eq.27.22)
+// ��������� � �������� Tsai'� (27.20) � ��������� ����� 2.5%, �� ����������� ����� (5%)
+// � 1/(g/cm^2)
+double InverseRadiationLength_DahlApproximation(const double A, const double Z)
+{
+	return Z * (Z + 1) * log(287 / sqrt(Z)) / (716.4 * A);
+}
+
+// �������� �������� ������������ ����� �������� ���������� �� n ���������.
+// ��� i-�� �������� 0<=i<n
+// w[i] - ������������� ��������(?) ��� 
+// A[i] - ������� ����� A [�/����],
+// Z[i]	- ����� ���� (������� �����)
+// rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
+// ��� ������� ������������ ����� ���������� �������� ��������
+// InverseRadiationLength (�������� �����������)
+// � 1/(g/cm^2)
+double InverseRadiationLength(const double* A, const double* Z, const double* w, const int n)
+{
+	double s = 0;
+	for (int i = 0; i < n; i++)
+		s += InverseRadiationLength(A[i], Z[i]) * w[i];
+	return s;
+}
 
 string CLEARFROMALPHA(string x);
 
@@ -345,6 +378,7 @@ void mcMediumProton::read(istream& is)
 	gdEdxStragglingGaussVarianceConstPart();
 	gRadiationLength();
 	gSigmaInelastic();
+	gRadiationLength();
 
 	status_ = LOADED;
 }
@@ -357,7 +391,7 @@ void mcMediumProton::createDB()
 	for (int i = 0; i < kEmax(); i++) {
 		S = 0.0; // длина свободного пробега
 		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata);
+			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata)/pow(10,24);
 		}
 		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
 		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
