@@ -294,12 +294,24 @@ const mcPhysics* mcMedia::getPhysics(int ptype) const
 
 const mcMedium* mcMedia::getMedium(int ptype, int idx) const
 {
-	if (idx >= (int)mnames_.size())
-		throw std::exception("Unsupported particle type");
-	if (ptype == MCP_PROTON)
-		return protons_[idx];
-	else if (ptype == MCP_NEUTRON)
-		return neutrons_[idx];
-	else
+	if (ptype == MCP_PHOTON || ptype == MCP_NEGATRON || ptype == MCP_POSITRON)
+	{
+		if (idx >= (int)xes_.size())
+			throw std::exception("EGS media index out of range");
 		return xes_[idx];
+	}
+	else if (ptype == MCP_PROTON)
+	{
+		if (idx >= (int)protons_.size())
+			throw std::exception("Proton media index out of range");
+		return protons_[idx];
+	}
+	else if (ptype == MCP_NEUTRON)
+	{
+		if (idx >= (int)neutrons_.size())
+			throw std::exception("Neutron media index out of range");
+		return neutrons_[idx];
+	}
+	else
+		throw std::exception("Unsupported particle type");
 }
