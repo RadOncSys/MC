@@ -82,7 +82,7 @@ void mcMedia::initXEFromStream(istream& is)
 	for (int i = 0; i < (int)mnames_.size(); i++)
 		xes_.push_back(new mcMediumXE());
 
-	// ×òåíèå äàííûõ
+	// Чтение данных
 	string line, s1, s2;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -92,7 +92,7 @@ void mcMedia::initXEFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Ïðîâåðÿåì, íóæíà ëè äàííàÿ ñðåäà äëÿ çàãðóçêè?
+			// Проверяем, нужна ли данная среда для загрузки?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
@@ -105,7 +105,7 @@ void mcMedia::initXEFromStream(istream& is)
 		getline(is, line, '\n');
 	}
 
-	// Ïðîâåðÿåì, âñå ëè ñðåäû çàãðóæåíû
+	// Проверяем, все ли среды загружены
 	string errmedia;
 	for (int i = 0; i < (int)xes_.size(); i++)
 	{
@@ -134,7 +134,7 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		protons_.push_back(new mcMediumProton());
 
-	// ×òåíèå äàííûõ - ÷àñòü â ýòîé ôóíêöèè ïîëíîñòüþ àíàëîãè÷íà XA, òîëüêî äîáàâëåíà ïðîâåðêà âåðñèè
+	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -144,13 +144,13 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Ïðîâåðÿåì, íóæíà ëè äàííàÿ ñðåäà äëÿ çàãðóçêè?
+			// Проверяем, нужна ли данная среда для загрузки?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// äîïîëíèòåëüíî ïðîâåðÿåì âåðñèþ input file VER=0.0.0
+				// дополнительно проверяем версию input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -159,15 +159,15 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Proton media data version"); 
-					//â ïðèíöèïå äàííûå ìîãóò áûòü äàëüøå â ýòîì æå ôàéëå â äðóãîé âåðñèè, 
-					// òàê ÷òî ïðîñòî íå ñ÷èòûâàåì äàííûå
+					//в принципе данные могут быть дальше в этом же файле в другой версии, 
+					// так что просто не считываем данные
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// Ïðîâåðÿåì, âñå ëè ñðåäû çàãðóæåíû
+	// Проверяем, все ли среды загружены
 	string errmedia;
 	for (int i = 0; i < (int)protons_.size(); i++)
 	{
@@ -182,12 +182,12 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 
 void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 {
-	// Ñòàðûé âàðèàíò òîðìîçíûõ ñïîïîñáíîñòåé (Êîñòþ÷åíêî, 2008)
+	// Старый вариант тормозных спопосбностей (Костюченко, 2008)
 	ifstream is(fname.c_str());
 	if (is.fail())
 		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
 	initProtonDeDxFromStream(is);
-	
+
 
 	//TablicaMendeleeva H = Loaded O = Loaded
 	//for (media1:media_last)
@@ -204,16 +204,16 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 
 
 
-	// Îáúåêò, â êîòîðûé ñíà÷àëà çàêà÷èâàåì âñþ áàç äàííûõ ñå÷åíèé
+	// Объект, в который сначала закачиваем всю баз данных сечений
 	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
 
 	// ICRU-63
 	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
 
 	// ENDF
-	auto dbData = std::make_unique<std::vector<std::shared_ptr<mcEndfP>>>();
+	auto dbData = std::make_unique<std::vector<mcEndfP>>();
 
-	// Öèêë ïî ôàéëàì ñå÷åíèé, â êàæäîì èç êîòîðûõ ñîäåðæàòñÿ ïîëíûå äàííûå äëÿ îäíîãî èçîòîïà
+	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
@@ -227,7 +227,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		if (std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
-		// Ìåòêó àòîìíîãî ýëåìåíòà áåðåì èç èìåíè ôàéëà.
+		// Метку атомного элемента берем из имени файла.
 		string elementName = std::string(&fname[2]);
 		string AtNum = elementName;
 		int Z;
@@ -242,19 +242,16 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 			}
 		}
 
-		// Áàçà äàííûõ èçîòîïà
+		// База данных изотопа
 		//mcCSNuclear csForElement;
-		auto csForElement = std::make_shared<mcEndfP>();
-		csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
-		if (Table.isNecessary[Z])
-		{
-			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
-			dbData->push_back(csForElement);
-		}
+		mcEndfP csForElement;
+		csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 
 		//ifstream isIcru(entry.path().c_str());
+		dbData->push_back(csForElement);
+		//ifstream isIcru(entry.path().c_str());
 	}
-	initProtonCSFromVector(&dbData);
+	//initProtonCSFromVector(&dbData);
 }
 
 void mcMedia::initProtonCSFromVector(std::vector<mcEndfP>* dbData)
@@ -274,7 +271,7 @@ void mcMedia::initNeutronFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		neutrons_.push_back(new mcMediumNeutron());
 
-	// ×òåíèå äàííûõ - ÷àñòü â ýòîé ôóíêöèè ïîëíîñòüþ àíàëîãè÷íà XA, òîëüêî äîáàâëåíà ïðîâåðêà âåðñèè
+	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -284,13 +281,13 @@ void mcMedia::initNeutronFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Ïðîâåðÿåì, íóæíà ëè äàííàÿ ñðåäà äëÿ çàãðóçêè?
+			// Проверяем, нужна ли данная среда для загрузки?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// äîïîëíèòåëüíî ïðîâåðÿåì âåðñèþ input file VER=0.0.0
+				// дополнительно проверяем версию input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -299,15 +296,15 @@ void mcMedia::initNeutronFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Neutron media data version"); 
-					//â ïðèíöèïå äàííûå ìîãóò áûòü äàëüøå â ýòîì æå ôàéëå â äðóãîé âåðñèè, 
-					// òàê ÷òî ïðîñòî íå ñ÷èòûâàåì äàííûå
+					//в принципе данные могут быть дальше в этом же файле в другой версии, 
+					// так что просто не считываем данные
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// Ïðîâåðÿåì, âñå ëè ñðåäû çàãðóæåíû
+	// Проверяем, все ли среды загружены
 	string errmedia;
 	for (int i = 0; i < (int)neutrons_.size(); i++)
 	{
