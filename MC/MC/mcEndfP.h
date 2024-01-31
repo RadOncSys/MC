@@ -41,7 +41,10 @@ public:
 	void Load(std::istream& is);
 	void dump(std::ostream& os) const;
 
-	double get_sigma(double kE);
+	double get_lambda(double kE, double rho, double A);
+
+	//Статус, показывающий не пуста ли таблица
+	bool isEmpty;
 
 	// Количество пар энергия падающей частицы / сечение
 	int npoints;
@@ -84,6 +87,8 @@ public:
 
 	//Интерполяция f_0 для пары энергия-энергия вылета
 	double getf_0(int IN, double Eout);
+
+	double integrate_f0(mcRng& rng, double kE);
 
 	int ZA_nucl;
 
@@ -155,7 +160,7 @@ public:
 	std::vector<double> Multiplicities;
 };
 
-enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma, electron };
+enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gammas, electron };
 
 class mcEndfProduct
 {

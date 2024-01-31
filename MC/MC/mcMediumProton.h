@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #pragma once
 
+#include "mcEndfP.h"
 #include "mcMedium.h"
 #include "mcDefs.h"
 
@@ -16,6 +17,7 @@ public:
 
 	const double kEmax(void)const { return (double)dedx1_proto.size(); }
 	virtual void read(istream& is);
+	void createDB();
 	const double AtomicWeight() const;	// Атомный вес среды, г/моль
 
 private:
@@ -29,7 +31,7 @@ private:
 public:
 	// не зависимая от энергии и пути часть Гауссовой вариации (sigma^2) dE/dx
 	double dEdxStragglingGaussVarianceConstPart_;
-
+	
 	//// Transport:
 	double radLength;          // Radiation length, [cm](!)
 
@@ -43,4 +45,6 @@ public:
 	vector<double> dedx1_proto;
 
 	double transCutoff_proto;		// Energy cutoff for proton transport
+
+	vector<mcEndfP> ENDFdata;
 };
