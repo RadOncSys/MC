@@ -43,4 +43,7 @@ public:
 
 	// ќдномерное сглаживание SavitzkyЦGolay с различными степен€ми.
 	static void SmoothSG1D(std::vector<double>& p, unsigned m, unsigned nl, unsigned nr);
+
+	// ƒвумерное сглаживание SavitzkyЦGolay.
+	static std::unique_ptr<std::vector<std::vector<double>>> SmoothSG2D(const std::vector<std::vector<double>>& data);
 };

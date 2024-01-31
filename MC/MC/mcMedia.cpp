@@ -82,7 +82,7 @@ void mcMedia::initXEFromStream(istream& is)
 	for (int i = 0; i < (int)mnames_.size(); i++)
 		xes_.push_back(new mcMediumXE());
 
-	// ×òåíèå äàííûõ
+	// Ð§Ñ‚ÐµÐ½Ð¸Ðµ Ð´Ð°Ð½Ð½Ñ‹Ñ…
 	string line, s1, s2;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -92,7 +92,7 @@ void mcMedia::initXEFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Ïðîâåðÿåì, íóæíà ëè äàííàÿ ñðåäà äëÿ çàãðóçêè?
+			// ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼, Ð½ÑƒÐ¶Ð½Ð° Ð»Ð¸ Ð´Ð°Ð½Ð½Ð°Ñ ÑÑ€ÐµÐ´Ð° Ð´Ð»Ñ Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
@@ -105,7 +105,7 @@ void mcMedia::initXEFromStream(istream& is)
 		getline(is, line, '\n');
 	}
 
-	// Ïðîâåðÿåì, âñå ëè ñðåäû çàãðóæåíû
+	// ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼, Ð²ÑÐµ Ð»Ð¸ ÑÑ€ÐµÐ´Ñ‹ Ð·Ð°Ð³Ñ€ÑƒÐ¶ÐµÐ½Ñ‹
 	string errmedia;
 	for (int i = 0; i < (int)xes_.size(); i++)
 	{
@@ -134,7 +134,7 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		protons_.push_back(new mcMediumProton());
 
-	// ×òåíèå äàííûõ - ÷àñòü â ýòîé ôóíêöèè ïîëíîñòüþ àíàëîãè÷íà XA, òîëüêî äîáàâëåíà ïðîâåðêà âåðñèè
+	// Ð§Ñ‚ÐµÐ½Ð¸Ðµ Ð´Ð°Ð½Ð½Ñ‹Ñ… - Ñ‡Ð°ÑÑ‚ÑŒ Ð² ÑÑ‚Ð¾Ð¹ Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¸ Ð¿Ð¾Ð»Ð½Ð¾ÑÑ‚ÑŒÑŽ Ð°Ð½Ð°Ð»Ð¾Ð³Ð¸Ñ‡Ð½Ð° XA, Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð° Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð²ÐµÑ€ÑÐ¸Ð¸
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -144,13 +144,13 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Ïðîâåðÿåì, íóæíà ëè äàííàÿ ñðåäà äëÿ çàãðóçêè?
+			// ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼, Ð½ÑƒÐ¶Ð½Ð° Ð»Ð¸ Ð´Ð°Ð½Ð½Ð°Ñ ÑÑ€ÐµÐ´Ð° Ð´Ð»Ñ Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// äîïîëíèòåëüíî ïðîâåðÿåì âåðñèþ input file VER=0.0.0
+				// Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼ Ð²ÐµÑ€ÑÐ¸ÑŽ input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -159,15 +159,15 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Proton media data version"); 
-					//â ïðèíöèïå äàííûå ìîãóò áûòü äàëüøå â ýòîì æå ôàéëå â äðóãîé âåðñèè, 
-					// òàê ÷òî ïðîñòî íå ñ÷èòûâàåì äàííûå
+					//Ð² Ð¿Ñ€Ð¸Ð½Ñ†Ð¸Ð¿Ðµ Ð´Ð°Ð½Ð½Ñ‹Ðµ Ð¼Ð¾Ð³ÑƒÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð´Ð°Ð»ÑŒÑˆÐµ Ð² ÑÑ‚Ð¾Ð¼ Ð¶Ðµ Ñ„Ð°Ð¹Ð»Ðµ Ð² Ð´Ñ€ÑƒÐ³Ð¾Ð¹ Ð²ÐµÑ€ÑÐ¸Ð¸, 
+					// Ñ‚Ð°Ðº Ñ‡Ñ‚Ð¾ Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð½Ðµ ÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ Ð´Ð°Ð½Ð½Ñ‹Ðµ
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// Ïðîâåðÿåì, âñå ëè ñðåäû çàãðóæåíû
+	// ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼, Ð²ÑÐµ Ð»Ð¸ ÑÑ€ÐµÐ´Ñ‹ Ð·Ð°Ð³Ñ€ÑƒÐ¶ÐµÐ½Ñ‹
 	string errmedia;
 	for (int i = 0; i < (int)protons_.size(); i++)
 	{
@@ -182,12 +182,12 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 
 void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 {
-	// Ñòàðûé âàðèàíò òîðìîçíûõ ñïîïîñáíîñòåé (Êîñòþ÷åíêî, 2008)
+	// Ð¡Ñ‚Ð°Ñ€Ñ‹Ð¹ Ð²Ð°Ñ€Ð¸Ð°Ð½Ñ‚ Ñ‚Ð¾Ñ€Ð¼Ð¾Ð·Ð½Ñ‹Ñ… ÑÐ¿Ð¾Ð¿Ð¾ÑÐ±Ð½Ð¾ÑÑ‚ÐµÐ¹ (ÐšÐ¾ÑÑ‚ÑŽÑ‡ÐµÐ½ÐºÐ¾, 2008)
 	ifstream is(fname.c_str());
 	if (is.fail())
 		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
 	initProtonDeDxFromStream(is);
-	
+
 
 	//TablicaMendeleeva H = Loaded O = Loaded
 	//for (media1:media_last)
@@ -204,16 +204,16 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 
 
 
-	// Îáúåêò, â êîòîðûé ñíà÷àëà çàêà÷èâàåì âñþ áàç äàííûõ ñå÷åíèé
+	// ÐžÐ±ÑŠÐµÐºÑ‚, Ð² ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ð¹ ÑÐ½Ð°Ñ‡Ð°Ð»Ð° Ð·Ð°ÐºÐ°Ñ‡Ð¸Ð²Ð°ÐµÐ¼ Ð²ÑÑŽ Ð±Ð°Ð· Ð´Ð°Ð½Ð½Ñ‹Ñ… ÑÐµÑ‡ÐµÐ½Ð¸Ð¹
 	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
 
 	// ICRU-63
 	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
 
 	// ENDF
-	vector<mcEndfP> dbData;
+	auto dbData = std::make_unique<std::vector<mcEndfP>>();
 
-	// Öèêë ïî ôàéëàì ñå÷åíèé, â êàæäîì èç êîòîðûõ ñîäåðæàòñÿ ïîëíûå äàííûå äëÿ îäíîãî èçîòîïà
+	// Ð¦Ð¸ÐºÐ» Ð¿Ð¾ Ñ„Ð°Ð¹Ð»Ð°Ð¼ ÑÐµÑ‡ÐµÐ½Ð¸Ð¹, Ð² ÐºÐ°Ð¶Ð´Ð¾Ð¼ Ð¸Ð· ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ñ… ÑÐ¾Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑÑ Ð¿Ð¾Ð»Ð½Ñ‹Ðµ Ð´Ð°Ð½Ð½Ñ‹Ðµ Ð´Ð»Ñ Ð¾Ð´Ð½Ð¾Ð³Ð¾ Ð¸Ð·Ð¾Ñ‚Ð¾Ð¿Ð°
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
@@ -227,7 +227,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		if (std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
-		// Ìåòêó àòîìíîãî ýëåìåíòà áåðåì èç èìåíè ôàéëà.
+		// ÐœÐµÑ‚ÐºÑƒ Ð°Ñ‚Ð¾Ð¼Ð½Ð¾Ð³Ð¾ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð° Ð±ÐµÑ€ÐµÐ¼ Ð¸Ð· Ð¸Ð¼ÐµÐ½Ð¸ Ñ„Ð°Ð¹Ð»Ð°.
 		string elementName = std::string(&fname[2]);
 		string AtNum = elementName;
 		int Z;
@@ -242,17 +242,16 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 			}
 		}
 
-		// Áàçà äàííûõ èçîòîïà
+		// Ð‘Ð°Ð·Ð° Ð´Ð°Ð½Ð½Ñ‹Ñ… Ð¸Ð·Ð¾Ñ‚Ð¾Ð¿Ð°
 		//mcCSNuclear csForElement;
 		mcEndfP csForElement;
-		if (Table.isNecessary[Z])
-		{
-			csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
-			dbData.push_back(csForElement);
-		}
+		csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
+
+		//ifstream isIcru(entry.path().c_str());
+		dbData->push_back(csForElement);
 		//ifstream isIcru(entry.path().c_str());
 	}
-	initProtonCSFromVector(&dbData);
+	//initProtonCSFromVector(&dbData);
 }
 
 void mcMedia::initProtonCSFromVector(std::vector<mcEndfP>* dbData)
@@ -272,7 +271,7 @@ void mcMedia::initNeutronFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		neutrons_.push_back(new mcMediumNeutron());
 
-	// ×òåíèå äàííûõ - ÷àñòü â ýòîé ôóíêöèè ïîëíîñòüþ àíàëîãè÷íà XA, òîëüêî äîáàâëåíà ïðîâåðêà âåðñèè
+	// Ð§Ñ‚ÐµÐ½Ð¸Ðµ Ð´Ð°Ð½Ð½Ñ‹Ñ… - Ñ‡Ð°ÑÑ‚ÑŒ Ð² ÑÑ‚Ð¾Ð¹ Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¸ Ð¿Ð¾Ð»Ð½Ð¾ÑÑ‚ÑŒÑŽ Ð°Ð½Ð°Ð»Ð¾Ð³Ð¸Ñ‡Ð½Ð° XA, Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð° Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð²ÐµÑ€ÑÐ¸Ð¸
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -282,13 +281,13 @@ void mcMedia::initNeutronFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Ïðîâåðÿåì, íóæíà ëè äàííàÿ ñðåäà äëÿ çàãðóçêè?
+			// ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼, Ð½ÑƒÐ¶Ð½Ð° Ð»Ð¸ Ð´Ð°Ð½Ð½Ð°Ñ ÑÑ€ÐµÐ´Ð° Ð´Ð»Ñ Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// äîïîëíèòåëüíî ïðîâåðÿåì âåðñèþ input file VER=0.0.0
+				// Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼ Ð²ÐµÑ€ÑÐ¸ÑŽ input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -297,15 +296,15 @@ void mcMedia::initNeutronFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Neutron media data version"); 
-					//â ïðèíöèïå äàííûå ìîãóò áûòü äàëüøå â ýòîì æå ôàéëå â äðóãîé âåðñèè, 
-					// òàê ÷òî ïðîñòî íå ñ÷èòûâàåì äàííûå
+					//Ð² Ð¿Ñ€Ð¸Ð½Ñ†Ð¸Ð¿Ðµ Ð´Ð°Ð½Ð½Ñ‹Ðµ Ð¼Ð¾Ð³ÑƒÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð´Ð°Ð»ÑŒÑˆÐµ Ð² ÑÑ‚Ð¾Ð¼ Ð¶Ðµ Ñ„Ð°Ð¹Ð»Ðµ Ð² Ð´Ñ€ÑƒÐ³Ð¾Ð¹ Ð²ÐµÑ€ÑÐ¸Ð¸, 
+					// Ñ‚Ð°Ðº Ñ‡Ñ‚Ð¾ Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð½Ðµ ÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ Ð´Ð°Ð½Ð½Ñ‹Ðµ
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// Ïðîâåðÿåì, âñå ëè ñðåäû çàãðóæåíû
+	// ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼, Ð²ÑÐµ Ð»Ð¸ ÑÑ€ÐµÐ´Ñ‹ Ð·Ð°Ð³Ñ€ÑƒÐ¶ÐµÐ½Ñ‹
 	string errmedia;
 	for (int i = 0; i < (int)neutrons_.size(); i++)
 	{

@@ -31,7 +31,7 @@ void mcSourceUniformCone::sample(mcParticle& p, mcThread* thread)
 	double x = r * sin(phi);
 	double y = r * cos(phi);
 
-	p.p.set(0, 0, z_);
+	p.p.set(x, y, z_);
 	p.u.set(x, y, sad_);
 	p.u.normalize();
 
@@ -45,10 +45,78 @@ void mcSourceUniformCone::dumpVRML(ostream& os) const
 {
 	mcSource::dumpVRML(os);
 
-	os << "# Uniform cone source: " << this->getName() << endl;
+	// При симуляции параллельного пучка и часто не только есть проблема 
+	// масштабирования VRML сцены.
+	// Поэтому заменяем рисование конуса версией из mcSourceSimpleMono.
+	 
+	//os << "# Uniform cone source: " << this->getName() << endl;
+	//os << "Transform {" << endl;
+	//os << "  translation " << "0 " << "0 " << (z_ + sad_ * 0.5) << endl;
+	//os << "  rotation 1 0 0 " << (-1.5708) << endl;
+	//os << "  children [" << endl;
+	//os << "    Shape{" << endl;
+	//os << "      appearance Appearance {" << endl;
+	//os << "        material Material {" << endl;
+	//os << "          diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+	//os << "          transparency " << transparancy_ << endl;
+	//os << "        }" << endl;
+	//os << "      }" << endl;
+	//os << "      geometry Cone { " << endl;
+	//os << "                      bottomRadius " << r_ << endl;
+	//os << "                      height " << sad_ << endl;
+	//os << "      }" << endl;
+	//os << "    }" << endl;
+	//os << "  ]" << endl;
+	//os << "}" << endl;
+
+
+	double r0 = 0.4, r = 0.2, rr = 0.4, h = 1.0, L = 5.0;
+	geomVector3D p_(0, 0, z_);
+	geomVector3D v_(0, 0, 1);
+
+	os << "# Source: " << name_ << endl;
+
 	os << "Transform {" << endl;
-	os << "  translation " << "0 " << "0 " << (z_ + sad_ * 0.5) << endl;
-	os << "  rotation 1 0 0 " << (-1.5708) << endl;
+	os << "  translation " << p_.x() << ' ' << p_.y() << ' ' << p_.z() << endl;
+	os << "  children [" << endl;
+	os << "    Shape{" << endl;
+	os << "      appearance Appearance {" << endl;
+	os << "        material Material {" << endl;
+	os << "          diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+	os << "          transparency " << transparancy_ << endl;
+	os << "        }" << endl;
+	os << "      }" << endl;
+	os << "      geometry Sphere { radius " << r0 << " }" << endl;
+	os << "    }" << endl;
+	os << "  ]" << endl;
+	os << "}" << endl;
+
+	geomVector3D p = p_ + (v_ * (L * 0.5));
+
+	os << "Transform {" << endl;
+	os << "  translation " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
+	os << "  rotation 1 0 0 1.5708" << endl;
+	os << "  children [" << endl;
+	os << "    Shape{" << endl;
+	os << "      appearance Appearance {" << endl;
+	os << "        material Material {" << endl;
+	os << "          diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+	os << "          transparency " << transparancy_ << endl;
+	os << "        }" << endl;
+	os << "      }" << endl;
+	os << "      geometry Cylinder { " << endl;
+	os << "                           radius " << r << endl;
+	os << "                           height " << L << endl;
+	os << "      }" << endl;
+	os << "    }" << endl;
+	os << "  ]" << endl;
+	os << "}" << endl;
+
+	p = p_ + (v_ * (L + h * 0.5));
+
+	os << "Transform {" << endl;
+	os << "  translation " << p.x() << ' ' << p.y() << ' ' << p.z() << endl;
+	os << "  rotation 1 0 0 1.5708" << endl;
 	os << "  children [" << endl;
 	os << "    Shape{" << endl;
 	os << "      appearance Appearance {" << endl;
@@ -58,10 +126,11 @@ void mcSourceUniformCone::dumpVRML(ostream& os) const
 	os << "        }" << endl;
 	os << "      }" << endl;
 	os << "      geometry Cone { " << endl;
-	os << "                      bottomRadius " << r_ << endl;
-	os << "                      height " << sad_ << endl;
+	os << "                      bottomRadius  " << rr << endl;
+	os << "                      height " << h << endl;
 	os << "      }" << endl;
 	os << "    }" << endl;
 	os << "  ]" << endl;
 	os << "}" << endl;
+
 }

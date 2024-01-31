@@ -247,3 +247,44 @@ void ProfileProcessor::SmoothSG1D(vector<double>& p, unsigned m, unsigned nl, un
 		p[i] = f;
 	}
 }
+
+std::unique_ptr<std::vector<std::vector<double>>> ProfileProcessor::SmoothSG2D(const std::vector<std::vector<double>>& data)
+{
+	const int W = 3;
+	const double K[49] = { 
+		-0.04761905, -0.01360544, 0.00680272, 0.01360544, 0.00680272, -0.01360544, -0.04761905,
+		-0.01360544, 0.02040816, 0.04081633, 0.04761905, 0.04081633, 0.02040816 -0.01360544, 
+		0.00680272, 0.04081633, 0.06122449, 0.06802721, 0.06122449, 0.04081633, 0.00680272,
+		0.01360544, 0.04761905, 0.06802721, 0.07482993, 0.06802721, 0.04761905, 0.01360544,
+		0.00680272, 0.04081633, 0.06122449, 0.06802721, 0.06122449, 0.04081633, 0.00680272,
+		-0.01360544, 0.02040816, 0.04081633, 0.04761905, 0.04081633, 0.02040816, -0.01360544,
+		-0.04761905, -0.01360544, 0.00680272, 0.01360544, 0.00680272, -0.01360544, -0.04761905
+	};
+
+	int nx = (int)data[0].size();
+	int ny = (int)data.size();
+	auto out = std::make_unique<std::vector<std::vector<double>>>(data);
+	auto& outRef = *out.get();
+
+	for (int j = 0; j < ny; j++)
+	{
+		for (int i = 0; i < nx; i++)
+		{
+			double weight = 1;
+			double f = 0;
+			for (int iy = -W; iy <= W; iy++)
+			{
+				for (int ix = -W; ix <= W; ix++)
+				{
+					if (j + iy >= 0 && i + ix >= 0 && j + iy < ny && i + ix < nx)
+						f += data[j + iy][i + ix] * K[W * (iy + W) + ix + W];
+					else
+						weight -= K[W * (iy + W / 2) + ix + W / 2];
+				}
+			}
+			outRef[j][i] = f / weight;
+		}
+	}
+
+	return std::move(out);
+}
