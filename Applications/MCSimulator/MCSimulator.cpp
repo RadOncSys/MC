@@ -43,7 +43,7 @@ int _tmain(int argc, _TCHAR* argv [])
 
 	try
 	{
-		// Используемые среды
+		// Г€Г±ГЇГ®Г«ГјГ§ГіГҐГ¬Г»ГҐ Г±Г°ГҐГ¤Г»
 		mcMedia media;
 		media.addName("H2O700ICRU");
 		media.addName("AIR700ICRU");
@@ -56,17 +56,18 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("TI700ICRU");
 		media.addName("STEEL700ICRU");
 		media.addName("CU700ICRU");
+		media.addName("HE700ICRU");
+		media.addName("MYLAR700ICRU");
 
-		//media.addName("C60");
+		media.addName("C60");
 		//media.addName("NAI700ICRU");
 		//media.addName("SI700ICRU");
-		//media.addName("MYLAR700ICRU");
-		//media.addName("HE700ICRU");
 		//media.addName("170C700ICRU");
 		//media.addName("226C700ICRU");
 		//media.addName("BE700ICRU");
 		//media.addName("TA700ICRU");
-		//media.addName("AU700ICRU");
+		media.addName("AU700ICRU");
+
 
 		media.initXEFromFile("..\\data\\AcceleratorSimulator.pegs4dat");
 		//media.initProtonFromFiles("../data/proton.dat", "../data/PSTAR", "../data/ICRU63");
@@ -79,7 +80,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		XmlParseReaderBase::CreateXPRDocumentFromFile(argv[2], geometryDoc);
 
 		//
-		// Геометрические модули
+		// ГѓГҐГ®Г¬ГҐГІГ°ГЁГ·ГҐГ±ГЄГЁГҐ Г¬Г®Г¤ГіГ«ГЁ
 		//
 		mcTransport* tfirst = nullptr;
 		mcTransport* tprev = nullptr;
@@ -105,7 +106,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		}
 
 		//
-		// Параметры
+		// ГЏГ Г°Г Г¬ГҐГІГ°Г»
 		//
 		double ecut = 0;
 		mcSource* source = nullptr;
@@ -200,7 +201,7 @@ int _tmain(int argc, _TCHAR* argv [])
 				}
 			}
 			//
-			// Источник
+			// Г€Г±ГІГ®Г·Г­ГЁГЄ
 			//
 			else if (_wcsicmp(node.Name.c_str(), L"source") == 0)
 			{
@@ -214,7 +215,7 @@ int _tmain(int argc, _TCHAR* argv [])
 			else if (_wcsicmp(node.Name.c_str(), L"score") == 0)
 			{
 				mcScore* score = GeometryParser::ParseScore(node, nThreads);
-				// Привязка к геометрическому объекту
+				// ГЏГ°ГЁГўГїГ§ГЄГ  ГЄ ГЈГҐГ®Г¬ГҐГІГ°ГЁГ·ГҐГ±ГЄГ®Г¬Гі Г®ГЎГєГҐГЄГІГі
 				mcTransport* t = tfirst;
 				while (t)
 				{
@@ -229,30 +230,43 @@ int _tmain(int argc, _TCHAR* argv [])
 			}
 		}
 
-		// Кол-во частиц в одном запуске для каждой нити
+		// ГЉГ®Г«-ГўГ® Г·Г Г±ГІГЁГ¶ Гў Г®Г¤Г­Г®Г¬ Г§Г ГЇГіГ±ГЄГҐ Г¤Г«Гї ГЄГ Г¦Г¤Г®Г© Г­ГЁГІГЁ
 		int nParticles = nHistories / nThreads;
 
 		// HACK!!!
-		// CUTOFF энергия должна ассоциироваться с модулем.
-		// Поскольку там реально не предусмотрена настройка, определяем это глобально здесь.
-		// Если соотвествующий параметр не определен или 0, то действуем как прописано в сечениях.
+		// CUTOFF ГЅГ­ГҐГ°ГЈГЁГї Г¤Г®Г«Г¦Г­Г  Г Г±Г±Г®Г¶ГЁГЁГ°Г®ГўГ ГІГјГ±Гї Г± Г¬Г®Г¤ГіГ«ГҐГ¬.
+		// ГЏГ®Г±ГЄГ®Г«ГјГЄГі ГІГ Г¬ Г°ГҐГ Г«ГјГ­Г® Г­ГҐ ГЇГ°ГҐГ¤ГіГ±Г¬Г®ГІГ°ГҐГ­Г  Г­Г Г±ГІГ°Г®Г©ГЄГ , Г®ГЇГ°ГҐГ¤ГҐГ«ГїГҐГ¬ ГЅГІГ® ГЈГ«Г®ГЎГ Г«ГјГ­Г® Г§Г¤ГҐГ±Гј.
+		// Г…Г±Г«ГЁ Г±Г®Г®ГІГўГҐГ±ГІГўГіГѕГ№ГЁГ© ГЇГ Г°Г Г¬ГҐГІГ° Г­ГҐ Г®ГЇГ°ГҐГ¤ГҐГ«ГҐГ­ ГЁГ«ГЁ 0, ГІГ® Г¤ГҐГ©Г±ГІГўГіГҐГ¬ ГЄГ ГЄ ГЇГ°Г®ГЇГЁГ±Г Г­Г® Гў Г±ГҐГ·ГҐГ­ГЁГїГµ.
 		if (ecut > 0)
 		{
 			vector<mcMedium*> mm = media.Media();
 			for (i = 0; i < (int) mm.size(); i++)
 			{
 				mcMediumXE* m = (mcMediumXE*) mm[i];
-				m->transCutoff_elec = ecut;
+				m->transCutoff_elec = m->eventCutoff_elec;
 
-				// Test: ручное отключение транспорта электронов в коллиматоре
+				// ГЉ ГЅГІГ®Г¬Гі Г¬Г®Г¬ГҐГ­ГІГі Г±Г°ГҐГ¤Г  ГіГ¦ГҐ ГЁГ¬ГҐГҐГІ Г§Г­Г Г·ГҐГ­ГЁГҐ, ГЇГ°Г®Г·ГЁГІГ Г­Г­Г®ГҐ Гў PEGS4.
+				// ГЊГ» Г­ГҐ Г¬Г®Г¦ГҐГ¬ Г­Г Г§Г­Г Г·Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Г¬ГҐГ­ГјГёГҐ.
+				// Г‚ ГЇГ°Г®ГІГЁГўГ­Г®Г¬ Г±Г«ГіГ·Г ГҐ, ГЇГ®Г¬ГЁГ¬Г® Г±Г®Г¬Г­ГЁГІГҐГ«ГјГ­Г®Г±ГІГЁ ГІГ®Г·Г­Г®Г±ГІГЁ Г°Г Г±Г·ГҐГІГ®Гў, 
+				// ГўГ®Г§Г­ГЁГЄГ ГѕГІ ГґГ ГІГ Г«ГјГ­Г»ГҐ Г®ГёГЁГЎГЄГЁ ГўГ»Г·ГЁГ±Г«ГҐГ­ГЁГ©.
+				if(ecut > m->transCutoff_elec)
+					m->transCutoff_elec = ecut;
+				else
+				{
+					// ГЏГ°ГҐГ¤ГіГЇГ°ГҐГ¦Г¤Г ГҐГ¬ ГЇГ®Г«ГјГ§Г®ГўГ ГІГҐГ«Гї Г® Г­Г Г°ГіГёГҐГ­ГЁГЁ ГҐГЈГ® ГЇГ®Г¦ГҐГ«Г Г­ГЁГ©
+					cout << "Requested ECAT for material " << m->name_
+						<< " is lower PEGS4 value.Keep PEGS4 ecut = " << m->transCutoff_elec << endl;
+				}
+
+				// Test: Г°ГіГ·Г­Г®ГҐ Г®ГІГЄГ«ГѕГ·ГҐГ­ГЁГҐ ГІГ°Г Г­Г±ГЇГ®Г°ГІГ  ГЅГ«ГҐГЄГІГ°Г®Г­Г®Гў Гў ГЄГ®Г«Г«ГЁГ¬Г ГІГ®Г°ГҐ
 				//if(m->name_ == "W700ICRU")
 				//	m->transCutoff_elec = 100.0;
 
-				// HACK!! До решения вопроса привязки ECUT к модулю принудительно назначаем его
-				// для воды и воздуха 0.3 МэВ, как наиболее практичного для транспорта в среде.
-				if (m->name_ == "H2O700ICRU" || m->name_ == "AIR700ICRU" ||
-					m->name_ == "LUNG700ICRU" || m->name_ == "ICRPBONE700ICRU")
-					m->transCutoff_elec = 0.3;
+				//// HACK!! Г„Г® Г°ГҐГёГҐГ­ГЁГї ГўГ®ГЇГ°Г®Г±Г  ГЇГ°ГЁГўГїГ§ГЄГЁ ECUT ГЄ Г¬Г®Г¤ГіГ«Гѕ ГЇГ°ГЁГ­ГіГ¤ГЁГІГҐГ«ГјГ­Г® Г­Г Г§Г­Г Г·Г ГҐГ¬ ГҐГЈГ®
+				//// Г¤Г«Гї ГўГ®Г¤Г» ГЁ ГўГ®Г§Г¤ГіГµГ  0.3 ГЊГЅГ‚, ГЄГ ГЄ Г­Г ГЁГЎГ®Г«ГҐГҐ ГЇГ°Г ГЄГІГЁГ·Г­Г®ГЈГ® Г¤Г«Гї ГІГ°Г Г­Г±ГЇГ®Г°ГІГ  Гў Г±Г°ГҐГ¤ГҐ.
+				//if (m->name_ == "H2O700ICRU" || m->name_ == "AIR700ICRU" ||
+				//	m->name_ == "LUNG700ICRU" || m->name_ == "ICRPBONE700ICRU")
+				//	m->transCutoff_elec = 0.3;
 			}
 		}
 
@@ -263,7 +277,7 @@ int _tmain(int argc, _TCHAR* argv [])
 			source->setScoreTrack(trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons, doTrackProtons, doTrackNeutrons);
 
 		//
-		// Симуляция
+		// Г‘ГЁГ¬ГіГ«ГїГ¶ГЁГї
 		//
 		mcTransport* tstart = tfirst;
 		//if (startinside)
@@ -284,7 +298,7 @@ int _tmain(int argc, _TCHAR* argv [])
 			tstart = t;
 		}
 
-		double* energySource = new double[nThreads];  // счетчик энергии источника
+		double* energySource = new double[nThreads];  // Г±Г·ГҐГІГ·ГЁГЄ ГЅГ­ГҐГ°ГЈГЁГЁ ГЁГ±ГІГ®Г·Г­ГЁГЄГ 
 		for (i = 0; i < nThreads; i++) energySource[i] = 0;
 
 		for (int ib = 0; ib < nBanches; ib++)
@@ -329,8 +343,8 @@ int _tmain(int argc, _TCHAR* argv [])
 		wcout << L"Simulation time =  " << TIMESINCE(simStartTime) << L" sec" << endl;
 		wcout << L"Writing results ..." << endl;
 
-		// Запись геометрии в VRML (до симуляции на случай если таковая сломается; 
-		// можно бкдет посмотреть простую причину)
+		// Г‡Г ГЇГЁГ±Гј ГЈГҐГ®Г¬ГҐГІГ°ГЁГЁ Гў VRML (Г¤Г® Г±ГЁГ¬ГіГ«ГїГ¶ГЁГЁ Г­Г  Г±Г«ГіГ·Г Г© ГҐГ±Г«ГЁ ГІГ ГЄГ®ГўГ Гї Г±Г«Г®Г¬Г ГҐГІГ±Гї; 
+		// Г¬Г®Г¦Г­Г® ГЎГЄГ¤ГҐГІ ГЇГ®Г±Г¬Г®ГІГ°ГҐГІГј ГЇГ°Г®Г±ГІГіГѕ ГЇГ°ГЁГ·ГЁГ­Гі)
 		if (!vrmlFile.empty())
 		{
 			ofstream wfs(vrmlFile.c_str());
@@ -347,7 +361,7 @@ int _tmain(int argc, _TCHAR* argv [])
 				mcScore* s = t->getScore();
 				if (s) s->dumpVRML(wfs);
 
-				// Проверяем вложения
+				// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬ ГўГ«Г®Г¦ГҐГ­ГЁГї
 				mcTransport* ti = t;
 				if (ti != nullptr) ti = ti->getInternalTransport();
 				while (ti)
@@ -367,7 +381,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		else
 			wcout << L"VRML dump skipped" << endl;
 
-		// Сохранение статистики
+		// Г‘Г®ГµГ°Г Г­ГҐГ­ГЁГҐ Г±ГІГ ГІГЁГ±ГІГЁГЄГЁ
 		double energyDeposited = 0;
 		for (i = 0; i < nThreads; i++) energyDeposited += energySource[i];
 		wcout << endl;
@@ -389,7 +403,7 @@ int _tmain(int argc, _TCHAR* argv [])
 					s->dumpStatistic(sfs);
 				}
 
-				// Проверяем вложения
+				// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬ ГўГ«Г®Г¦ГҐГ­ГЁГї
 				mcTransport* ti = t;
 				if (ti != nullptr) ti = ti->getInternalTransport();
 				while (ti)
@@ -411,7 +425,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		else
 			wcout << L"Statistic dump skipped" << endl;
 
-		// Чистка памяти
+		// Г—ГЁГ±ГІГЄГ  ГЇГ Г¬ГїГІГЁ
 		if (source) delete source;
 
 		mcTransport* t = tfirst;
@@ -420,7 +434,7 @@ int _tmain(int argc, _TCHAR* argv [])
 			mcTransport* tt = t;
 			t = (mcTransport *) tt->getNextTransport();
 
-			// Проверяем вложения
+			// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬ ГўГ«Г®Г¦ГҐГ­ГЁГї
 			mcTransport* ti = tt;
 			if (ti != nullptr) ti = ti->getInternalTransport();
 			while (ti)

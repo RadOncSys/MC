@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MCTools.cpp" />
+    <ClCompile Include="testEndf.cpp" />
     <ClCompile Include="testProton.cpp" />
   </ItemGroup>
   <ItemGroup>

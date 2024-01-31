@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="mcBrachySource.h" />
     <ClInclude Include="mcClinicalElectronBeam.h" />
     <ClInclude Include="mcCSNuclear.h" />
     <ClInclude Include="mcDefs.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="mcScoreBeamFluence2.h" />
     <ClInclude Include="mcScoreBeamFluenceSubsource.h" />
     <ClInclude Include="mcScoreBeamFluenceXY.h" />
+    <ClInclude Include="mcScoreBrachy.h" />
     <ClInclude Include="mcScoreConicalRZ.h" />
     <ClInclude Include="mcScoreEnergyFluence.h" />
     <ClInclude Include="mcScoreEnergySpectrum.h" />
@@ -262,6 +264,7 @@
     <ClInclude Include="ProfileProcessor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mcBrachySource.cpp" />
     <ClCompile Include="mcClinicalElectronBeam.cpp" />
     <ClCompile Include="mcCSNuclear.cpp" />
     <ClCompile Include="mcEndfP.cpp" />
@@ -304,6 +307,7 @@
     <ClCompile Include="mcScoreBeamFluence2.cpp" />
     <ClCompile Include="mcScoreBeamFluenceSubsource.cpp" />
     <ClCompile Include="mcScoreBeamFluenceXY.cpp" />
+    <ClCompile Include="mcScoreBrachy.cpp" />
     <ClCompile Include="mcScoreConicalRZ.cpp" />
     <ClCompile Include="mcScoreEnergyFluence.cpp" />
     <ClCompile Include="mcScoreEnergySpectrum.cpp" />

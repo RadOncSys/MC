@@ -354,6 +354,11 @@
     </ClInclude>
     <ClInclude Include="mcSpline.h">
       <Filter>Media</Filter>
+    <ClInclude Include="mcBrachySource.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreBrachy.h">
+      <Filter>Score</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -655,5 +660,11 @@
       <Filter>Media</Filter>
     </ClCompile>
     <ClCompile Include="mcScoreTest.cpp" />
+    <ClCompile Include="mcBrachySource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreBrachy.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
