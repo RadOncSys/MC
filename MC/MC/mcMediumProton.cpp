@@ -3,47 +3,14 @@
 #include <iostream>
 #include "mcPhysicsCommon.h"
 #include "mcEndfP.h"
-//#include <math.h>
-//���������� ������ ���������� ������� ��������������� � ��������, ��������:
-#ifndef InverseRadiationLength
-#define InverseRadiationLength InverseRadiationLength_DahlApproximation
-#endif InverseRadiationLength
 
-// �������� �������� ������������ ����� �������� 
-// c ������� ������ A [�/����],
-// � ������� ���� (������� �������) Z (� �������� ������ ���������)
-// ����������� � ����������� Dahl'a
-// rpp-2006-book.pdf 27.4.1 p.264 (eq.27.22)
-// ��������� � �������� Tsai'� (27.20) � ��������� ����� 2.5%, �� ����������� ����� (5%)
-// � 1/(g/cm^2)
-double InverseRadiationLength_DahlApproximation(const double A, const double Z)
+string CLEARFROMALPHA(string x)
 {
-	return Z * (Z + 1) * log(287 / sqrt(Z)) / (716.4 * A);
+	for (int i = 0; i < x.length(); i++)
+		if (x[i] > '9')
+			x.erase(i, 1);
+	return x;
 }
-
-// �������� �������� ������������ ����� �������� ���������� �� n ���������.
-// ��� i-�� �������� 0<=i<n
-// w[i] - ������������� ��������(?) ��� 
-// A[i] - ������� ����� A [�/����],
-// Z[i]	- ����� ���� (������� �����)
-// rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
-// ��� ������� ������������ ����� ���������� �������� ��������
-// InverseRadiationLength (�������� �����������)
-// � 1/(g/cm^2)
-double InverseRadiationLength(const double* A, const double* Z, const double* w, const int n)
-{
-	double s = 0;
-	for (int i = 0; i < n; i++)
-		s += InverseRadiationLength(A[i], Z[i]) * w[i];
-	return s;
-}
-
-string CLEARFROMALPHA(string x);
-
-//Необходимо задать конкретную формулу соответствующим с макросом, например:
-#ifndef InverseRadiationLength
-#define InverseRadiationLength InverseRadiationLength_DahlApproximation
-#endif InverseRadiationLength
 
 // Величина обратная радиационной длине вещества 
 // c атомной массой A [г/моль],
@@ -69,8 +36,8 @@ double InverseRadiationLength_DahlApproximation(const double A, const double Z)
 double InverseRadiationLength(const double* A, const double* Z, const double* w, const int n)
 {
 	double s = 0;
-	for (int i = 0; i < n; i++)
-		s += InverseRadiationLength(A[i], Z[i]) * w[i];
+	//for (int i = 0; i < n; i++)
+	//	s += InverseRadiationLength(A[i], Z[i]) * w[i];
 	return s;
 }
 
@@ -248,9 +215,9 @@ const double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 const double mcMediumProton::gRadiationLength()
 {
 	radLength = 0.0;
-	for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-		radLength += InverseRadiationLength(el->atomicMass, el->atomicNumber) * el->partsByNumber * el->atomicMass;
-	}
+	//for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+	//	radLength += InverseRadiationLength(el->atomicMass, el->atomicNumber) * el->partsByNumber * el->atomicMass;
+	//}
 	radLength = AtomicWeight() / (radLength * density_);
 	return radLength;
 }
@@ -398,12 +365,4 @@ void mcMediumProton::createDB()
 	}
 	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
 	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
-}
-
-string CLEARFROMALPHA (string x)
-{
-	for (int i = 0; i < x.length(); i++)
-		if (x[i] > '9')
-			x.erase(i, 1);
-	return x;
 }
