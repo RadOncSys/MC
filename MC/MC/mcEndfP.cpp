@@ -448,6 +448,19 @@ double mcEndfCrossSectionTable::get_lambda(double kE, double rho, double A)
 	return 1 / (rho * _sigma * Na / A / 10);
 }
 
+double mcEndfCrossSectionTable::get_sigma(double kE) const
+{
+	int i = 0;
+	for (i = 0; i < Energies.size(); i++)
+		if (Energies[i] > kE)
+			break;
+	if (i == Energies.size())
+		i--;
+	i--;
+	double _sigma = (Values[i + 1] - Values[i]) / (Energies[i + 1] - Energies[i]) * (kE - Energies[i]) + Values[i];
+	return _sigma;
+}
+
 void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 {
 	os << "Multiplicity table:" << endl;

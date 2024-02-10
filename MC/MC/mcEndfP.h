@@ -43,6 +43,8 @@ public:
 
 	double get_lambda(double kE, double rho, double A);
 
+	double get_sigma(double kE) const;
+
 	//—татус, показывающий не пуста ли таблица
 	bool isEmpty;
 

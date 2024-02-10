@@ -47,4 +47,5 @@ public:
 	double transCutoff_proto;		// Energy cutoff for proton transport
 
 	vector<mcEndfP> ENDFdata;
+	double microsigmaforelement(int A, int Z, int kE) const;
 };

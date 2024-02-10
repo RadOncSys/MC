@@ -110,6 +110,37 @@ double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE)
 	return sigmaTL;
 }
 
+double mcMediumProton::microsigmaforelement(int A, int Z, int kE) const
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDFdata.size(); i++)
+	{
+		if (CLEARFROMALPHA(ENDFdata[i].ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//Если нуклид не найден в базе данных ENDF возвращается 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDFdata[i].NuclearCrossSections.isEmpty)
+		return SIGMA;	//Если нет данных по MF=3 MT=5 возвращается 0
+	if (kE <= ENDFdata[i].NuclearCrossSections.Energies[0])
+		return SIGMA;
+	SIGMA = ENDFdata[i].NuclearCrossSections.get_sigma(kE);
+	return SIGMA / pow(10,24);
+}
+
 double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
 {
 	double SIGMA = 0.0;
@@ -131,10 +162,10 @@ double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
 		}
 	}
 	if (!isFound)
-		return SIGMA;
+		return SIGMA;	//Если нуклид не найден в базе данных ENDF возвращается 0
 		//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
 	if (ENDF->at(i).NuclearCrossSections.isEmpty)
-		return SIGMA;
+		return SIGMA;	//Если нет данных по MF=3 MT=5 возвращается 0
 	if (kE <= ENDF->at(i).NuclearCrossSections.Energies[0])
 		return SIGMA;
 	else
@@ -353,14 +384,16 @@ void mcMediumProton::createDB()
 {
 	double S;
 	vector<double>sigma_endf;
+	vector<double>sigma_;
 
 	for (int i = 0; i < kEmax(); i++) {
 		S = 0.0; // длина свободного пробега
 		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata)/pow(10,24);
+			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata)/pow(10,24) * el->partsByNumber;
 		}
 		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
 		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+		sigma_.push_back(S); // mfp=1/(sigma_in)
 	}
 	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
 	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
