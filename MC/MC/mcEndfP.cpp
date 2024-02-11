@@ -1069,7 +1069,7 @@ double mcEndfEANuclearCrossSectionTable::getf_0(int IN, double Eout)
 	return f_0;
 }
 
-double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
+int mcEndfEANuclearCrossSectionTable::playMulti(double kE, mcRng& rng) const
 {
 	int i = 0;
 	for (i = 0; i < Energies.size(); i++)
@@ -1094,7 +1094,14 @@ double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
 			multiplicity = (kE - Energies[i - 1]) / (Energies[i] - Energies[i - 1]) * (Multiplicities[i] - Multiplicities[i - 1]) + Multiplicities[i - 1];
 		}
 	else throw exception("Interpolation range break");
-	return multiplicity;
+
+	int quantity = int(multiplicity);
+	double additional = multiplicity - quantity;
+	double random = rng.rnd();
+	if (random > additional)
+		quantity++;
+
+	return quantity;
 }
 
 

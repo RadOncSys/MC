@@ -79,7 +79,7 @@ public:
 	void dump(std::ostream& os) const;
 
 	//Интерполяция мультиплетности
-	double getMulti(double kE);
+	int playMulti(double kE, mcRng& rng) const;
 
 	//Розыгрыш f_0 и r
 	double** playpar(mcRng& rng, double kE, int LAW);

@@ -15,6 +15,8 @@ mcPhysicsProton::~mcPhysicsProton(void)
 {
 }
 
+string CLEARFROMALPHA(string x);
+
 bool mcPhysicsProton::Discarge(mcParticle* p, const mcMedium& med, double& edep) const
 {
 	if (p->ke <= ((const mcMediumProton&)med).transCutoff_proto)
@@ -161,11 +163,54 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 				continue;
 			else break;
 		}
-	}									//Теперь реакция осуществляется на nucID-ом ядре
+	}			
+						//Теперь реакция осуществляется на nucID-ом ядре
+	int endfID = 0;
+	int A = ROUND(m->elements_[nucID].atomicMass);
+	int Z = ROUND(m->elements_[nucID].atomicNumber);
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(ROUND(m->elements_[nucID].atomicMass));
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (endfID = 0; endfID < m->ENDFdata.size(); endfID++)
+	{
+		if (CLEARFROMALPHA(m->ENDFdata[endfID].ElementName) == elName)
+		{
+			break;
+		}
+	}
+	vector<int> quantity; //[0] - n, [1] - p, [2] - gamma
+	for (int i = 0; i < m->ENDFdata[endfID].Products.size(); i++)
+	{
+		if (int(m->ENDFdata[endfID].Products[i]->product_type) < 2 || int(m->ENDFdata[endfID].Products[i]->product_type) == 6)
+			quantity.push_back(m->ENDFdata[endfID].Products[i]->EANuclearCrossSections[0]->playMulti(p->ke * 1000000, rng));
+	}
+	for (int i = 0; i < quantity.size(); i++)
+	{
+		for (int j = 0; j < quantity[i]; j++)
+		{
 
+		}
+	}
 
-
-
-
+	p->ke /= 3.0;
 	return 2 * p->ke * p->weight;
 }
+
+void mcPhysicsProton::createnewparticlewithEA(mcRng& rng, mcParticle* p, const mcMediumProton* pmed, int endfID, int pID)
+{
+	double phi, theta, kE;
+	if (pID == 2)
+		pID = 6;
+	if (pmed->ENDFdata[endfID].Products[pID]->LAW != 1)
+		throw exception((string("This LAW doesn't exist in ENDF play-block.")).c_str());
+	if (pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->LANG[0] == 1)
+	{
+		phi = 2 * PI * rng.rnd();
+		theta = PI * rng.rnd();
+		mcParticle* pNextParticle;
+	}
+}
+

@@ -5,6 +5,9 @@
 #pragma once
 #include "mcPhysicsCharged.h"
 
+class mcMediumProton;
+class mcRng;
+
 class mcPhysicsProton : public mcPhysicsCharged
 {
 public:
@@ -21,4 +24,8 @@ public:
 	double TakeOneStep(mcParticle* p, const mcMedium& med, double& step) const override;
 
 	bool Discarge(mcParticle* p, const mcMedium& med, double& edep) const override;
+
+protected:
+
+	static void createnewparticlewithEA(mcRng& rng, mcParticle* p, const mcMediumProton* pmed, int endfID, int pID);
 };
