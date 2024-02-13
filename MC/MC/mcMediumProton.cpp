@@ -110,7 +110,7 @@ double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE)
 	return sigmaTL;
 }
 
-double mcMediumProton::microsigmaforelement(int A, int Z, int kE) const
+double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 {
 	double SIGMA = 0.0;
 	kE *= 1000000;

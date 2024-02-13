@@ -7,6 +7,8 @@
 #include "mcDefs.h"
 #include <float.h>
 
+using namespace std;
+
 mcPhysicsProton::mcPhysicsProton(void)
 {
 }
@@ -147,12 +149,11 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	for (int i = 0; i < m->elements_.size(); i++)
 	{
 		if (psum != 0)
-			sigmaratio[i] /= psum;
+			probability.push_back(sigmaratio[i] / psum);
 		else break;
-		if (i == 0)
-			probability.push_back(sigmaratio[i]);
-		else probability.push_back(sigmaratio[i] + sigmaratio[i - 1]);
 	}
+	for (int i = 1; i < probability.size(); i++)
+		probability[i] += probability[i - 1];
 	double random = rng.rnd();
 	int nucID = 0;
 	for (nucID = 0; nucID < m->elements_.size(); nucID++)
@@ -187,30 +188,73 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 		if (int(m->ENDFdata[endfID].Products[i]->product_type) < 2 || int(m->ENDFdata[endfID].Products[i]->product_type) == 6)
 			quantity.push_back(m->ENDFdata[endfID].Products[i]->EANuclearCrossSections[0]->playMulti(p->ke * 1000000, rng));
 	}
+	int SUMquantity = 0;
 	for (int i = 0; i < quantity.size(); i++)
+		SUMquantity += quantity[i];
+	
+	double edep = 0.0;
+	
+	if (SUMquantity > 0)
 	{
-		for (int j = 0; j < quantity[i]; j++)
-		{
+		double ke_before = p->ke;
+		createnewparticleswithEA(rng, p, m, endfID, &quantity);
+		edep = ke_before - p->ke;
+		p->ke = 0.0;
+	} 
 
+	return edep * p->weight;
+}
+
+void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, const mcMediumProton* pmed, int endfID, vector<int>* quantity)
+{
+	double newphi = 0, newtheta = 0, newkE = 0;
+	for (int i = 0; i < quantity->size(); i++)
+	{
+		int pID = (i == 2) ? (pmed->ENDFdata[endfID].Products.size() - 1) : i;
+		if (pmed->ENDFdata[endfID].Products[pID]->LAW != 1)
+			throw exception("This LAW doesn't exist in ENDF play-block.");
+		if (pmed->ENDFdata[endfID].Products[pID]->product_type > 6)
+			throw exception("Trying to generate electron as a product of nuclear reaction.");
+		for (int j = 0; j < quantity->at(i); j++)
+		{
+			if (pID > 1 && pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->LANG[0] == 1)
+			{
+				mcParticle* pNewPhoton = DuplicateParticle(primary);
+				pNewPhoton->t = MCP_PHOTON;
+				pNewPhoton->q = 0;
+				int eoutID = 0, keIN = 0;
+				pNewPhoton->ke = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
+				GoInRandomDirection(rng.rnd(), rng.rnd(), pNewPhoton->u);
+				primary->ke -= pNewPhoton->ke;
+			}
+			else if (pID == 1 && pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->LANG[0] == 2)
+			{
+				mcParticle* pNewProton = DuplicateParticle(primary);
+				int eoutID = 0, keIN = 0;
+				pNewProton->ke = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
+				getKallbachMannAngle(rng, endfID, pNewProton, pmed, keIN, eoutID);
+				primary->ke -= pNewProton->ke;
+			}
+			else
+			{
+				int eoutID = 0, keIN = 0;
+				double neutron_ke = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
+				primary->ke -= neutron_ke;
+			}
 		}
 	}
-
-	p->ke /= 3.0;
-	return 2 * p->ke * p->weight;
+	return;
 }
 
-void mcPhysicsProton::createnewparticlewithEA(mcRng& rng, mcParticle* p, const mcMediumProton* pmed, int endfID, int pID)
+void mcPhysicsProton::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumProton* pmed, int keIN, int eoutID)
 {
-	double phi, theta, kE;
-	if (pID == 2)
-		pID = 6;
-	if (pmed->ENDFdata[endfID].Products[pID]->LAW != 1)
-		throw exception((string("This LAW doesn't exist in ENDF play-block.")).c_str());
-	if (pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->LANG[0] == 1)
-	{
-		phi = 2 * PI * rng.rnd();
-		theta = PI * rng.rnd();
-		mcParticle* pNextParticle;
-	}
+	int pID = (p->t == MCP_PROTON) ? (1) : (0);
+	double ke_ = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->Energies[keIN]; //В первом приближении энергия без интерполяции
+	double costheta = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playmu(ke_, pmed->ENDFdata[endfID].Products[pID]->LAW, keIN, eoutID, pID, rng);
+	double sintheta = sin(acos(costheta));
+	double phi = 2 * PI * rng.rnd();
+	double cosphi = cos(phi);
+	double sinphi = sin(phi);
+	ChangeDirection(costheta, sintheta, cosphi, sinphi, p->u);
+	return;
 }
-

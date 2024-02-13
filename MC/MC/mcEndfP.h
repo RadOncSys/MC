@@ -78,14 +78,17 @@ public:
 
 	void dump(std::ostream& os) const;
 
-	//Интерполяция мультиплетности
+	//Розыгрыш мультиплетности с интерполяцией
 	int playMulti(double kE, mcRng& rng) const;
+
+	//Розыгрыш энергии вылетающей частицы
+	double playE(double kE, int &keIN, int &eoutID, mcRng& rng) const;
 
 	//Розыгрыш f_0 и r
 	double** playpar(mcRng& rng, double kE, int LAW);
 
 	//Розыгрыш косинуса угла рассеяния
-	double playmu(double kE, int LAW, double** pars, int ptype, mcRng& rng);
+	double playmu(double kE, int LAW, int keIN, int eoutID, int ptype, mcRng& rng) const;
 
 	//Интерполяция f_0 для пары энергия-энергия вылета
 	double getf_0(int IN, double Eout);

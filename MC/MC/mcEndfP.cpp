@@ -509,7 +509,7 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	
 }
 
-double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** pars, int ptype, mcRng& rng)
+double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, int eoutID, int ptype, mcRng& rng) const
 {
 	int pi = 0;
 	double SIGN = rng.rnd();
@@ -591,7 +591,7 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** par
 				33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NA - ZA) * (NA - ZA) / pow(AA, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZA * ZA / pow(AA, kf3)) +
 				1.211 * (ZC * ZC / AC - ZA * ZA / AA); // - Ia	
 
-			epsb = pars[0][0] / 1000000 * (AWR_nucl + 0.99862) / (AWR_nucl + 0.99862 - Ap); // AWRB = AWRA + AWRa - AWRb; in formula (p.138): AWRB + AWRb = AWRA + AWR(proton)
+			epsb = EA_par[keIN][eoutID][0] / 1000000 * (AWR_nucl + 0.99862) / (AWR_nucl + 0.99862 - Ap); // AWRB = AWRA + AWRa - AWRb; in formula (p.138): AWRB + AWRb = AWRA + AWR(proton)
 			Sb = 15.68 * (AC - AB) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NB - ZB) * (NB - ZB) / AB) - 18.56 * (pow(AC, kf2) - pow(AB, kf2)) +
 				33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NB - ZB) * (NB - ZB) / pow(AB, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZB * ZB / pow(AB, kf3)) +
 				1.211 * (ZC * ZC / AC - ZB * ZB / AB); // - Ib
@@ -603,7 +603,7 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** par
 			double R3 = min(ea, Et3);
 			a = C1 * R1 * eb / ea + C2 * pow(R1 * eb / ea, 3) + C3 * pow(R3 * eb / ea, 4) * Ma * mb;
 
-			double Excl = (1 + pars[2][0]) / 2;
+			double Excl = (1 + EA_par[keIN][eoutID][2]) / 2;
 			double mu = 0;
 			if (ksi1 < Excl)
 				mu = 1 / a * log(1 + ksi2 * (exp(2 * a) - 1)) - 1;
@@ -612,8 +612,9 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** par
 			return mu;
 		}
 	}
-	else if (LAW == 2 && pars[0][0] == 0)
+	else if (LAW == 2 && EA_par[keIN][eoutID][0])
 	{
+		throw exception ("Trying to play particle direction using LAW = 2.");
 		int interpol = 0;
 		for (interpol = 0; interpol < EA_par.size(); interpol++)
 		{
@@ -1102,6 +1103,63 @@ int mcEndfEANuclearCrossSectionTable::playMulti(double kE, mcRng& rng) const
 		quantity++;
 
 	return quantity;
+}
+
+double mcEndfEANuclearCrossSectionTable::playE(double kE, int &keIN, int &eoutID, mcRng& rng) const
+{
+	eoutID = 0;
+	vector<double> probability;
+	kE *= 1000000;
+	keIN = 0;
+	for (keIN = 0; keIN < Energies.size(); keIN++)
+		if (Energies[keIN] > kE)
+			break;
+	if (keIN == 0)
+	{
+		for (int i = 0; i < EA_par[keIN].size(); i++)
+		{
+			if (i != EA_par[keIN].size() - 1)
+				probability.push_back(EA_par[keIN][i][1] * (EA_par[keIN][i + 1][0] - EA_par[keIN][i][0]));
+			else
+				probability.push_back(0);
+		}
+	}
+	else if (Energies[keIN] - kE > kE - Energies[keIN - 1])
+	{
+		keIN--;
+		for (int i = 0; i < EA_par[keIN].size(); i++)
+		{
+			if (i != EA_par[keIN].size() - 1)
+				probability.push_back(EA_par[keIN][i][1] * (EA_par[keIN][i + 1][0] - EA_par[keIN][i][0]));
+			else
+				probability.push_back(0);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < EA_par[keIN].size(); i++)
+		{
+			if (i != EA_par[keIN].size() - 1)
+				probability.push_back(EA_par[keIN][i][1] * (EA_par[keIN][i + 1][0] - EA_par[keIN][i][0]));
+			else
+				probability.push_back(0);
+		}
+	}
+	double random = rng.rnd();
+	double psum = 0;
+	for (int i = 0; i < probability.size(); i++)
+		psum += probability[i];
+	for (int i = 0; i < probability.size(); i++)
+		probability[i] /= psum;
+	for (int i = 1; i < probability.size(); i++)
+	{
+		probability[i] += probability[i - 1];
+	}
+	for (eoutID = 0; eoutID < probability.size(); eoutID++)
+		if (probability[eoutID] > random)
+			break;
+
+	return EA_par[keIN][eoutID][0] / 1000000.0;
 }
 
 

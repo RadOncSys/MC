@@ -4,6 +4,8 @@
 //---------------------------------------------------------------------------
 #pragma once
 #include "mcPhysicsCharged.h"
+#include <vector>
+using namespace std;
 
 class mcMediumProton;
 class mcRng;
@@ -27,5 +29,6 @@ public:
 
 protected:
 
-	static void createnewparticlewithEA(mcRng& rng, mcParticle* p, const mcMediumProton* pmed, int endfID, int pID);
+	static void createnewparticleswithEA(mcRng& rng, mcParticle* p, const mcMediumProton* pmed, int endfID, vector<int>* quantity);
+	static void getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumProton* pmed, int keIN, int eoutID);
 };
