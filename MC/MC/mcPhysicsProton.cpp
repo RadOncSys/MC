@@ -257,6 +257,7 @@ void mcPhysicsProton::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p
 	double AWRa = 0.99862, AWRA = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->AWR_nucl;
 	double AWRb = (pID == 0) ? (1) : (0.99862);
 	double Eb = p->ke;
+	ke_ /= 1000000;
 	p->ke = Eb + AWRa * AWRb * ke_ / (AWRA + AWRa) / (AWRA + AWRa) + 2 * sqrt(AWRa * AWRb * ke_ * Eb) * costheta / (AWRA + AWRa);
 	costheta = sqrt(Eb / p->ke) * costheta + sqrt(AWRa * AWRb * ke_ / p->ke) / (AWRA + AWRa);
 	double sintheta = sin(acos(costheta));
