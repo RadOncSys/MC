@@ -251,10 +251,15 @@ void mcPhysicsProton::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p
 	int pID = (p->t == MCP_PROTON) ? (1) : (0);
 	double ke_ = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->Energies[keIN]; //Â ïåğâîì ïğèáëèæåíèè ıíåğãèÿ áåç èíòåğïîëÿöèè
 	double costheta = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playmu(ke_, pmed->ENDFdata[endfID].Products[pID]->LAW, keIN, eoutID, pID, rng);
-	double sintheta = sin(acos(costheta));
 	double phi = 2 * PI * rng.rnd();
 	double cosphi = cos(phi);
 	double sinphi = sin(phi);
+	double AWRa = 0.99862, AWRA = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->AWR_nucl;
+	double AWRb = (pID == 0) ? (1) : (0.99862);
+	double Eb = p->ke;
+	p->ke = Eb + AWRa * AWRb * ke_ / (AWRA + AWRa) / (AWRA + AWRa) + 2 * sqrt(AWRa * AWRb * ke_ * Eb) * costheta / (AWRA + AWRa);
+	costheta = sqrt(Eb / p->ke) * costheta + sqrt(AWRa * AWRb * ke_ / p->ke) / (AWRA + AWRa);
+	double sintheta = sin(acos(costheta));
 	ChangeDirection(costheta, sintheta, cosphi, sinphi, p->u);
 	return;
 }
