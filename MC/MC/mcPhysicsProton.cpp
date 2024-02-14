@@ -198,7 +198,9 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	{
 		double ke_before = p->ke;
 		createnewparticleswithEA(rng, p, m, endfID, &quantity);
-		edep = ke_before - p->ke;
+		if (p->ke >= 0)
+			edep = ke_before - p->ke;
+		else edep = ke_before;
 		p->ke = 0.0;
 	} 
 
