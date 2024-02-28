@@ -61,6 +61,8 @@ public:
 	// TODO: если обнаружится потребность в поддержке 
 	// множества типов интерполяций переделать в массив
 	int interpolationType;
+
+	short MT;
 	
 	// Точки
 	std::vector<double> Energies;
@@ -233,6 +235,81 @@ public:
 
 	//MT = 50, 51...; MF = 6;
 	std::vector<mcEndfProduct*> EmittedNeutrons;
+
+	// Загрузка одного файла сечений
+	void Load(const char* fname, const char* ename);
+
+	void Clear();
+
+	void dumpTotalCrossections(std::ostream& os) const;
+};
+
+// Класс для чтения MF=4
+
+class mcEndfAngular
+{
+public:
+	mcEndfAngular() {
+		isEmpty = true;
+		NE1 = 0;
+		NE2 = 0;
+	}
+
+	void Load(std::istream& is);
+
+	bool isEmpty;
+
+	int ZA;
+
+	double AWR;
+
+	// Вид представления угловых распределений в секции
+	short LTT;
+
+	// 1 - все распределения изотропны, 0 - нет
+	short LI;
+
+	// Система отсчета, в которой представлены распределения
+	short LCT;
+
+	int NE1, NE2;
+
+	std::vector<double> Energies;
+	std::vector<std::vector<double>> Values;
+
+};
+
+class mcEndfN
+{
+public:
+	mcEndfN();
+
+	~mcEndfN();
+
+	// Назавание изотопа, включающее атомное имя и атомный вес.
+	// Используется как уникальный идентификатор.
+	std::string ElementName;
+
+	// Сечения суммы упругих рассеяний и ядерных реакций в зависимости от энергии падающей частицы
+	// TODO: Возможно временная таблица. Разобраться, не нужно ли эти реакции учитывать 
+	// в дополнение к тому, что в угловом смысле ассоциируется с dE/dX.
+	mcEndfCrossSectionTable TotalCrossSections;
+
+	mcEndfCrossSectionTable ElasticCrossSections;
+
+	// Сечения ядерных реакций в зависимости от энергии падающей частицы
+	mcEndfCrossSectionTable NuclearCrossSections;
+
+	// MF = 4, MT = 2
+	mcEndfAngular nElasticAngular;
+
+	// Сечения реакций (p,n) MF = 3 MT = 51-90;
+	std::vector<mcEndfCrossSectionTable*> nInelasticCS;
+
+	std::vector<mcEndfProduct*> Products;
+
+	//MT = 50, 51...; MF = 6;
+	std::vector<mcEndfProduct*> nInelasticContin;
 
 	// Загрузка одного файла сечений
 	void Load(const char* fname, const char* ename);

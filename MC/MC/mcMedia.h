@@ -45,7 +45,7 @@ public:
 	void initProtonCSFromVector(std::vector<mcEndfP>* dbData);
 
 	void initNeutronFromStream(istream&);
-	void initNeutronFromFile(const string& fname);
+	void initNeutronFromFile(const string& nuclearDir);
 
 	// Возвращает указатель объекта физических расчетов для частицы указанного типа
 	const mcPhysics* getPhysics(int ptype) const;
