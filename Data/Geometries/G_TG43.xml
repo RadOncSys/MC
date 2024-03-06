@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+Симуляция брахи источников согласно прооколу TG-43.
+-->
+<accelerator>
+  <!--
+  Группа вложенных объектов распознается следующим образом.
+  В стандартную линейную цепочку встраивается только внешний объект.
+  Остальные объекты привязываются как последовательность вложенных в него.
+  Первым идет самый внутренний объект.
+  Каждый следующий охватывает предыдущий.
+  Координаты каждого модуля группы определяются относительно системы группы.
+  -->
+  <module type="embedding" name="Phantom">
+    <position unit="cm" x="0" y="0" z="0" />
+    <normal x="0" y="0" z="1" />
+    <xaxis x="1" y="0" z="0" />
+
+    <!--
+    Иридиевый источник.
+    В качестве материала выбираем золото как ближайший к иридию материал из имеющихся в PEGS4
+    -->
+    <module type="cylinder" name="Source" medium="AU700ICRU" density="1">
+      <Color r="1.0" g="0.5" b="0.5" t="0.5" />
+      <position unit="cm" x="0" y="0" z="-0.18" />
+      <normal x="0" y="0" z="1" />
+      <xaxis x="1" y="0" z="0" />
+      <size unit="cm" radius="0.03" height="0.36"/>
+    </module>
+
+    <!--
+    На старте берем цилиндрическую капсулу для простоты.
+    -->
+    <module type="cylinder" name="Source" medium="STEEL700ICRU" density="1">
+      <Color r="1.0" g="0.5" b="0.5" t="0.5" />
+      <position unit="cm" x="0" y="0" z="-9.67" />
+      <normal x="0" y="0" z="1" />
+      <xaxis x="1" y="0" z="0" />
+      <size unit="cm" radius="0.045" height="10.0"/>
+    </module>
+
+    <!--
+    Сферический водяной фантом
+    -->
+    <module type="esphere" name="Phantom" medium="H2O700ICRU" density="1">
+      <Color r="0.0" g="0.0" b="1.0" t="0.8" />
+      <position unit="cm" x="0" y="0" z="0" />
+      <normal x="0" y="0" z="1" />
+      <xaxis x="1" y="0" z="0" />
+      <size unit="cm" radius="40.0"/>
+    </module>
+  </module>
+</accelerator>

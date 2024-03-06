@@ -31,6 +31,7 @@
 #include "../../mc/mc/mcScoreBeamFluence.h"
 #include "../../mc/mc/mcScoreBeamFluence2.h"
 #include "../../mc/mc/mcScoreMatrixRZ.h"
+#include "../../mc/mc/mcScoreBrachy.h"
 #include "../../mc/mc/mcScoreConicalRZ.h"
 #include "../../mc/mc/mcScoreBeamFluenceXY.h"
 #include "../../mc/mc/mcScorePhaseSpaceConcentrator.h"
@@ -49,6 +50,7 @@
 #include "../../mc/mc/mcSourceAccelerator.h"
 #include "../../mc/mc/mcSourceXraySigmaR.h"
 #include "../../mc/mc/mcSourceCylindricalC60.h"
+#include "../../mc/mc/mcBrachySource.h"
 #include "../../mc/mc/mcSourceModelRadialPhsp.h"
 #include "../../mc/mc/mcSourceModelRadialDirect.h"
 #include "../../mc/mc/mcSourceLEBA.h"
@@ -550,6 +552,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	double ecut = 0;
 	int nr_s = 0;
 	double rmax_s = 0, tmax = 0;
+	double length = 0;	// длина брахи источника
 	double H = 0;
 	double d_iz = 0;
 	double psx = 0, psy = 0, psz = 0;
@@ -613,6 +616,8 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 					r1 = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"rmax") == 0)
 					rmax = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"length") == 0)
+					length = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"zmin") == 0)
 					zmin = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"zmax") == 0)
@@ -731,6 +736,12 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	else if (_wcsicmp(scoreType.c_str(), L"rz") == 0)
 	{
 		score = new mcScoreMatrixRZ(scoreModule.c_str(), nThreads, nr, nz, rmax, zmin, zmax);
+	}
+
+	// Параметры брахитерапевтического источника по протоколу TG-43
+	else if (_wcsicmp(scoreType.c_str(), L"brachy") == 0)
+	{
+		score = new mcScoreBrachy(scoreModule.c_str(), nThreads, length);
 	}
 
 	// 3D дозовое распределение в веерной RZ геометрии
@@ -858,6 +869,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	string srcName;
 	string sourceModule;
 	wstring radTypeName;
+	mc_isotope_t isotope = mc_isotope_t::UNKNOWN;
 	double energy = 0, ewidth = 0, awidth = 0;
 	spectrum_distr_t sptype = spectrum_distr_t::SPECTRUM_GAUSS;
 	profile_distr_t prf_type = profile_distr_t::PROFILE_EXPONENT;
@@ -905,6 +917,11 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 					ewidth = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"awidth") == 0)
 					awidth = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"isotope") == 0)
+				{
+					isotope = _wcsicmp(n1.Text.c_str(), L"C60") == 0 ? mc_isotope_t::C60 :
+						_wcsicmp(n1.Text.c_str(), L"IR192") == 0 ? mc_isotope_t::IR192 : mc_isotope_t::UNKNOWN;
+				}
 			}
 			if (node.Nodes.size() > 0)
 				isRadiationDefined = true;
@@ -1077,6 +1094,10 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		if (!isCoreSetDefined)
 			throw exception("Please, indicate radiation source dimensions");
 		source = new mcSourceSphereC60(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), radius);
+	}
+	else if (_wcsicmp(radTypeName.c_str(), L"brachy") == 0)
+	{
+		source = new mcBrachySource(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), radius, h, isotope);
 	}
 	else if (_wcsicmp(radTypeName.c_str(), L"clinical_electron_beam") == 0)
 	{

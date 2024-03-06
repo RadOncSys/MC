@@ -8,6 +8,7 @@
 #include "mcEndfP.h"
 
 void testproton();
+void testEndf();
 
 int main(int argc, char* argv[])
 {
@@ -37,6 +38,10 @@ int main(int argc, char* argv[])
 		else if (strcmp(argv[1], "3") == 0)
 		{
 			testproton();
+		}
+		else if (strcmp(argv[1], "5") == 0)
+		{
+			testEndf();
 		}
 	}
 	catch (std::exception& e)
