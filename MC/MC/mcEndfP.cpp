@@ -213,7 +213,8 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 				{
 					for (i = 0; i < n_energypoints; i++)
 					{
-						int c = 0, c1 = 0; //counters
+						int cur_el = 0; // counter of NW (ENDF p.136)
+						int c = 0, c1 = 0; //counters: c - number of element of current line
 						NA = atoi(record.c[3]);
 						EA_Epoints[i] = mcEndfRecord::ParseValue(record.c[1], 11);
 						npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
@@ -231,10 +232,18 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 							}
 							EA_par[i][j][0] = mcEndfRecord::ParseValue(record.c[c1], 11);
 							c = c1 + 1;
+							if (c == 6)
+							{
+								getline(is, line, '\n');
+								::memcpy(&record, line.c_str(), 80);
+								c = 0;
+							}
+							cur_el++;
 							for (int ii = 0; ii < NA + 1; ii++)
 							{
 								EA_par[i][j][ii + 1] = mcEndfRecord::ParseValue(record.c[c], 11);
-								if (c % 5 == 0 && j != npoints_out - 1)
+								cur_el++;
+								if (c == 5 && cur_el < (NA + 2) * npoints_out)
 								{
 									getline(is, line, '\n');
 									::memcpy(&record, line.c_str(), 80);
@@ -1472,7 +1481,6 @@ void mcEndfAngular::Load(std::istream& is)
 	mcEndfRecord record;
 	int pointCount = 0;
 	bool isFirstTime = true;
-	bool isNE1read = false;
 	isEmpty = false;
 
 	getline(is, line, '\n');
@@ -1486,18 +1494,70 @@ void mcEndfAngular::Load(std::istream& is)
 		{
 			if (isFirstTime)
 			{
-				LI = mcEndfRecord::ParseValue(record.c[3], 11);
-				LCT = mcEndfRecord::ParseValue(record.c[4], 11);
+				LI = mcEndfRecord::iStrCrop(record.c[2], 11);
+				LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
 				isFirstTime = false;
 			}
 			else
 			{
 				getline(is, line, '\n');
 				::memcpy(&record, line.c_str(), 80);
-				if (!isNE1read)
+				NE1 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				LValues.resize(NE1);
+				getline(is, line, '\n');
+				for (int i = 0; i < NE1; i++)
 				{
-					NE1 = mcEndfRecord::ParseValue(record.c[5], 11);
+					getline(is, line, '\n');
+					::memcpy(&record, line.c_str(), 80);
+					LEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
+					int NL = mcEndfRecord::iStrCrop(record.c[4], 11);
+					int _lines = NL / 6;
+					int iStop = 0;
+					(NL % 6 > 0) ? (_lines++) : (0);
+					for (int j = 0; j < _lines; j++)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+						for (int k = 0; k < 6; k++)
+						{
+							iStop++;
+							LValues[i].push_back(mcEndfRecord::ParseValue(record.c[k], 11));
+							if (iStop >= NL)
+								break;
+						}
+					}
 				}
+				getline(is, line, '\n');
+				::memcpy(&record, line.c_str(), 80);
+				NE2 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				TValues.resize(NE2);
+				Cosines.resize(NE2);
+				getline(is, line, '\n');
+				for (int i = 0; i < NE2; i++)
+				{
+					getline(is, line, '\n');
+					::memcpy(&record, line.c_str(), 80);
+					TEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
+					int npoints = mcEndfRecord::iStrCrop(record.c[5], 11);
+					getline(is, line, '\n');
+					int _lines = npoints * 2 / 6;
+					(npoints % 6 > 0) ? (_lines++) : (0);
+					int iStop = 0;
+					for (int j = 0; j < _lines; j++)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+						for (int k = 0; k < 3; k++)
+						{
+							iStop++;
+							Cosines[i].push_back(mcEndfRecord::ParseValue(record.c[2 * k], 11));
+							TValues[i].push_back(mcEndfRecord::ParseValue(record.c[2 * k + 1], 11));
+							if (iStop >= npoints)
+								break;
+						}
+					}
+				}		
+				break;
 			}
 		}
 	}
