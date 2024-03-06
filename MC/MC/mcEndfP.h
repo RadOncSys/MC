@@ -26,6 +26,7 @@ struct mcEndfRecord
 	// (где степнь указана нестандартно после знака +/-).
 	static double ParseValue(const char* s, int n);
 
+	// Парсинг целого числа
 	static int iStrCrop(const char* s, int n) {
 		std::string s1 = s;
 		s1.erase(n);

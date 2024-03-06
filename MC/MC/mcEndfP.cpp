@@ -556,24 +556,24 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, in
 			}
 			switch (ptype) {
 			case 0: mb = 0.5;
-				Ap = 1;
-				Zp = 0;
+				Ap = 1.0;
+				Zp = 0.0;
 				break;
-			case 1: mb = 1;
-				Ap = 1;
-				Zp = 1;
+			case 1: mb = 1.0;
+				Ap = 1.0;
+				Zp = 1.0;
 				break;
-			case 2: mb = 1;
-				Zp = 1;
-				Ap = 2;
+			case 2: mb = 1.0;
+				Zp = 1.0;
+				Ap = 2.0;
 				break;
-			case 3: mb = 1;
-				Zp = 1;
-				Ap = 3;
+			case 3: mb = 1.0;
+				Zp = 1.0;
+				Ap = 3.0;
 				break;
-			case 4: mb = 2;
-				Zp = 2;
-				Ap = 4;
+			case 4: mb = 2.0;
+				Zp = 2.0;
+				Ap = 4.0;
 				break;
 			case 5: throw exception("Recoils doesn't supported. See ENDF manual p.139");
 				break;
@@ -657,6 +657,13 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, in
 	}
 }
 
+double Pn(double x, int n)
+{
+	if (n == 0) return 1;
+	if (n == 1) return x;
+	return ((2 * n - 1) * Pn(x, n - 1) - (n - 1) * Pn(x, n - 2)) / n;
+}
+
 double Legandre(int NL, double* a, double mu)
 {
 	double output = 0.5;
@@ -665,6 +672,13 @@ double Legandre(int NL, double* a, double mu)
 	return output;
 }
 
+double LegandreKM(int NA, double* f, double mu)
+{
+	double output = 0;
+	for (double j = 1.0; j < NA; j++)
+		output += pow(mu, j) * f[int(j)] * (2.0 * j + 1.0) / 2.0;
+	return output;
+}
 
 
 double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LAW)
@@ -1035,7 +1049,7 @@ double mcEndfEANuclearCrossSectionTable::integrate_f0(mcRng& rng, double kE)
 		f1[i][1] = Eh;
 		f1[i][0] = CountSpline(cs, f1[i][1]);
 		Eh += h;
-		cout << f1[i][1] << "\t" << f1[i][0] << endl;
+		//cout << f1[i][1] << "\t" << f1[i][0] << endl;
 	}
 	for (int i = 1; i < f1.size() - 1; i += 2)
 	{
