@@ -27,6 +27,7 @@ private:
 	const double gdEdxStragglingGaussVarianceConstPart();	// генерирует и возвращает посто€нную (по энергии и пути) часть вариации √аусссова приближени€ разброса dE/dx. 
 	const double gRadiationLength();	// генерирует и возвращает величину обратную радиационной длине сложного вещества rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23) дл€ расчЄта радиационной длины отдельного элемента вызывает InverseRadiationLength  (прин€тое приближение (в версии 2007 года это приближение Dahl'а))
 	const void	 gSigmaInelastic(int Ap = 1, int Zp = 1);	// генерирует величину сечени€ неупругого взаимодействи€
+	const double gRadiationLength();
 
 public:
 	// не зависима€ от энергии и пути часть √ауссовой вариации (sigma^2) dE/dx
@@ -47,4 +48,5 @@ public:
 	double transCutoff_proto;		// Energy cutoff for proton transport
 
 	vector<mcEndfP> ENDFdata;
+	double microsigmaforelement(int A, int Z, double kE) const;
 };

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include "mcSpline.h"
+#include <cmath>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ double mcEndfRecord::ParseValue(const char* s, int n)
 {
 	std::string s1 = s;
 	s1.erase(n);
-	double f = atof(s);
+	double f = stof(s1);
 	int i = 0;
 	for (; i < n; i++)											
 		if (s[i] == '+' || s[i] == '-' && i != 0) break;  //Исправлен парсинг upd. 17.05.23 by GK
@@ -448,6 +449,19 @@ double mcEndfCrossSectionTable::get_lambda(double kE, double rho, double A)
 	return 1 / (rho * _sigma * Na / A / 10);
 }
 
+double mcEndfCrossSectionTable::get_sigma(double kE) const
+{
+	int i = 0;
+	for (i = 0; i < Energies.size(); i++)
+		if (Energies[i] > kE)
+			break;
+	if (i == Energies.size())
+		i--;
+	i--;
+	double _sigma = (Values[i + 1] - Values[i]) / (Energies[i + 1] - Energies[i]) * (kE - Energies[i]) + Values[i];
+	return _sigma;
+}
+
 void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 {
 	os << "Multiplicity table:" << endl;
@@ -496,7 +510,7 @@ void mcEndfEANuclearCrossSectionTable::dump(std::ostream& os) const
 	
 }
 
-double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** pars, int ptype, mcRng& rng)
+double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, int eoutID, int ptype, mcRng& rng) const
 {
 	int pi = 0;
 	double SIGN = rng.rnd();
@@ -578,7 +592,7 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** par
 				33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NA - ZA) * (NA - ZA) / pow(AA, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZA * ZA / pow(AA, kf3)) +
 				1.211 * (ZC * ZC / AC - ZA * ZA / AA); // - Ia	
 
-			epsb = pars[0][0] / 1000000 * (AWR_nucl + 0.99862) / (AWR_nucl + 0.99862 - Ap); // AWRB = AWRA + AWRa - AWRb; in formula (p.138): AWRB + AWRb = AWRA + AWR(proton)
+			epsb = EA_par[keIN][eoutID][0] / 1000000 * (AWR_nucl + 0.99862) / (AWR_nucl + 0.99862 - Ap); // AWRB = AWRA + AWRa - AWRb; in formula (p.138): AWRB + AWRb = AWRA + AWR(proton)
 			Sb = 15.68 * (AC - AB) - 28.07 * ((NC - ZC) * (NC - ZC) / AC - (NB - ZB) * (NB - ZB) / AB) - 18.56 * (pow(AC, kf2) - pow(AB, kf2)) +
 				33.22 * ((NC - ZC) * (NC - ZC) / pow(AC, kf1) - (NB - ZB) * (NB - ZB) / pow(AB, kf1)) - 0.717 * (ZC * ZC / pow(AC, kf3) - ZB * ZB / pow(AB, kf3)) +
 				1.211 * (ZC * ZC / AC - ZB * ZB / AB); // - Ib
@@ -590,7 +604,7 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** par
 			double R3 = min(ea, Et3);
 			a = C1 * R1 * eb / ea + C2 * pow(R1 * eb / ea, 3) + C3 * pow(R3 * eb / ea, 4) * Ma * mb;
 
-			double Excl = (1 + pars[2][0]) / 2;
+			double Excl = (1 + EA_par[keIN][eoutID][2]) / 2;
 			double mu = 0;
 			if (ksi1 < Excl)
 				mu = 1 / a * log(1 + ksi2 * (exp(2 * a) - 1)) - 1;
@@ -599,8 +613,9 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, double** par
 			return mu;
 		}
 	}
-	else if (LAW == 2 && pars[0][0] == 0)
+	else if (LAW == 2 && EA_par[keIN][eoutID][0])
 	{
+		throw exception ("Trying to play particle direction using LAW = 2.");
 		int interpol = 0;
 		for (interpol = 0; interpol < EA_par.size(); interpol++)
 		{
@@ -646,9 +661,10 @@ double Legandre(int NL, double* a, double mu)
 {
 	double output = 0.5;
 	for (double j = 1.0; j < NL; j++)
-		output += pow(mu, j) * a[int(j)] * (2.0 * j + 1.0) / 2.0;
+		output += legendre(int(j), mu) * a[int(j)] * (2.0 * j + 1.0) / 2.0;
 	return output;
 }
+
 
 
 double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LAW)
@@ -1056,7 +1072,7 @@ double mcEndfEANuclearCrossSectionTable::getf_0(int IN, double Eout)
 	return f_0;
 }
 
-double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
+int mcEndfEANuclearCrossSectionTable::playMulti(double kE, mcRng& rng) const
 {
 	int i = 0;
 	for (i = 0; i < Energies.size(); i++)
@@ -1081,7 +1097,71 @@ double mcEndfEANuclearCrossSectionTable::getMulti(double kE)
 			multiplicity = (kE - Energies[i - 1]) / (Energies[i] - Energies[i - 1]) * (Multiplicities[i] - Multiplicities[i - 1]) + Multiplicities[i - 1];
 		}
 	else throw exception("Interpolation range break");
-	return multiplicity;
+
+	int quantity = int(multiplicity);
+	double additional = multiplicity - quantity;
+	double random = rng.rnd();
+	if (random > additional)
+		quantity++;
+
+	return quantity;
+}
+
+double mcEndfEANuclearCrossSectionTable::playE(double kE, int &keIN, int &eoutID, mcRng& rng) const
+{
+	eoutID = 0;
+	vector<double> probability;
+	kE *= 1000000;
+	keIN = 0;
+	for (keIN = 0; keIN < Energies.size(); keIN++)
+		if (Energies[keIN] > kE)
+			break;
+	if (keIN == 0)
+	{
+		for (int i = 0; i < EA_par[keIN].size(); i++)
+		{
+			if (i != EA_par[keIN].size() - 1)
+				probability.push_back(EA_par[keIN][i][1] * (EA_par[keIN][i + 1][0] - EA_par[keIN][i][0]));
+			else
+				probability.push_back(0);
+		}
+	}
+	else if (Energies[keIN] - kE > kE - Energies[keIN - 1])
+	{
+		keIN--;
+		for (int i = 0; i < EA_par[keIN].size(); i++)
+		{
+			if (i != EA_par[keIN].size() - 1)
+				probability.push_back(EA_par[keIN][i][1] * (EA_par[keIN][i + 1][0] - EA_par[keIN][i][0]));
+			else
+				probability.push_back(0);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < EA_par[keIN].size(); i++)
+		{
+			if (i != EA_par[keIN].size() - 1)
+				probability.push_back(EA_par[keIN][i][1] * (EA_par[keIN][i + 1][0] - EA_par[keIN][i][0]));
+			else
+				probability.push_back(0);
+		}
+	}
+	double random = rng.rnd();
+	double psum = 0;
+	for (int i = 0; i < probability.size(); i++)
+		psum += probability[i];
+	for (int i = 0; i < probability.size(); i++)
+		probability[i] /= psum;
+	for (int i = 1; i < probability.size(); i++)
+	{
+		probability[i] += probability[i - 1];
+	}
+	for (eoutID = 0; eoutID < probability.size(); eoutID++)
+		if (probability[eoutID] > random)
+			break;
+
+	return EA_par[keIN][eoutID][0] / 1000000.0;
 }
 
 
@@ -1367,6 +1447,584 @@ void mcEndfP::Load(const char* fname, const char* ename)
 					}
 				}
 			 }
+
+		getline(isEndf, line, '\n');
+	}
+}
+
+void mcEndfAngular::Load(std::istream& is)
+{
+	string line, s1, s2, s3, s4;
+	mcEndfRecord record;
+	int pointCount = 0;
+	bool isFirstTime = true;
+	bool isNE1read = false;
+	isEmpty = false;
+
+	getline(is, line, '\n');
+
+	while (!is.fail())
+	{
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+		if (LTT == 3)
+		{
+			if (isFirstTime)
+			{
+				LI = mcEndfRecord::ParseValue(record.c[3], 11);
+				LCT = mcEndfRecord::ParseValue(record.c[4], 11);
+				isFirstTime = false;
+			}
+			else
+			{
+				getline(is, line, '\n');
+				::memcpy(&record, line.c_str(), 80);
+				if (!isNE1read)
+				{
+					NE1 = mcEndfRecord::ParseValue(record.c[5], 11);
+				}
+			}
+		}
+	}
+}
+
+mcEndfN::mcEndfN()
+{
+}
+
+mcEndfN::~mcEndfN()
+{
+}
+
+void mcEndfN::Load(const char* fname, const char* ename)
+{
+	// Separators
+	static const string beginSeparator("*** C O N T E N T S ***");
+	static const string beginSeparator2("*****");
+
+	ifstream isEndf(fname);
+	if (isEndf.fail())
+		throw exception((string("Can't open Neutron data file: ") + ename).c_str());
+	ElementName = ename;
+
+	// Читаем строки текста одну за другой и выбираем нужную информацию
+	string line, s1, s2, s3, s4;
+	getline(isEndf, line, '\n');
+
+	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
+	bool isInData = false;
+	int pointCount = 0;
+
+	mcEndfRecord record;
+
+	while (!isEndf.fail())
+	{
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+
+		// Начало новой энергии
+		if (!isInData)
+		{
+			if (line.find(beginSeparator) != string::npos || line.find(beginSeparator2) != string::npos)
+				isInData = true;
+		}
+
+		// Последняя строка файла. Прерываем не дожидаясь ошибки.
+		else if (record.Stblt[0] == '-' && record.Stblt[1] == '1')
+			break;
+
+		// Длина строки из девяток является разделителем между таблицами
+		else if (string(record.LineNumber, 5) == "99999")
+		{
+			pointCount = 0;
+		}
+
+		// Полное сечение
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '1')
+		{
+			TotalCrossSections.Load(isEndf);
+			TotalCrossSections.isEmpty = false;
+		}
+
+		// Сечения упругого рассеяния	
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
+		{
+			ElasticCrossSections.Load(isEndf);
+			ElasticCrossSections.isEmpty = false;
+		}
+
+		// Сечения ядерных реакций
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
+		{
+			NuclearCrossSections.Load(isEndf);
+			NuclearCrossSections.isEmpty = false;
+		}
+
+		// Сечения (n,n') MT = 51 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 52
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 53 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 54 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 55 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 56 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '6')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 57 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '7')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 58 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '8')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 59 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '9')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 60 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '0')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 61 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '1')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 62		
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '2')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 63 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '3')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 64 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '4')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 65
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '5')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 66
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '6')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 67
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '7')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 68
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '8')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 69 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '9')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 70 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '0')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 71 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '1')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 72 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '2')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 73 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '3')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 74 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '4')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 75 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '5')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 76 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '6')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 77 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '7')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 78 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '8')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 79 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '9')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 80 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '0')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 81 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '1')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 82 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '2')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 83 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '3')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 84 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '4')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 85 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '5')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 86 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '6')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 87 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '7')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 88 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '8')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 89 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '9')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 90 
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '0')
+		{
+			auto inelastic = new mcEndfCrossSectionTable();
+			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+			inelastic->Load(isEndf);
+			nInelasticCS.push_back(inelastic);
+		}
+
+		// Сечения (n,n') MT = 91
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '1')
+			{
+				auto inelastic = new mcEndfCrossSectionTable();
+				inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelastic->Load(isEndf);
+				nInelasticCS.push_back(inelastic);
+				}
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
+		{
+				nElasticAngular.ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				nElasticAngular.AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				nElasticAngular.LTT = mcEndfRecord::ParseValue(record.c[3], 11);
+				nElasticAngular.Load(isEndf);
+		}
+
+
+		// Энерго-угловые распределения
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
+		{
+			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+			{
+				int NK = atoi(record.c[4]);
+				int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				for (int i = 0; i < NK; i++)
+				{
+					auto product = new mcEndfProduct();
+					product->Load(isEndf);
+					Products.push_back(product);
+					Products[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+					Products[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+				}
+			}
+		}
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
+			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '1')  // (n,n) реакции MT = 91 MF = 6
+		{
+			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+			{
+				int NK = atoi(record.c[4]);
+				int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				for (int i = 0; i < NK; i++)
+				{
+					auto continuousN = new mcEndfProduct();
+					continuousN->Load(isEndf);
+					nInelasticContin.push_back(continuousN);
+					nInelasticContin[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+					nInelasticContin[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+				}
+			}
+		}
+
+
 
 		getline(isEndf, line, '\n');
 	}

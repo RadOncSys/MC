@@ -320,12 +320,69 @@ void mcMedia::initNeutronFromStream(istream& is)
 		throw std::exception((string("The following Neutron media were not loaded succcessfuly:\n") + errmedia).c_str());
 }
 
-void mcMedia::initNeutronFromFile(const string& fname)
+void mcMedia::initNeutronFromFile(const string& nuclearDir)
 {
-	ifstream is(fname.c_str());
-	if (is.fail())
-		throw std::exception((string("Can't open Neutron data file: ") + fname).c_str());
-	initNeutronFromStream(is);
+	Mendeleev Table;
+	Table.init();
+
+	for (int i = 0; i < xes_.size(); i++)
+		for (int j = 0; j < xes_[i]->elements_.size(); j++)
+		{
+			if (Table.isNecessary[xes_[i]->elements_[j].atomicNumber] == false)
+				Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
+		}
+
+
+
+	// Объект, в который сначала закачиваем всю баз данных сечений
+	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
+
+	// ICRU-63
+	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
+
+	// ENDF
+	vector<mcEndfN> dbData;
+
+	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
+	for (const auto& entry : fs::directory_iterator(nuclearDir))
+	{
+		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
+			continue;
+
+		//string fname = fs::path(entry.path()).filename().string();
+		string fname = fs::path(entry.path()).stem().string();
+		string ext = fs::path(entry.path()).extension().string();
+		std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
+
+		if (std::toupper(fname[0]) != 'N' || ext != ".DAT")
+			continue;
+
+		// Метку атомного элемента берем из имени файла.
+		string elementName = std::string(&fname[2]);
+		string AtNum = elementName;
+		int Z;
+
+		for (int i = 0; i < AtNum.size(); i++)
+		{
+			if (isalpha(AtNum[i]))
+			{
+				AtNum.erase(i, AtNum.size() - i);
+				Z = stoi(AtNum);
+				break;
+			}
+		}
+
+		// База данных изотопа
+		//mcCSNuclear csForElement;
+		mcEndfN csForElement;
+		if (Table.isNecessary[Z])
+		{
+			csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
+			dbData.push_back(csForElement);
+		}
+		//ifstream isIcru(entry.path().c_str());
+	}
+	//initProtonCSFromVector(&dbData);
 }
 
 const mcPhysics* mcMedia::getPhysics(int ptype) const

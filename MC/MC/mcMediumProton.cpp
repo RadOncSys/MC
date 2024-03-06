@@ -4,6 +4,39 @@
 #include "mcPhysicsCommon.h"
 #include "mcEndfP.h"
 //#include <math.h>
+//���������� ������ ���������� ������� ��������������� � ��������, ��������:
+#ifndef InverseRadiationLength
+#define InverseRadiationLength InverseRadiationLength_DahlApproximation
+#endif InverseRadiationLength
+
+// �������� �������� ������������ ����� �������� 
+// c ������� ������ A [�/����],
+// � ������� ���� (������� �������) Z (� �������� ������ ���������)
+// ����������� � ����������� Dahl'a
+// rpp-2006-book.pdf 27.4.1 p.264 (eq.27.22)
+// ��������� � �������� Tsai'� (27.20) � ��������� ����� 2.5%, �� ����������� ����� (5%)
+// � 1/(g/cm^2)
+double InverseRadiationLength_DahlApproximation(const double A, const double Z)
+{
+	return Z * (Z + 1) * log(287 / sqrt(Z)) / (716.4 * A);
+}
+
+// �������� �������� ������������ ����� �������� ���������� �� n ���������.
+// ��� i-�� �������� 0<=i<n
+// w[i] - ������������� ��������(?) ��� 
+// A[i] - ������� ����� A [�/����],
+// Z[i]	- ����� ���� (������� �����)
+// rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
+// ��� ������� ������������ ����� ���������� �������� ��������
+// InverseRadiationLength (�������� �����������)
+// � 1/(g/cm^2)
+double InverseRadiationLength(const double* A, const double* Z, const double* w, const int n)
+{
+	double s = 0;
+	for (int i = 0; i < n; i++)
+		s += InverseRadiationLength(A[i], Z[i]) * w[i];
+	return s;
+}
 
 string CLEARFROMALPHA(string x);
 
@@ -111,6 +144,37 @@ double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE)
 	return sigmaTL;
 }
 
+double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDFdata.size(); i++)
+	{
+		if (CLEARFROMALPHA(ENDFdata[i].ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDFdata[i].NuclearCrossSections.isEmpty)
+		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+	if (kE <= ENDFdata[i].NuclearCrossSections.Energies[0])
+		return SIGMA;
+	SIGMA = ENDFdata[i].NuclearCrossSections.get_sigma(kE);
+	return SIGMA / pow(10,24);
+}
+
 double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
 {
 	double SIGMA = 0.0;
@@ -132,10 +196,10 @@ double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
 		}
 	}
 	if (!isFound)
-		return SIGMA;
+		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
 		//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
 	if (ENDF->at(i).NuclearCrossSections.isEmpty)
-		return SIGMA;
+		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
 	if (kE <= ENDF->at(i).NuclearCrossSections.Energies[0])
 		return SIGMA;
 	else
@@ -221,6 +285,7 @@ const double mcMediumProton::gRadiationLength()
 	radLength = AtomicWeight() / (radLength * density_);
 	return radLength;
 }
+
 
 // Вычисляет коэффициенты линейной аппроксимации для каждого диапазона s по двум точкам ax+b,
 void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
@@ -345,6 +410,7 @@ void mcMediumProton::read(istream& is)
 	gdEdxStragglingGaussVarianceConstPart();
 	gRadiationLength();
 	gSigmaInelastic();
+	gRadiationLength();
 
 	status_ = LOADED;
 }
@@ -353,14 +419,16 @@ void mcMediumProton::createDB()
 {
 	double S;
 	vector<double>sigma_endf;
+	vector<double>sigma_;
 
 	for (int i = 0; i < kEmax(); i++) {
 		S = 0.0; // длина свободного пробега
 		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata);
+			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata)/pow(10,24) * el->partsByNumber;
 		}
 		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
 		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+		sigma_.push_back(S); // mfp=1/(sigma_in)
 	}
 	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
 	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
