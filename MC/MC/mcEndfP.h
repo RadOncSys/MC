@@ -273,9 +273,15 @@ public:
 	short LCT;
 
 	int NE1, NE2;
+	
+	//Распределения по Лежандру
+	std::vector<double> LEnergies;
+	std::vector<std::vector<double>> LValues;
 
-	std::vector<double> Energies;
-	std::vector<std::vector<double>> Values;
+	//Табличные распределения
+	std::vector<double>TEnergies;
+	std::vector<std::vector<double>> Cosines;
+	std::vector<std::vector<double>> TValues;
 
 };
 
@@ -313,8 +319,4 @@ public:
 
 	// Загрузка одного файла сечений
 	void Load(const char* fname, const char* ename);
-
-	void Clear();
-
-	void dumpTotalCrossections(std::ostream& os) const;
 };
