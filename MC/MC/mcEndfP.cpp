@@ -378,7 +378,7 @@ void mcEndfProduct::Load(std::istream& is)
 	int energy_count = 0;
 	int pointCount = 0;
 
-	auto energyangle = new mcEndfEANuclearCrossSectionTable();
+	auto energyangle = std::make_shared<mcEndfEANuclearCrossSectionTable>();
 	mcEndfRecord record;
 
 	while (!is.fail())
@@ -389,7 +389,7 @@ void mcEndfProduct::Load(std::istream& is)
 
 		if (!is_multiplicity_read)
 		{
-			ZAP = round(mcEndfRecord::ParseValue(record.c[0], 11));
+			ZAP = (int)round(mcEndfRecord::ParseValue(record.c[0], 11));
 			AWP = mcEndfRecord::ParseValue(record.c[1], 11);
 			LAW = mcEndfRecord::iStrCrop(record.c[3], 11);
 			switch (ZAP) {
@@ -565,24 +565,24 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, in
 			}
 			switch (ptype) {
 			case 0: mb = 0.5;
-				Ap = 1.0;
-				Zp = 0.0;
+				Ap = 1;
+				Zp = 0;
 				break;
 			case 1: mb = 1.0;
-				Ap = 1.0;
-				Zp = 1.0;
+				Ap = 1;
+				Zp = 1;
 				break;
 			case 2: mb = 1.0;
-				Zp = 1.0;
-				Ap = 2.0;
+				Zp = 1;
+				Ap = 2;
 				break;
 			case 3: mb = 1.0;
-				Zp = 1.0;
-				Ap = 3.0;
+				Zp = 1;
+				Ap = 3;
 				break;
 			case 4: mb = 2.0;
-				Zp = 2.0;
-				Ap = 4.0;
+				Zp = 2;
+				Ap = 4;
 				break;
 			case 5: throw exception("Recoils doesn't supported. See ENDF manual p.139");
 				break;
@@ -638,7 +638,7 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, in
 				vector<double> mu;
 				vector<double> p;
 				double* a;
-				int SIZE = EA_par[interpol].size();
+				int SIZE = (int)EA_par[interpol].size();
 				a = new double[SIZE];
 				for (int i = 0; i < EA_par[interpol].size(); i++)
 				{
@@ -650,8 +650,8 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, in
 				for (int i = 0; i < mu.size(); i++)
 				{
 					if (i == 0)
-						p[i] = (Legandre(EA_par[interpol].size(), a, mu[i]));
-					else p[i] = p[i - 1] + (Legandre(EA_par[interpol].size(), a, mu[i]));
+						p[i] = (Legandre((int)EA_par[interpol].size(), a, mu[i]));
+					else p[i] = p[i - 1] + (Legandre((int)EA_par[interpol].size(), a, mu[i]));
 				}
 				for (int i = 0; i < mu.size(); i++)
 				{
@@ -661,7 +661,6 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, in
 		}
 		else 
 		{
-
 		}
 	}
 }
@@ -689,7 +688,9 @@ double LegandreKM(int NA, double* f, double mu)
 	return output;
 }
 
-
+// TODO: так делать нельзя. Нужно использовать либо <vector<vector<double>>,
+// Либо shared_ptr<<vector<vector<double>>>
+// Кроме того, не все пути возвращают результат, что неприемлемо.
 double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LAW)
 {
 	if (LAW == 2)
@@ -716,8 +717,8 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LA
 	if (i == EA_Epoints.size())
 		i -= 2;
 	else i--;
-	int maxsize = max(EA_par[i].size(), EA_par[i + 1].size());
-	int minsize = min(EA_par[i].size(), EA_par[i + 1].size());
+	int maxsize = (int)max(EA_par[i].size(), EA_par[i + 1].size());
+	int minsize = (int)min(EA_par[i].size(), EA_par[i + 1].size());
 	vector<double> Eout;
 	vector<double> r_par;
 	//vector<vector<double>> f_l (2);
@@ -936,7 +937,7 @@ double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LA
 
 double lagrange(double xp, vector<vector<double>> f) {
 	double intp = 0;
-	int n = f.size();
+	int n = (int)f.size();
 	for (int i = 0; i < n; i++) {
 		double m = 1;
 		for (int j = 0; j < n; j++) {
@@ -977,8 +978,8 @@ double mcEndfEANuclearCrossSectionTable::integrate_f0(mcRng& rng, double kE)
 	if (i == EA_Epoints.size())
 		i -= 2;
 	else i--;
-	int maxsize = max(EA_par[i].size(), EA_par[i + 1].size());
-	int minsize = min(EA_par[i].size(), EA_par[i + 1].size());
+	int maxsize = (int)max(EA_par[i].size(), EA_par[i + 1].size());
+	int minsize = (int)min(EA_par[i].size(), EA_par[i + 1].size());
 	vector<double> Eout;
 	vector<double> r_par;
 	//vector<vector<double>> f_l (2);
@@ -1326,7 +1327,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
 				 int NK = atoi(record.c[4]);
-				 int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				 int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 				 double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				for (int i = 0; i < NK; i++)
 				{
@@ -1345,7 +1346,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
 				int NK = atoi(record.c[4]);
-				int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				for (int i = 0; i < NK; i++)
 				{
@@ -1367,7 +1368,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
 				int NK = atoi(record.c[4]);
-				int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				for (int i = 0; i < NK; i++)
 				{
@@ -1389,7 +1390,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
 					int NK = atoi(record.c[4]);
-					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 					for (int i = 0; i < NK; i++)
 					{
@@ -1411,7 +1412,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
 					int NK = atoi(record.c[4]);
-					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 					for (int i = 0; i < NK; i++)
 					{
@@ -1433,7 +1434,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
 					int NK = atoi(record.c[4]);
-					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 					for (int i = 0; i < NK; i++)
 					{
@@ -1455,7 +1456,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
 					int NK = atoi(record.c[4]);
-					int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 					for (int i = 0; i < NK; i++)
 					{
@@ -2052,9 +2053,9 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
 		{
-				nElasticAngular.ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				nElasticAngular.ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 				nElasticAngular.AWR = mcEndfRecord::ParseValue(record.c[1], 11);
-				nElasticAngular.LTT = mcEndfRecord::ParseValue(record.c[3], 11);
+				nElasticAngular.LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
 				nElasticAngular.Load(isEndf);
 		}
 
@@ -2066,7 +2067,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
 				int NK = atoi(record.c[4]);
-				int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				for (int i = 0; i < NK; i++)
 				{
@@ -2085,7 +2086,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
 				int NK = atoi(record.c[4]);
-				int ZA = mcEndfRecord::ParseValue(record.c[0], 11);
+				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				for (int i = 0; i < NK; i++)
 				{

@@ -189,7 +189,7 @@ public:
 	int LAW;
 
 	// Энерго-угловые сечения в зависимости от энергии налетающих протонов
-	std::vector<mcEndfEANuclearCrossSectionTable*> EANuclearCrossSections;
+	std::vector<std::shared_ptr<mcEndfEANuclearCrossSectionTable>> EANuclearCrossSections;
 	
 	void Load(std::istream& is);
 };

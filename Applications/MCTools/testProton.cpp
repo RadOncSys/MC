@@ -31,7 +31,11 @@ void testproton() {
 	{
 		pars = elementData.Products[29]->EANuclearCrossSections[0]->playpar(rng, kE, elementData.Products[29]->LAW);
 		cout << pars[0][0] << "  " << pars[1][0] << "  ";// << pars[2][0] << endl;
-		mu = elementData.Products[29]->EANuclearCrossSections[0]->playmu(kE, elementData.Products[29]->LAW, pars, elementData.Products[29]->product_type, rng);
+
+		// TODO: от фанаря поставлены два параметра только чтобы компилировалось.
+		// Смысл не понятен.
+		mu = elementData.Products[29]->EANuclearCrossSections[0]->playmu(kE, elementData.Products[29]->LAW, (int)pars[0][0], (int)pars[0][1], elementData.Products[29]->product_type, rng);
+
 		cout << mu;
 		cout << endl;
 	}

@@ -9,42 +9,6 @@
 #define InverseRadiationLength InverseRadiationLength_DahlApproximation
 #endif InverseRadiationLength
 
-// �������� �������� ������������ ����� �������� 
-// c ������� ������ A [�/����],
-// � ������� ���� (������� �������) Z (� �������� ������ ���������)
-// ����������� � ����������� Dahl'a
-// rpp-2006-book.pdf 27.4.1 p.264 (eq.27.22)
-// ��������� � �������� Tsai'� (27.20) � ��������� ����� 2.5%, �� ����������� ����� (5%)
-// � 1/(g/cm^2)
-double InverseRadiationLength_DahlApproximation(const double A, const double Z)
-{
-	return Z * (Z + 1) * log(287 / sqrt(Z)) / (716.4 * A);
-}
-
-// �������� �������� ������������ ����� �������� ���������� �� n ���������.
-// ��� i-�� �������� 0<=i<n
-// w[i] - ������������� ��������(?) ��� 
-// A[i] - ������� ����� A [�/����],
-// Z[i]	- ����� ���� (������� �����)
-// rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
-// ��� ������� ������������ ����� ���������� �������� ��������
-// InverseRadiationLength (�������� �����������)
-// � 1/(g/cm^2)
-double InverseRadiationLength(const double* A, const double* Z, const double* w, const int n)
-{
-	double s = 0;
-	for (int i = 0; i < n; i++)
-		s += InverseRadiationLength(A[i], Z[i]) * w[i];
-	return s;
-}
-
-string CLEARFROMALPHA(string x);
-
-//Необходимо задать конкретную формулу соответствующим с макросом, например:
-#ifndef InverseRadiationLength
-#define InverseRadiationLength InverseRadiationLength_DahlApproximation
-#endif InverseRadiationLength
-
 // Величина обратная радиационной длине вещества 
 // c атомной массой A [г/моль],
 // и зарядом ядра (атомным номером) Z (в единицах заряда электрона)
@@ -73,6 +37,13 @@ double InverseRadiationLength(const double* A, const double* Z, const double* w,
 		s += InverseRadiationLength(A[i], Z[i]) * w[i];
 	return s;
 }
+
+string CLEARFROMALPHA(string x);
+
+//Необходимо задать конкретную формулу соответствующим с макросом, например:
+#ifndef InverseRadiationLength
+#define InverseRadiationLength InverseRadiationLength_DahlApproximation
+#endif InverseRadiationLength
 
 // Возвращает rms радиус ядра в фм (1E-13 см)
 // см. Wilson, et al 1991 rp1257.pdf 4.5.2 (eq.4.84,4.85) с исправлениями:
@@ -156,9 +127,9 @@ double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 	else if (A < 100)
 		elName += "0" + to_string(A);
 	else elName += to_string(A);
-	for (i = 0; i < ENDFdata.size(); i++)
+	for (i = 0; i < ENDFdata->size(); i++)
 	{
-		if (CLEARFROMALPHA(ENDFdata[i].ElementName) == elName)
+		if (CLEARFROMALPHA(ENDFdata->at(i)->ElementName) == elName)
 		{
 			isFound = true;
 			break;
@@ -167,15 +138,15 @@ double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 	if (!isFound)
 		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
 	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
-	if (ENDFdata[i].NuclearCrossSections.isEmpty)
+	if (ENDFdata->at(i)->NuclearCrossSections.isEmpty)
 		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
-	if (kE <= ENDFdata[i].NuclearCrossSections.Energies[0])
+	if (kE <= ENDFdata->at(i)->NuclearCrossSections.Energies[0])
 		return SIGMA;
-	SIGMA = ENDFdata[i].NuclearCrossSections.get_sigma(kE);
+	SIGMA = ENDFdata->at(i)->NuclearCrossSections.get_sigma(kE);
 	return SIGMA / pow(10,24);
 }
 
-double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
+double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfP>>* ENDF)
 {
 	double SIGMA = 0.0;
 	kE *= 1000000;
@@ -189,7 +160,7 @@ double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
 	else elName += to_string(A);
 	for (i = 0; i < ENDF->size(); i++)
 	{
-		if (CLEARFROMALPHA(ENDF->at(i).ElementName) == elName)
+		if (CLEARFROMALPHA(ENDF->at(i)->ElementName) == elName)
 		{
 			isFound = true;
 			break;
@@ -198,21 +169,21 @@ double sigmaENDF(int A, int Z, int kE, vector<mcEndfP>* ENDF)
 	if (!isFound)
 		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
 		//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
-	if (ENDF->at(i).NuclearCrossSections.isEmpty)
+	if (ENDF->at(i)->NuclearCrossSections.isEmpty)
 		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
-	if (kE <= ENDF->at(i).NuclearCrossSections.Energies[0])
+	if (kE <= ENDF->at(i)->NuclearCrossSections.Energies[0])
 		return SIGMA;
 	else
 	{
-		for (int j = 0; j < ENDF->at(i).NuclearCrossSections.Energies.size(); j++)
-			if (kE < ENDF->at(i).NuclearCrossSections.Energies[j])
+		for (int j = 0; j < ENDF->at(i)->NuclearCrossSections.Energies.size(); j++)
+			if (kE < ENDF->at(i)->NuclearCrossSections.Energies[j])
 			{
 				if (j == 0)
 					break;
-				SIGMA = ENDF->at(i).NuclearCrossSections.Values[j - 1] + 
-					(kE - ENDF->at(i).NuclearCrossSections.Energies[j - 1]) *
-					(ENDF->at(i).NuclearCrossSections.Values[j] - ENDF->at(i).NuclearCrossSections.Values[j - 1]) /
-					(ENDF->at(i).NuclearCrossSections.Energies[j] - ENDF->at(i).NuclearCrossSections.Energies[j - 1]);
+				SIGMA = ENDF->at(i)->NuclearCrossSections.Values[j - 1] +
+					(kE - ENDF->at(i)->NuclearCrossSections.Energies[j - 1]) *
+					(ENDF->at(i)->NuclearCrossSections.Values[j] - ENDF->at(i)->NuclearCrossSections.Values[j - 1]) /
+					(ENDF->at(i)->NuclearCrossSections.Energies[j] - ENDF->at(i)->NuclearCrossSections.Energies[j - 1]);
 				break;
 			}
 	}
@@ -250,7 +221,7 @@ const double mcMediumProton::AtomicWeight() const
 // генерирует постоянную (по энергии и пути) часть вариации Гауссова приближения разброса dE/dx. 
 // т.е. {sigma^2 of dE/dx} / [path *  (1-(totalE/Mass)^2)]
 // исходная формула взяты из диссертации Н.М.Соболевского
-const double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
+double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 {
 	//(sigma^2 of dE/dx) 
 	// = const				* f1(path)	* f2(projectile)		* f3(element)
@@ -276,7 +247,7 @@ const double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 // для расчёта радиационной длины отдельного элемента вызывает InverseRadiationLength 
 // (принятое приближение (в версии 2007 года это приближение Dahl'а))
 // в см!!!
-const double mcMediumProton::gRadiationLength()
+double mcMediumProton::gRadiationLength()
 {
 	radLength = 0.0;
 	for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
@@ -307,7 +278,7 @@ void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
 // для налетающей частицы с массой (в единицах массы протона) Ap 
 // и зарядом (в единицах заряда электрона) Zp
 // По умолчанию для протона (Ap = Zp = 1)
-const void mcMediumProton::gSigmaInelastic(int Ap, int Zp)
+void mcMediumProton::gSigmaInelastic(int Ap, int Zp)
 {
 	double S;
 	vector<double>sigma_in;
@@ -424,7 +395,7 @@ void mcMediumProton::createDB()
 	for (int i = 0; i < kEmax(); i++) {
 		S = 0.0; // длина свободного пробега
 		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, &ENDFdata)/pow(10,24) * el->partsByNumber;
+			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get())/pow(10,24) * el->partsByNumber;
 		}
 		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
 		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)

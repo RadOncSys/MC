@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 using namespace std;
 
 class mcMedium;
@@ -42,7 +43,7 @@ public:
 	// icrudir63 - файлы сечений ядерных реакций из протокола ICRU63
 	void initProtonFromFiles(const string& fname, const string& icru63dir);
 	void initProtonDeDxFromStream(istream&);
-	void initProtonCSFromVector(std::vector<mcEndfP>* dbData);
+	void initProtonCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfP>>> dbData);
 
 	void initNeutronFromStream(istream&);
 	void initNeutronFromFile(const string& nuclearDir);

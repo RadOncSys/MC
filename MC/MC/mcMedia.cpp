@@ -211,7 +211,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
 
 	// ENDF
-	auto dbData = std::make_unique<std::vector<std::shared_ptr<mcEndfP>>>();
+	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfP>>>();
 
 	// Öèêë ïî ôàéëàì ñå÷åíèé, â êàæäîì èç êîòîðûõ ñîäåðæàòñÿ ïîëíûå äàííûå äëÿ îäíîãî èçîòîïà
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
@@ -254,14 +254,14 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 
 		//ifstream isIcru(entry.path().c_str());
 	}
-	initProtonCSFromVector(&dbData);
+	initProtonCSFromVector(dbData);
 }
 
-void mcMedia::initProtonCSFromVector(std::vector<mcEndfP>* dbData)
+void mcMedia::initProtonCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfP>>> dbData)
 {
 	for (int i = 0; i < protons_.size(); i++)
 	{
-		((mcMediumProton*)protons_[i])->ENDFdata = *dbData;
+		((mcMediumProton*)protons_[i])->ENDFdata = dbData;
 		((mcMediumProton*)protons_[i])->createDB();
 	}
 }

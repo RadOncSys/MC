@@ -17,7 +17,7 @@ struct SplineSet {
 
 vector<SplineSet> spline(vec& x, vec& y)
 {
-    int n = x.size() - 1;
+    int n = (int)x.size() - 1;
     vec a;
     a.insert(a.begin(), y.begin(), y.end());
     vec b(n);
