@@ -59,20 +59,19 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("HE700ICRU");
 		media.addName("MYLAR700ICRU");
 
-		media.addName("C60");
+		//media.addName("C60");
 		//media.addName("NAI700ICRU");
 		//media.addName("SI700ICRU");
 		//media.addName("170C700ICRU");
 		//media.addName("226C700ICRU");
 		//media.addName("BE700ICRU");
 		//media.addName("TA700ICRU");
-		media.addName("AU700ICRU");
+		//media.addName("AU700ICRU");
 
-
-		media.initXEFromFile("..\\data\\AcceleratorSimulator.pegs4dat");
+		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
 		//media.initProtonFromFiles("../data/proton.dat", "../data/PSTAR", "../data/ICRU63");
-		media.initProtonFromFiles("..\\data\\proton.dat", "..\\data\\ENDFP");
-		media.initNeutronFromFile("..\\data\\ENDFN");
+		media.initProtonFromFiles("../data/proton.dat", "../data/ENDFP");
+		media.initNeutronFromFile("../data/ENDFN");
 
 		// Pars input files
 		XPRNode paramsDoc, geometryDoc;
