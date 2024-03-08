@@ -7,6 +7,8 @@
 #include "mcDefs.h"
 #include <float.h>
 
+using namespace std;
+
 mcPhysicsProton::mcPhysicsProton(void)
 {
 }
@@ -14,6 +16,8 @@ mcPhysicsProton::mcPhysicsProton(void)
 mcPhysicsProton::~mcPhysicsProton(void)
 {
 }
+
+string CLEARFROMALPHA(string x);
 
 bool mcPhysicsProton::Discarge(mcParticle* p, const mcMedium& med, double& edep) const
 {
@@ -29,11 +33,11 @@ bool mcPhysicsProton::Discarge(mcParticle* p, const mcMedium& med, double& edep)
 
 double mcPhysicsProton::MeanFreePath(double ke, const mcMedium& med, double dens) const
 {
-	// вместо логарифма используем линейно энергию
+	// РІРјРµСЃС‚Рѕ Р»РѕРіР°СЂРёС„РјР° РёСЃРїРѕР»СЊР·СѓРµРј Р»РёРЅРµР№РЅРѕ СЌРЅРµСЂРіРёСЋ
 	const mcMediumProton& m = (const mcMediumProton&)med;
 	double logKE = ke;//log(ke);
 	int iLogKE = int(ke);//int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	double sigma = (m.sigma0_proto[iLogKE] + logKE * m.sigma1_proto[iLogKE]) * dens;
+	double sigma = (m.sigma0_proto[iLogKE] + (logKE - iLogKE) * m.sigma1_proto[iLogKE]) * dens;
 	return (sigma > 0.0) ? 1 / sigma : DBL_MAX;
 }
 
@@ -41,68 +45,67 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 {
 	const mcMediumProton& m = (const mcMediumProton&)med;
 	double e_dep = 0;
-
 	// VK
-	// Определить размер шага, на который происходит транспорт и занести его в step
-	// Определить потери энергии на этом шаге 
-	// с учётом страглинга
-	// и вернуть их return e_dep 
-	// Изменить положение частицы
-	// Разыграть рассеяние - изменить направление
+	// РћРїСЂРµРґРµР»РёС‚СЊ СЂР°Р·РјРµСЂ С€Р°РіР°, РЅР° РєРѕС‚РѕСЂС‹Р№ РїСЂРѕРёСЃС…РѕРґРёС‚ С‚СЂР°РЅСЃРїРѕСЂС‚ Рё Р·Р°РЅРµСЃС‚Рё РµРіРѕ РІ step
+	// РћРїСЂРµРґРµР»РёС‚СЊ РїРѕС‚РµСЂРё СЌРЅРµСЂРіРёРё РЅР° СЌС‚РѕРј С€Р°РіРµ 
+	// СЃ СѓС‡С‘С‚РѕРј СЃС‚СЂР°РіР»РёРЅРіР°
+	// Рё РІРµСЂРЅСѓС‚СЊ РёС… return e_dep 
+	// РР·РјРµРЅРёС‚СЊ РїРѕР»РѕР¶РµРЅРёРµ С‡Р°СЃС‚РёС†С‹
+	// Р Р°Р·С‹РіСЂР°С‚СЊ СЂР°СЃСЃРµСЏРЅРёРµ - РёР·РјРµРЅРёС‚СЊ РЅР°РїСЂР°РІР»РµРЅРёРµ
 
-	// 1. Определяем средние потери энергии
-	// Пока полагаем, что протон на каждом шаге теряет не больше 1% энергии
-	e_dep = 0.01 * p->ke;	// Задаём максимальную величину потерь энергии на шаге
-	// поправка на убыль энергии вдоль шага
-	// берём dE/dx для средней энергии вдоль шага: kE-dE/2.0
-	//double mE = kE;		// исходная версия (Отчёт)
-	double mE = p->ke - e_dep / 2.0;  // коррекция март 2008
-	// вместо логарифма используем линейно энергию
+	// 1. РћРїСЂРµРґРµР»СЏРµРј СЃСЂРµРґРЅРёРµ РїРѕС‚РµСЂРё СЌРЅРµСЂРіРёРё
+	// РџРѕРєР° РїРѕР»Р°РіР°РµРј, С‡С‚Рѕ РїСЂРѕС‚РѕРЅ РЅР° РєР°Р¶РґРѕРј С€Р°РіРµ С‚РµСЂСЏРµС‚ РЅРµ Р±РѕР»СЊС€Рµ 1% СЌРЅРµСЂРіРёРё
+	e_dep = 0.01 * p->ke;	// Р—Р°РґР°С‘Рј РјР°РєСЃРёРјР°Р»СЊРЅСѓСЋ РІРµР»РёС‡РёРЅСѓ РїРѕС‚РµСЂСЊ СЌРЅРµСЂРіРёРё РЅР° С€Р°РіРµ
+	// РїРѕРїСЂР°РІРєР° РЅР° СѓР±С‹Р»СЊ СЌРЅРµСЂРіРёРё РІРґРѕР»СЊ С€Р°РіР°
+	// Р±РµСЂС‘Рј dE/dx РґР»СЏ СЃСЂРµРґРЅРµР№ СЌРЅРµСЂРіРёРё РІРґРѕР»СЊ С€Р°РіР°: kE-dE/2.0
+	//double mE = kE;		// РёСЃС…РѕРґРЅР°СЏ РІРµСЂСЃРёСЏ (РћС‚С‡С‘С‚)
+	double mE = p->ke - e_dep / 2.0;  // РєРѕСЂСЂРµРєС†РёСЏ РјР°СЂС‚ 2008
+	// РІРјРµСЃС‚Рѕ Р»РѕРіР°СЂРёС„РјР° РёСЃРїРѕР»СЊР·СѓРµРј Р»РёРЅРµР№РЅРѕ СЌРЅРµСЂРіРёСЋ
 	double logKE = mE; //p->ke;//log(p->ke);
 	int iLogKE = int(logKE);//(int) (m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);
-	// более короткие шаги (до пересечения с границей или точечного вз. считаем без поправки
+	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + (logKE - iLogKE) * m.dedx1_proto[iLogKE]);			//BUG??? logKE Р·Р°РјРµРЅРµРЅ РЅР° (logKE - iLogKE)
+	// Р±РѕР»РµРµ РєРѕСЂРѕС‚РєРёРµ С€Р°РіРё (РґРѕ РїРµСЂРµСЃРµС‡РµРЅРёСЏ СЃ РіСЂР°РЅРёС†РµР№ РёР»Рё С‚РѕС‡РµС‡РЅРѕРіРѕ РІР·. СЃС‡РёС‚Р°РµРј Р±РµР· РїРѕРїСЂР°РІРєРё
 	step = MIN(step, e_dep / dedx);
-	e_dep = step * dedx;	// если изменился шаг
+	e_dep = step * dedx;	// РµСЃР»Рё РёР·РјРµРЅРёР»СЃСЏ С€Р°Рі
 
-	// Поправку на то, что пробег больше длины шага не вводим
-	// 2. Учитываем страгглинг
+	// РџРѕРїСЂР°РІРєСѓ РЅР° С‚Рѕ, С‡С‚Рѕ РїСЂРѕР±РµРі Р±РѕР»СЊС€Рµ РґР»РёРЅС‹ С€Р°РіР° РЅРµ РІРІРѕРґРёРј
+	// 2. РЈС‡РёС‚С‹РІР°РµРј СЃС‚СЂР°РіРіР»РёРЅРі
 	double rel = (p->ke + PMASS) * PMASS_1;
 	double sig2 = p->regDensityRatio * m.dEdxStragglingGaussVarianceConstPart_ * step * (1 + SQUARE(rel));
 
 	double r1, r2;
-	GaussStandardRnd_by_Marsaglia(p->thread_->rng(), r1, r2); // случайно распределённые по Гауссу величины
+	GaussStandardRnd_by_Marsaglia(p->thread_->rng(), r1, r2); // СЃР»СѓС‡Р°Р№РЅРѕ СЂР°СЃРїСЂРµРґРµР»С‘РЅРЅС‹Рµ РїРѕ Р“Р°СѓСЃСЃСѓ РІРµР»РёС‡РёРЅС‹
 	e_dep = e_dep - sqrt(sig2) * r1;
 	e_dep = (e_dep < 0) ? 0 : (e_dep > p->ke) ? p->ke : e_dep;
 
-	// 3. Транспортируем частицу
+	// 3. РўСЂР°РЅСЃРїРѕСЂС‚РёСЂСѓРµРј С‡Р°СЃС‚РёС†Сѓ
 	p->p += p->u * step;
 	//p->ke -= e_dep;
 
-	// 4. Разыгрываем новое направление и устанавливаем его
-	// Моделируем Мольеровское рассеяние
-	double tE = p->ke + PMASS; // полная энергия
-	// Не уверен на счёт p->regDensityRatio, но в Nova вроде именно так входит
+	// 4. Р Р°Р·С‹РіСЂС‹РІР°РµРј РЅРѕРІРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РµРіРѕ
+	// РњРѕРґРµР»РёСЂСѓРµРј РњРѕР»СЊРµСЂРѕРІСЃРєРѕРµ СЂР°СЃСЃРµСЏРЅРёРµ
+	double tE = p->ke + PMASS; // РїРѕР»РЅР°СЏ СЌРЅРµСЂРіРёСЏ
+	// РќРµ СѓРІРµСЂРµРЅ РЅР° СЃС‡С‘С‚ p->regDensityRatio, РЅРѕ РІ Nova РІСЂРѕРґРµ РёРјРµРЅРЅРѕ С‚Р°Рє РІС…РѕРґРёС‚
 	double l = p->regDensityRatio * step / m.radLength;
-	//double a1	= 1+0.038*log(l); // выражение в скобках
-	//double a2	= betasq(PMASS,tE)*tE; // знаменатель b*c*p=E*b^2
+	//double a1	= 1+0.038*log(l); // РІС‹СЂР°Р¶РµРЅРёРµ РІ СЃРєРѕР±РєР°С…
+	//double a2	= betasq(PMASS,tE)*tE; // Р·РЅР°РјРµРЅР°С‚РµР»СЊ b*c*p=E*b^2
 	//double a1_2 = a1/a2;
 	double a1_2 = (1 + 0.038 * log(l)) / (betasq(PMASS, tE) * tE);
 	double th0 = sqrt(184.96 * l * SQUARE(a1_2)); // 184.96=13.6^2	
-	// Всё-таки не до конца ясно, а в EGS восстановить не удаётся. Здесь только попытка
-	// Моделируем theta и отклонение по
-	// см. rpp-2006-book.pdf 27.3 p.262 eq.27.18,27.19
-	// а второй угол берём равномерным на 2*pi
-	// Надо бы разобраться в том, что в Nova и как его изменить под p+ (масса!)
-	// там наверняка лучше, чем здесь
+	// Р’СЃС‘-С‚Р°РєРё РЅРµ РґРѕ РєРѕРЅС†Р° СЏСЃРЅРѕ, Р° РІ EGS РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРµ СѓРґР°С‘С‚СЃСЏ. Р—РґРµСЃСЊ С‚РѕР»СЊРєРѕ РїРѕРїС‹С‚РєР°
+	// РњРѕРґРµР»РёСЂСѓРµРј theta Рё РѕС‚РєР»РѕРЅРµРЅРёРµ РїРѕ
+	// СЃРј. rpp-2006-book.pdf 27.3 p.262 eq.27.18,27.19
+	// Р° РІС‚РѕСЂРѕР№ СѓРіРѕР» Р±РµСЂС‘Рј СЂР°РІРЅРѕРјРµСЂРЅС‹Рј РЅР° 2*pi
+	// РќР°РґРѕ Р±С‹ СЂР°Р·РѕР±СЂР°С‚СЊСЃСЏ РІ С‚РѕРј, С‡С‚Рѕ РІ Nova Рё РєР°Рє РµРіРѕ РёР·РјРµРЅРёС‚СЊ РїРѕРґ p+ (РјР°СЃСЃР°!)
+	// С‚Р°Рј РЅР°РІРµСЂРЅСЏРєР° Р»СѓС‡С€Рµ, С‡РµРј Р·РґРµСЃСЊ
 	double theta = fabs(r2 * th0); //eq.27.19
-	//смещение игнорируем
+	//СЃРјРµС‰РµРЅРёРµ РёРіРЅРѕСЂРёСЂСѓРµРј
 	//double sqrtOf12inverse = 0.28867513459481288225457439025098;	
 	//double deflection	= r2*th0*t*sqrtOf12inverse+theta*t*0.5;	//eq.27.18
 	double phi = p->thread_->rng().rnd() * TWOPI;
 	ChangeDirection(cos(theta), sin(theta), cos(phi), sin(phi), p->u);
 
-	// p->mfps = 0; // VK Это зачем? Если мы не разыгрываем каждый раз mfp, а редуцируем его, то эта строка кажестя не верна 
+	// p->mfps = 0; // VK Р­С‚Рѕ Р·Р°С‡РµРј? Р•СЃР»Рё РјС‹ РЅРµ СЂР°Р·С‹РіСЂС‹РІР°РµРј РєР°Р¶РґС‹Р№ СЂР°Р· mfp, Р° СЂРµРґСѓС†РёСЂСѓРµРј РµРіРѕ, С‚Рѕ СЌС‚Р° СЃС‚СЂРѕРєР° РєР°Р¶РµСЃС‚СЏ РЅРµ РІРµСЂРЅР° 
 
 	p->ke -= e_dep;
 	return e_dep;
@@ -110,42 +113,156 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 
 double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 {
-	// TODO: Следует серьезнее разобраться с дискретными взаимодействиями.
-	// 1. Насколько часто происходит взаимодействие на атомах водорода.
-	//    Вероятно их нужно моделировать корректно, так как появляются 2 протона
-	//    выделяющие энергию именно в области интереса.
-	// 2. В результате ядерных взаимодействий протон меняет направление.
-	//    И если не моделировать тяжелые частицы, то хотя-бы определиться с 
-	//    энергиями направлениями остаточных протонов, причем в зависимости от их
-	//    энергии до взаимодействия.
+	// TODO: РЎР»РµРґСѓРµС‚ СЃРµСЂСЊРµР·РЅРµРµ СЂР°Р·РѕР±СЂР°С‚СЊСЃСЏ СЃ РґРёСЃРєСЂРµС‚РЅС‹РјРё РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏРјРё.
+	// 1. РќР°СЃРєРѕР»СЊРєРѕ С‡Р°СЃС‚Рѕ РїСЂРѕРёСЃС…РѕРґРёС‚ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёРµ РЅР° Р°С‚РѕРјР°С… РІРѕРґРѕСЂРѕРґР°.
+	//    Р’РµСЂРѕСЏС‚РЅРѕ РёС… РЅСѓР¶РЅРѕ РјРѕРґРµР»РёСЂРѕРІР°С‚СЊ РєРѕСЂСЂРµРєС‚РЅРѕ, С‚Р°Рє РєР°Рє РїРѕСЏРІР»СЏСЋС‚СЃСЏ 2 РїСЂРѕС‚РѕРЅР°
+	//    РІС‹РґРµР»СЏСЋС‰РёРµ СЌРЅРµСЂРіРёСЋ РёРјРµРЅРЅРѕ РІ РѕР±Р»Р°СЃС‚Рё РёРЅС‚РµСЂРµСЃР°.
+	// 2. Р’ СЂРµР·СѓР»СЊС‚Р°С‚Рµ СЏРґРµСЂРЅС‹С… РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёР№ РїСЂРѕС‚РѕРЅ РјРµРЅСЏРµС‚ РЅР°РїСЂР°РІР»РµРЅРёРµ.
+	//    Р РµСЃР»Рё РЅРµ РјРѕРґРµР»РёСЂРѕРІР°С‚СЊ С‚СЏР¶РµР»С‹Рµ С‡Р°СЃС‚РёС†С‹, С‚Рѕ С…РѕС‚СЏ-Р±С‹ РѕРїСЂРµРґРµР»РёС‚СЊСЃСЏ СЃ 
+	//    СЌРЅРµСЂРіРёСЏРјРё РЅР°РїСЂР°РІР»РµРЅРёСЏРјРё РѕСЃС‚Р°С‚РѕС‡РЅС‹С… РїСЂРѕС‚РѕРЅРѕРІ, РїСЂРёС‡РµРј РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РёС…
+	//    СЌРЅРµСЂРіРёРё РґРѕ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ.
 
-	// Все дискретные взаимодействия моделируем следующим образом.
-	// У протона остается 1/3 кинетической энергии (а куда он движется ???).
-	// 1/3 поглощается в точке.
-	// 1/3 выносится за пределы области интереса.
+	// Р’СЃРµ РґРёСЃРєСЂРµС‚РЅС‹Рµ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ РјРѕРґРµР»РёСЂСѓРµРј СЃР»РµРґСѓСЋС‰РёРј РѕР±СЂР°Р·РѕРј.
+	// РЈ РїСЂРѕС‚РѕРЅР° РѕСЃС‚Р°РµС‚СЃСЏ 1/3 РєРёРЅРµС‚РёС‡РµСЃРєРѕР№ СЌРЅРµСЂРіРёРё (Р° РєСѓРґР° РѕРЅ РґРІРёР¶РµС‚СЃСЏ ???).
+	// 1/3 РїРѕРіР»РѕС‰Р°РµС‚СЃСЏ РІ С‚РѕС‡РєРµ.
+	// 1/3 РІС‹РЅРѕСЃРёС‚СЃСЏ Р·Р° РїСЂРµРґРµР»С‹ РѕР±Р»Р°СЃС‚Рё РёРЅС‚РµСЂРµСЃР°.
 
-	p->ke /= 3.0;
-	// Возвращаем энергию, выделившуюся в точке.
-	return 2 * p->ke * p->weight;
+	//p->ke /= 3.0;
+	//cout << ".";
 
-	// GG 14.06.2023
-	// Предполагаем, что к данному моменту вероятность всех ядерных реакций 
-	// реакций расчитана корректно.
-	// TODO: Проверить предыдущий тезис через суммарные сечения ENDF.
-	// Приступаем к розыгрышу конкретных событий.
+	// Р’РѕР·РІСЂР°С‰Р°РµРј СЌРЅРµСЂРіРёСЋ, РІС‹РґРµР»РёРІС€СѓСЋСЃСЏ РІ С‚РѕС‡РєРµ.
 
-	// Q: Где хранятся сечения для сред?
+	mcRng& rng = p->thread_->rng();
+	const mcMediumProton* m = (const mcMediumProton*)med;
+	double logKE = p->ke;//log(ke);
+	int iLogKE = int(p->ke);//int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
+	double microsigma_total = (m->sigma0_proto[iLogKE] + (logKE - iLogKE) * m->sigma1_proto[iLogKE]) / m->density_ / NAVOGADRO * m->AtomicWeight();
+	vector<double> sigmaratio;
+	vector<double> probability;
+	double psum = 0;
+	for (int i = 0; i < m->elements_.size(); i++)
+	{
+		sigmaratio.push_back(m->elements_[i].partsByNumber * (m->microsigmaforelement(ROUND(m->elements_[i].atomicMass), ROUND(m->elements_[i].atomicNumber), p->ke))/microsigma_total);
+		
+		psum += sigmaratio[i];
+	}
+	for (int i = 0; i < m->elements_.size(); i++)
+	{
+		if (psum != 0)
+			probability.push_back(sigmaratio[i] / psum);
+		else break;
+	}
+	for (int i = 1; i < probability.size(); i++)
+		probability[i] += probability[i - 1];
+	double random = rng.rnd();
+	int nucID = 0;
+	for (nucID = 0; nucID < m->elements_.size(); nucID++)
+	{
+		if (random <= probability[nucID])
+		{
+			if (probability[nucID] == 0)
+				continue;
+			else break;
+		}
+	}			
+						//РўРµРїРµСЂСЊ СЂРµР°РєС†РёСЏ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ РЅР° nucID-РѕРј СЏРґСЂРµ
+	int endfID = 0;
+	int A = ROUND(m->elements_[nucID].atomicMass);
+	int Z = ROUND(m->elements_[nucID].atomicNumber);
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(ROUND(m->elements_[nucID].atomicMass));
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (endfID = 0; endfID < m->ENDFdata.size(); endfID++)
+	{
+		if (CLEARFROMALPHA(m->ENDFdata[endfID].ElementName) == elName)
+		{
+			break;
+		}
+	}
+	vector<int> quantity; //[0] - n, [1] - p, [2] - gamma
+	for (int i = 0; i < m->ENDFdata[endfID].Products.size(); i++)
+	{
+		if (int(m->ENDFdata[endfID].Products[i]->product_type) < 2 || int(m->ENDFdata[endfID].Products[i]->product_type) == 6)
+			quantity.push_back(m->ENDFdata[endfID].Products[i]->EANuclearCrossSections[0]->playMulti(p->ke * 1000000, rng));
+	}
+	int SUMquantity = 0;
+	for (int i = 0; i < quantity.size(); i++)
+		SUMquantity += quantity[i];
+	
+	double edep = 0.0;
+	
+	if (SUMquantity > 0)
+	{
+		double ke_before = p->ke;
+		createnewparticleswithEA(rng, p, m, endfID, &quantity);
+		if (p->ke >= 0)
+			edep = ke_before - p->ke;
+		else edep = ke_before;
+		p->ke = 0.0;
+	} 
 
-	// Q: Что рождается в результате. В базе данных хранятся прдтукты, 
-	// описываемые классом mcEndfProduct.
-	// Данная функция вызывается в Shower и в аргументах содержит параметры 
-	// налетающей частицы и ссылку на среду.
-	// Особенностью транспорта с учетом ядерных реакций является 
-	// понятие множественности продуктов.
-	// Например, в результате ядерного взаимодействия на каждую налетающую частицу 
-	// может образоваться больше одного нейтрона.
-	// С целью простоты в каждом акте взаимодействия порождаем все типы частиц по одной 
-	// Но при этом используем веса частиц, чтобы обеспечить сохранение суммарного эффекта.
-	//
+	return edep * p->weight;
+}
 
+void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, const mcMediumProton* pmed, int endfID, vector<int>* quantity)
+{
+	double newphi = 0, newtheta = 0, newkE = 0;
+	for (int i = 0; i < quantity->size(); i++)
+	{
+		int pID = (i == 2) ? (pmed->ENDFdata[endfID].Products.size() - 1) : i;
+		if (pmed->ENDFdata[endfID].Products[pID]->LAW != 1)
+			throw exception("This LAW doesn't exist in ENDF play-block.");
+		if (pmed->ENDFdata[endfID].Products[pID]->product_type > 6)
+			throw exception("Trying to generate electron as a product of nuclear reaction.");
+		for (int j = 0; j < quantity->at(i); j++)
+		{
+			if (pID > 1 && pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->LANG[0] == 1)
+			{
+				mcParticle* pNewPhoton = DuplicateParticle(primary);
+				pNewPhoton->t = MCP_PHOTON;
+				pNewPhoton->q = 0;
+				int eoutID = 0, keIN = 0;
+				pNewPhoton->ke = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
+				GoInRandomDirection(rng.rnd(), rng.rnd(), pNewPhoton->u);
+				primary->ke -= pNewPhoton->ke;
+			}
+			else if (pID == 1 && pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->LANG[0] == 2)
+			{
+				mcParticle* pNewProton = DuplicateParticle(primary);
+				int eoutID = 0, keIN = 0;
+				pNewProton->ke = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
+				getKallbachMannAngle(rng, endfID, pNewProton, pmed, keIN, eoutID);
+				primary->ke -= pNewProton->ke;
+			}
+			else
+			{
+				int eoutID = 0, keIN = 0;
+				double neutron_ke = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
+				primary->ke -= neutron_ke;
+			}
+		}
+	}
+	return;
+}
+
+void mcPhysicsProton::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumProton* pmed, int keIN, int eoutID)
+{
+	int pID = (p->t == MCP_PROTON) ? (1) : (0);
+	double ke_ = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->Energies[keIN]; //Р’ РїРµСЂРІРѕРј РїСЂРёР±Р»РёР¶РµРЅРёРё СЌРЅРµСЂРіРёСЏ Р±РµР· РёРЅС‚РµСЂРїРѕР»СЏС†РёРё
+	double costheta = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->playmu(ke_, pmed->ENDFdata[endfID].Products[pID]->LAW, keIN, eoutID, pID, rng);
+	double phi = 2 * PI * rng.rnd();
+	double cosphi = cos(phi);
+	double sinphi = sin(phi);
+	double AWRa = 0.99862, AWRA = pmed->ENDFdata[endfID].Products[pID]->EANuclearCrossSections[0]->AWR_nucl;
+	double AWRb = (pID == 0) ? (1) : (0.99862);
+	double Eb = p->ke;
+	ke_ /= 1000000;
+	p->ke = Eb + AWRa * AWRb * ke_ / (AWRA + AWRa) / (AWRA + AWRa) + 2 * sqrt(AWRa * AWRb * ke_ * Eb) * costheta / (AWRA + AWRa);
+	costheta = sqrt(Eb / p->ke) * costheta + sqrt(AWRa * AWRb * ke_ / p->ke) / (AWRA + AWRa);
+	double sintheta = sin(acos(costheta));
+	ChangeDirection(costheta, sintheta, cosphi, sinphi, p->u);
+	return;
 }

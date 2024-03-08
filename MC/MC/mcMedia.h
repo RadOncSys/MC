@@ -13,6 +13,7 @@ class mcMediumXE;
 class mcMediumProton;
 class mcMediumNeutron;
 class mcPhysics;
+class mcEndfP;
 
 class mcMedia
 {
@@ -41,15 +42,16 @@ public:
 	// icrudir63 - файлы сечений ядерных реакций из протокола ICRU63
 	void initProtonFromFiles(const string& fname, const string& icru63dir);
 	void initProtonDeDxFromStream(istream&);
+	void initProtonCSFromVector(std::vector<mcEndfP>* dbData);
 
 	void initNeutronFromStream(istream&);
-	void initNeutronFromFile(const string& fname);
+	void initNeutronFromFile(const string& nuclearDir);
 
 	// Возвращает указатель объекта физических расчетов для частицы указанного типа
 	const mcPhysics* getPhysics(int ptype) const;
 
 	// Возвращает указатель объекта физических расчетов для частицы указанного типа
-	const mcMedium* getMedium(int ptype, int idx) const;
+	const mcMedium* getMedium(int ptype, int idx) const; 
 
 	vector<mcMedium*> Media() { return xes_; }
 
@@ -63,4 +65,12 @@ protected:
 	vector<mcMedium*> neutrons_;
 
 	vector<mcPhysics*> physics_;
+};
+
+struct Mendeleev
+{
+	vector<bool> isNecessary;
+	vector<bool> isLoad;
+
+	void init();
 };

@@ -352,6 +352,8 @@
     <ClInclude Include="mcScoreTest.h">
       <Filter>Score</Filter>
     </ClInclude>
+    <ClInclude Include="mcSpline.h">
+      <Filter>Media</Filter>
     <ClInclude Include="mcBrachySource.h">
       <Filter>Source</Filter>
     </ClInclude>

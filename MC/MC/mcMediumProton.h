@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #pragma once
 
+#include "mcEndfP.h"
 #include "mcMedium.h"
 #include "mcDefs.h"
 
@@ -16,6 +17,7 @@ public:
 
 	const double kEmax(void)const { return (double)dedx1_proto.size(); }
 	virtual void read(istream& is);
+	void createDB();
 	const double AtomicWeight() const;	// Атомный вес среды, г/моль
 
 private:
@@ -25,11 +27,12 @@ private:
 	const double gdEdxStragglingGaussVarianceConstPart();	// генерирует и возвращает постоянную (по энергии и пути) часть вариации Гаусссова приближения разброса dE/dx. 
 	const double gRadiationLength();	// генерирует и возвращает величину обратную радиационной длине сложного вещества rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23) для расчёта радиационной длины отдельного элемента вызывает InverseRadiationLength  (принятое приближение (в версии 2007 года это приближение Dahl'а))
 	const void	 gSigmaInelastic(int Ap = 1, int Zp = 1);	// генерирует величину сечения неупругого взаимодействия
+	const double gRadiationLength();
 
 public:
 	// не зависимая от энергии и пути часть Гауссовой вариации (sigma^2) dE/dx
 	double dEdxStragglingGaussVarianceConstPart_;
-
+	
 	//// Transport:
 	double radLength;          // Radiation length, [cm](!)
 
@@ -43,4 +46,7 @@ public:
 	vector<double> dedx1_proto;
 
 	double transCutoff_proto;		// Energy cutoff for proton transport
+
+	vector<mcEndfP> ENDFdata;
+	double microsigmaforelement(int A, int Z, double kE) const;
 };

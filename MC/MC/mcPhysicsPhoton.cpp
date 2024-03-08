@@ -35,6 +35,8 @@ double mcPhysicsPhoton::MeanFreePath(double ke, const mcMedium& med, double dens
 	const mcMediumXE& m = (const mcMediumXE&)med;
 	double logKE = log(ke);
 	int iLogKE = (int)(m.iLogKE0_phot + logKE * m.iLogKE1_phot);
+	if (iLogKE >= m.photonMFP0.size())
+		iLogKE = m.photonMFP0.size() - 1;		//BUG??? При симуляции получил iLogKE = 200, что выходит за границы массива
 	double mediumMeanFreePath = m.photonMFP0[iLogKE] + logKE * m.photonMFP1[iLogKE];
 
 	if (m.rayleigh) {

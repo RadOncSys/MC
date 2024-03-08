@@ -13,6 +13,7 @@
 #include "../geometry/text.h"
 #include <fstream>
 #include <filesystem>
+#include <ctype.h>
 
 namespace fs = std::filesystem;
 
@@ -81,7 +82,7 @@ void mcMedia::initXEFromStream(istream& is)
 	for (int i = 0; i < (int)mnames_.size(); i++)
 		xes_.push_back(new mcMediumXE());
 
-	// Чтение данных
+	// Г—ГІГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ
 	string line, s1, s2;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -91,7 +92,7 @@ void mcMedia::initXEFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Проверяем, нужна ли данная среда для загрузки?
+			// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬, Г­ГіГ¦Г­Г  Г«ГЁ Г¤Г Г­Г­Г Гї Г±Г°ГҐГ¤Г  Г¤Г«Гї Г§Г ГЈГ°ГіГ§ГЄГЁ?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
@@ -104,7 +105,7 @@ void mcMedia::initXEFromStream(istream& is)
 		getline(is, line, '\n');
 	}
 
-	// Проверяем, все ли среды загружены
+	// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬, ГўГ±ГҐ Г«ГЁ Г±Г°ГҐГ¤Г» Г§Г ГЈГ°ГіГ¦ГҐГ­Г»
 	string errmedia;
 	for (int i = 0; i < (int)xes_.size(); i++)
 	{
@@ -133,7 +134,7 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		protons_.push_back(new mcMediumProton());
 
-	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
+	// Г—ГІГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ - Г·Г Г±ГІГј Гў ГЅГІГ®Г© ГґГіГ­ГЄГ¶ГЁГЁ ГЇГ®Г«Г­Г®Г±ГІГјГѕ Г Г­Г Г«Г®ГЈГЁГ·Г­Г  XA, ГІГ®Г«ГјГЄГ® Г¤Г®ГЎГ ГўГ«ГҐГ­Г  ГЇГ°Г®ГўГҐГ°ГЄГ  ГўГҐГ°Г±ГЁГЁ
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -143,13 +144,13 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Проверяем, нужна ли данная среда для загрузки?
+			// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬, Г­ГіГ¦Г­Г  Г«ГЁ Г¤Г Г­Г­Г Гї Г±Г°ГҐГ¤Г  Г¤Г«Гї Г§Г ГЈГ°ГіГ§ГЄГЁ?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// дополнительно проверяем версию input file VER=0.0.0
+				// Г¤Г®ГЇГ®Г«Г­ГЁГІГҐГ«ГјГ­Г® ГЇГ°Г®ГўГҐГ°ГїГҐГ¬ ГўГҐГ°Г±ГЁГѕ input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -158,15 +159,15 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Proton media data version"); 
-					//в принципе данные могут быть дальше в этом же файле в другой версии, 
-					// так что просто не считываем данные
+					//Гў ГЇГ°ГЁГ­Г¶ГЁГЇГҐ Г¤Г Г­Г­Г»ГҐ Г¬Г®ГЈГіГІ ГЎГ»ГІГј Г¤Г Г«ГјГёГҐ Гў ГЅГІГ®Г¬ Г¦ГҐ ГґГ Г©Г«ГҐ Гў Г¤Г°ГіГЈГ®Г© ГўГҐГ°Г±ГЁГЁ, 
+					// ГІГ ГЄ Г·ГІГ® ГЇГ°Г®Г±ГІГ® Г­ГҐ Г±Г·ГЁГІГ»ГўГ ГҐГ¬ Г¤Г Г­Г­Г»ГҐ
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// Проверяем, все ли среды загружены
+	// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬, ГўГ±ГҐ Г«ГЁ Г±Г°ГҐГ¤Г» Г§Г ГЈГ°ГіГ¦ГҐГ­Г»
 	string errmedia;
 	for (int i = 0; i < (int)protons_.size(); i++)
 	{
@@ -181,13 +182,29 @@ void mcMedia::initProtonDeDxFromStream(istream& is)
 
 void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 {
-	// Старый вариант тормозных спопосбностей (Костюченко, 2008)
+	// Г‘ГІГ Г°Г»Г© ГўГ Г°ГЁГ Г­ГІ ГІГ®Г°Г¬Г®Г§Г­Г»Гµ Г±ГЇГ®ГЇГ®Г±ГЎГ­Г®Г±ГІГҐГ© (ГЉГ®Г±ГІГѕГ·ГҐГ­ГЄГ®, 2008)
 	ifstream is(fname.c_str());
 	if (is.fail())
 		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
 	initProtonDeDxFromStream(is);
+	
 
-	// Объект, в который сначала закачиваем всю баз данных сечений
+	//TablicaMendeleeva H = Loaded O = Loaded
+	//for (media1:media_last)
+	//protons_->elements_->
+	Mendeleev Table;
+	Table.init();
+
+	for (int i = 0; i < xes_.size(); i++)
+		for (int j = 0; j < xes_[i]->elements_.size(); j++)
+		{
+			if (Table.isNecessary[xes_[i]->elements_[j].atomicNumber] == false)
+				Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
+		}
+
+
+
+	// ГЋГЎГєГҐГЄГІ, Гў ГЄГ®ГІГ®Г°Г»Г© Г±Г­Г Г·Г Г«Г  Г§Г ГЄГ Г·ГЁГўГ ГҐГ¬ ГўГ±Гѕ ГЎГ Г§ Г¤Г Г­Г­Г»Гµ Г±ГҐГ·ГҐГ­ГЁГ©
 	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
 
 	// ICRU-63
@@ -196,7 +213,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 	// ENDF
 	auto dbData = std::make_unique<std::vector<std::shared_ptr<mcEndfP>>>();
 
-	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
+	// Г–ГЁГЄГ« ГЇГ® ГґГ Г©Г«Г Г¬ Г±ГҐГ·ГҐГ­ГЁГ©, Гў ГЄГ Г¦Г¤Г®Г¬ ГЁГ§ ГЄГ®ГІГ®Г°Г»Гµ Г±Г®Г¤ГҐГ°Г¦Г ГІГ±Гї ГЇГ®Г«Г­Г»ГҐ Г¤Г Г­Г­Г»ГҐ Г¤Г«Гї Г®Г¤Г­Г®ГЈГ® ГЁГ§Г®ГІГ®ГЇГ 
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
@@ -207,19 +224,45 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		string ext = fs::path(entry.path()).extension().string();
 		std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
 
-		if(std::toupper(fname[0]) != 'P' || ext != ".TENDL")
+		if (std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
-		// Метку атомного элемента берем из имени файла.
+		// ГЊГҐГІГЄГі Г ГІГ®Г¬Г­Г®ГЈГ® ГЅГ«ГҐГ¬ГҐГ­ГІГ  ГЎГҐГ°ГҐГ¬ ГЁГ§ ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г .
 		string elementName = std::string(&fname[2]);
+		string AtNum = elementName;
+		int Z;
 
-		// База данных изотопа
+		for (int i = 0; i < AtNum.size(); i++)
+		{
+			if (isalpha(AtNum[i]))
+			{
+				AtNum.erase(i, AtNum.size() - i);
+				Z = stoi(AtNum);
+				break;
+			}
+		}
+
+		// ГЃГ Г§Г  Г¤Г Г­Г­Г»Гµ ГЁГ§Г®ГІГ®ГЇГ 
 		//mcCSNuclear csForElement;
 		auto csForElement = std::make_shared<mcEndfP>();
 		csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
+		if (Table.isNecessary[Z])
+		{
+			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
+			dbData->push_back(csForElement);
+		}
 
 		//ifstream isIcru(entry.path().c_str());
-		dbData->push_back(csForElement);
+	}
+	initProtonCSFromVector(&dbData);
+}
+
+void mcMedia::initProtonCSFromVector(std::vector<mcEndfP>* dbData)
+{
+	for (int i = 0; i < protons_.size(); i++)
+	{
+		((mcMediumProton*)protons_[i])->ENDFdata = *dbData;
+		((mcMediumProton*)protons_[i])->createDB();
 	}
 }
 
@@ -231,7 +274,7 @@ void mcMedia::initNeutronFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		neutrons_.push_back(new mcMediumNeutron());
 
-	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
+	// Г—ГІГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ - Г·Г Г±ГІГј Гў ГЅГІГ®Г© ГґГіГ­ГЄГ¶ГЁГЁ ГЇГ®Г«Г­Г®Г±ГІГјГѕ Г Г­Г Г«Г®ГЈГЁГ·Г­Г  XA, ГІГ®Г«ГјГЄГ® Г¤Г®ГЎГ ГўГ«ГҐГ­Г  ГЇГ°Г®ГўГҐГ°ГЄГ  ГўГҐГ°Г±ГЁГЁ
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -241,13 +284,13 @@ void mcMedia::initNeutronFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Проверяем, нужна ли данная среда для загрузки?
+			// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬, Г­ГіГ¦Г­Г  Г«ГЁ Г¤Г Г­Г­Г Гї Г±Г°ГҐГ¤Г  Г¤Г«Гї Г§Г ГЈГ°ГіГ§ГЄГЁ?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// дополнительно проверяем версию input file VER=0.0.0
+				// Г¤Г®ГЇГ®Г«Г­ГЁГІГҐГ«ГјГ­Г® ГЇГ°Г®ГўГҐГ°ГїГҐГ¬ ГўГҐГ°Г±ГЁГѕ input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -256,15 +299,15 @@ void mcMedia::initNeutronFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Neutron media data version"); 
-					//в принципе данные могут быть дальше в этом же файле в другой версии, 
-					// так что просто не считываем данные
+					//Гў ГЇГ°ГЁГ­Г¶ГЁГЇГҐ Г¤Г Г­Г­Г»ГҐ Г¬Г®ГЈГіГІ ГЎГ»ГІГј Г¤Г Г«ГјГёГҐ Гў ГЅГІГ®Г¬ Г¦ГҐ ГґГ Г©Г«ГҐ Гў Г¤Г°ГіГЈГ®Г© ГўГҐГ°Г±ГЁГЁ, 
+					// ГІГ ГЄ Г·ГІГ® ГЇГ°Г®Г±ГІГ® Г­ГҐ Г±Г·ГЁГІГ»ГўГ ГҐГ¬ Г¤Г Г­Г­Г»ГҐ
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// Проверяем, все ли среды загружены
+	// ГЏГ°Г®ГўГҐГ°ГїГҐГ¬, ГўГ±ГҐ Г«ГЁ Г±Г°ГҐГ¤Г» Г§Г ГЈГ°ГіГ¦ГҐГ­Г»
 	string errmedia;
 	for (int i = 0; i < (int)neutrons_.size(); i++)
 	{
@@ -277,12 +320,69 @@ void mcMedia::initNeutronFromStream(istream& is)
 		throw std::exception((string("The following Neutron media were not loaded succcessfuly:\n") + errmedia).c_str());
 }
 
-void mcMedia::initNeutronFromFile(const string& fname)
+void mcMedia::initNeutronFromFile(const string& nuclearDir)
 {
-	ifstream is(fname.c_str());
-	if (is.fail())
-		throw std::exception((string("Can't open Neutron data file: ") + fname).c_str());
-	initNeutronFromStream(is);
+	Mendeleev Table;
+	Table.init();
+
+	for (int i = 0; i < xes_.size(); i++)
+		for (int j = 0; j < xes_[i]->elements_.size(); j++)
+		{
+			if (Table.isNecessary[xes_[i]->elements_[j].atomicNumber] == false)
+				Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
+		}
+
+
+
+	// Объект, в который сначала закачиваем всю баз данных сечений
+	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
+
+	// ICRU-63
+	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
+
+	// ENDF
+	vector<mcEndfN> dbData;
+
+	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
+	for (const auto& entry : fs::directory_iterator(nuclearDir))
+	{
+		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
+			continue;
+
+		//string fname = fs::path(entry.path()).filename().string();
+		string fname = fs::path(entry.path()).stem().string();
+		string ext = fs::path(entry.path()).extension().string();
+		std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
+
+		if (std::toupper(fname[0]) != 'N' || ext != ".DAT")
+			continue;
+
+		// Метку атомного элемента берем из имени файла.
+		string elementName = std::string(&fname[2]);
+		string AtNum = elementName;
+		int Z;
+
+		for (int i = 0; i < AtNum.size(); i++)
+		{
+			if (isalpha(AtNum[i]))
+			{
+				AtNum.erase(i, AtNum.size() - i);
+				Z = stoi(AtNum);
+				break;
+			}
+		}
+
+		// База данных изотопа
+		//mcCSNuclear csForElement;
+		mcEndfN csForElement;
+		if (Table.isNecessary[Z])
+		{
+			csForElement.Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
+			dbData.push_back(csForElement);
+		}
+		//ifstream isIcru(entry.path().c_str());
+	}
+	//initProtonCSFromVector(&dbData);
 }
 
 const mcPhysics* mcMedia::getPhysics(int ptype) const
@@ -314,4 +414,13 @@ const mcMedium* mcMedia::getMedium(int ptype, int idx) const
 	}
 	else
 		throw std::exception("Unsupported particle type");
+}
+
+void Mendeleev::init()
+{
+	for (int i = 0; i < 119; i++)
+	{
+		isNecessary.push_back(false);
+		isLoad.push_back(false);
+	}
 }

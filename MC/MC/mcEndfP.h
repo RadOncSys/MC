@@ -26,6 +26,7 @@ struct mcEndfRecord
 	// (где степнь указана нестандартно после знака +/-).
 	static double ParseValue(const char* s, int n);
 
+	// Парсинг целого числа
 	static int iStrCrop(const char* s, int n) {
 		std::string s1 = s;
 		s1.erase(n);
@@ -41,7 +42,12 @@ public:
 	void Load(std::istream& is);
 	void dump(std::ostream& os) const;
 
-	double get_sigma(double kE);
+	double get_lambda(double kE, double rho, double A);
+
+	double get_sigma(double kE) const;
+
+	//Статус, показывающий не пуста ли таблица
+	bool isEmpty;
 
 	// Количество пар энергия падающей частицы / сечение
 	int npoints;
@@ -56,6 +62,8 @@ public:
 	// TODO: если обнаружится потребность в поддержке 
 	// множества типов интерполяций переделать в массив
 	int interpolationType;
+
+	short MT;
 	
 	// Точки
 	std::vector<double> Energies;
@@ -73,17 +81,22 @@ public:
 
 	void dump(std::ostream& os) const;
 
-	//Интерполяция мультиплетности
-	double getMulti(double kE);
+	//Розыгрыш мультиплетности с интерполяцией
+	int playMulti(double kE, mcRng& rng) const;
+
+	//Розыгрыш энергии вылетающей частицы
+	double playE(double kE, int &keIN, int &eoutID, mcRng& rng) const;
 
 	//Розыгрыш f_0 и r
 	double** playpar(mcRng& rng, double kE, int LAW);
 
 	//Розыгрыш косинуса угла рассеяния
-	double playmu(double kE, int LAW, double** pars, int ptype, mcRng& rng);
+	double playmu(double kE, int LAW, int keIN, int eoutID, int ptype, mcRng& rng) const;
 
 	//Интерполяция f_0 для пары энергия-энергия вылета
 	double getf_0(int IN, double Eout);
+
+	double integrate_f0(mcRng& rng, double kE);
 
 	int ZA_nucl;
 
@@ -155,7 +168,7 @@ public:
 	std::vector<double> Multiplicities;
 };
 
-enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gamma, electron };
+enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gammas, electron };
 
 class mcEndfProduct
 {
@@ -230,4 +243,81 @@ public:
 	void Clear();
 
 	void dumpTotalCrossections(std::ostream& os) const;
+};
+
+// Класс для чтения MF=4
+
+class mcEndfAngular
+{
+public:
+	mcEndfAngular() {
+		isEmpty = true;
+		NE1 = 0;
+		NE2 = 0;
+	}
+
+	void Load(std::istream& is);
+
+	bool isEmpty;
+
+	int ZA;
+
+	double AWR;
+
+	// Вид представления угловых распределений в секции
+	short LTT;
+
+	// 1 - все распределения изотропны, 0 - нет
+	short LI;
+
+	// Система отсчета, в которой представлены распределения
+	short LCT;
+
+	int NE1, NE2;
+	
+	//Распределения по Лежандру
+	std::vector<double> LEnergies;
+	std::vector<std::vector<double>> LValues;
+
+	//Табличные распределения
+	std::vector<double>TEnergies;
+	std::vector<std::vector<double>> Cosines;
+	std::vector<std::vector<double>> TValues;
+
+};
+
+class mcEndfN
+{
+public:
+	mcEndfN();
+
+	~mcEndfN();
+
+	// Назавание изотопа, включающее атомное имя и атомный вес.
+	// Используется как уникальный идентификатор.
+	std::string ElementName;
+
+	// Сечения суммы упругих рассеяний и ядерных реакций в зависимости от энергии падающей частицы
+	// TODO: Возможно временная таблица. Разобраться, не нужно ли эти реакции учитывать 
+	// в дополнение к тому, что в угловом смысле ассоциируется с dE/dX.
+	mcEndfCrossSectionTable TotalCrossSections;
+
+	mcEndfCrossSectionTable ElasticCrossSections;
+
+	// Сечения ядерных реакций в зависимости от энергии падающей частицы
+	mcEndfCrossSectionTable NuclearCrossSections;
+
+	// MF = 4, MT = 2
+	mcEndfAngular nElasticAngular;
+
+	// Сечения реакций (p,n) MF = 3 MT = 51-90;
+	std::vector<mcEndfCrossSectionTable*> nInelasticCS;
+
+	std::vector<mcEndfProduct*> Products;
+
+	//MT = 50, 51...; MF = 6;
+	std::vector<mcEndfProduct*> nInelasticContin;
+
+	// Загрузка одного файла сечений
+	void Load(const char* fname, const char* ename);
 };
