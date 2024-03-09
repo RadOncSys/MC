@@ -6,6 +6,7 @@
 
 #include "mcMedium.h"
 #include "mcDefs.h"
+#include "mcEndfP.h"
 
 // Класс описания параметров конкретной среды для транспорта нейтронов.
 class mcMediumNeutron : public mcMedium
@@ -15,6 +16,7 @@ public:
 	virtual ~mcMediumNeutron(void);
 
 	virtual void read(istream& is);
+	void createNDB();
 
     const double kEmax(void)const{return (double)dedx1_neutro.size();}
 	const double AtomicWeight() const;
@@ -34,4 +36,7 @@ public:
 	vector<double> dedx1_neutro;
 
 	double transCutoff_neutron;
+
+	std::shared_ptr<std::vector<std::shared_ptr<mcEndfN>>> ENDFdata;
+	double Nmicrosigmaforelement(int A, int Z, double kE) const;
 };

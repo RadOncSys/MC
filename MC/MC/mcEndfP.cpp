@@ -1,4 +1,4 @@
-#include "mcEndfP.h"
+п»ї#include "mcEndfP.h"
 #include "../geometry/text.h"
 #include <fstream>
 #include <filesystem>
@@ -18,7 +18,7 @@ double mcEndfRecord::ParseValue(const char* s, int n)
 	double f = stof(s1);
 	int i = 0;
 	for (; i < n; i++)											
-		if (s[i] == '+' || s[i] == '-' && i != 0) break;  //Исправлен парсинг upd. 17.05.23 by GK
+		if (s[i] == '+' || s[i] == '-' && i != 0) break;  //РСЃРїСЂР°РІР»РµРЅ РїР°СЂСЃРёРЅРі upd. 17.05.23 by GK
 	if (i < n)
 	{
 		s1.erase(0, i);
@@ -32,6 +32,7 @@ void mcEndfCrossSectionTable::Load(istream& is)
 	string line, s1, s2, s3, s4;
 	mcEndfRecord record;
 	int pointCount = 0;
+	isEmpty = false;
 
 	getline(is, line, '\n');
 
@@ -41,25 +42,38 @@ void mcEndfCrossSectionTable::Load(istream& is)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
 		::memcpy(&record, line.c_str(), 80);
 
-		// Сечения 
+		// РЎРµС‡РµРЅРёСЏ 
 		if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '2')
 		{
 			ninterpolations = atoi(record.c[4]);
-			if (ninterpolations > 1)
-				throw exception("UUnexpected multiple interpolation types");
+			if (ninterpolations > 2)
+				throw exception((string("Unexpected multiple interpolation types, Z = ") + record.Z[0] + record.Z[1] + "\n" + string("line:") + "\n" + line).c_str());
 		}
 		else if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '3')
 		{
-			npoints = atoi(record.c[0]);
-			interpolationType = atoi(record.c[1]);
-			Energies.resize(npoints, 0);
-			Values.resize(npoints, 0);
+			if (ninterpolations == 1)
+			{
+				npoints.push_back(atoi(record.c[0]));
+				interpolationType.push_back(atoi(record.c[1]));
+				Energies.resize(npoints[0], 0);
+				Values.resize(npoints[0], 0);
+			}
+			else
+			{
+				npoints.push_back(atoi(record.c[0]));
+				interpolationType.push_back(atoi(record.c[1]));
+				npoints.push_back(atoi(record.c[2]));
+				interpolationType.push_back(atoi(record.c[3]));
+				Energies.resize(npoints[1], 0);
+				Values.resize(npoints[1], 0);
+			}
 		}
 		else
 		{
+			int amountofpoints = ninterpolations == 1 ? npoints[0] : npoints[1];
 			for (int ii = 0; ii < 6; ii += 2)
 			{
-				if (pointCount < npoints)
+				if (pointCount < amountofpoints)
 				{
 					Energies[pointCount] = mcEndfRecord::ParseValue(record.c[ii], 11);
 					Values[pointCount] = mcEndfRecord::ParseValue(record.c[ii + 1], 11);
@@ -67,8 +81,8 @@ void mcEndfCrossSectionTable::Load(istream& is)
 					pointCount++;
 				}
 			}
-			if (pointCount == npoints)
-				break; // конец таблицы, прерываем while
+			if (pointCount == amountofpoints)
+				break; // РєРѕРЅРµС† С‚Р°Р±Р»РёС†С‹, РїСЂРµСЂС‹РІР°РµРј while
 		}
 
 		getline(is, line, '\n');
@@ -89,7 +103,7 @@ void mcEndfEANuclearCrossSectionTable::mLoad(istream& is)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
 		::memcpy(&record, line.c_str(), 80);
 
-		// Мультиплетности 
+		// РњСѓР»СЊС‚РёРїР»РµС‚РЅРѕСЃС‚Рё 
 		if (!is_e_points_read)
 		{
 			n_energypoints = atoi(record.c[0]);
@@ -118,6 +132,7 @@ void mcEndfEANuclearCrossSectionTable::mLoad(istream& is)
 
 void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 {
+	isEmpty = false;
 	string line;
 	mcEndfRecord record;
 	int pointCount = 0, i = 0;
@@ -125,9 +140,12 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 	getline(is, line, '\n');
 	::memcpy(&record, line.c_str(), 80);
 	if (LAW == 1)
+	{
 		LANG.push_back(atoi(record.c[2]));
-
-	//чтение энерго-угловых параметров
+		if (mcEndfRecord::iStrCrop(record.c[4], 11) > 1)
+			throw exception((string("Unexpected multiple interpolation types, Z = ") + record.Z[0] + record.Z[1] + "\n" + string("line:") + "\n" + line).c_str());
+	}
+	//С‡С‚РµРЅРёРµ СЌРЅРµСЂРіРѕ-СѓРіР»РѕРІС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ
 	getline(is, line, '\n');
 	::memcpy(&record, line.c_str(), 80);
 	if (LAW == 2)
@@ -148,7 +166,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 				if (!is_ea_read)
 				{
 					n_energypoints = atoi(record.c[0]);
-					ninterpolations = atoi(record.c[1]);
+					interpolationType = atoi(record.c[1]);
 					EA_par.resize(n_energypoints);
 					EA_Epoints.resize(n_energypoints);
 					getline(is, line, '\n');
@@ -325,8 +343,13 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 	{
 		getline(is, line, '\n');
 		::memcpy(&record, line.c_str(), 80);
+		isEmpty = true;
 	}
-	else throw exception("This LAW type doesn't supported by this code");
+	else if (LAW == 0)
+	{
+		isEmpty = true;
+	}
+	else throw exception((string("This LAW type doesn't supported by this code. LAW = ") + to_string(LAW) + "\n" + string("Line: \n") + line).c_str());
 }
 
 mcEndfProduct::mcEndfProduct()
@@ -367,12 +390,12 @@ std::string typeof(int i)
 
 void mcEndfProduct::Load(std::istream& is)
 {
-	// Читаем строки текста одну за другой и выбираем нужную информацию
+	// Р§РёС‚Р°РµРј СЃС‚СЂРѕРєРё С‚РµРєСЃС‚Р° РѕРґРЅСѓ Р·Р° РґСЂСѓРіРѕР№ Рё РІС‹Р±РёСЂР°РµРј РЅСѓР¶РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ
 	string line, s1, s2, s3, s4;
 	int i = 0;
 	getline(is, line, '\n');
 
-	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
+	// РЎРѕСЃС‚РѕСЏРЅРёСЏ СѓРєР°Р·С‹РІР°С‚ РІ РєР°РєРѕРј РјРµСЃС‚Рµ РїР°СЂСЃРёРЅРіР° РјС‹ РЅР°С…РѕРґРёРјСЃСЏ Рё РїРѕС‚РѕРјСѓ РєР°Рє РёРЅС‚РµСЂРїРёС‚РёСЂСѓРµРј СЃС‚СЂРѕРєРё
 	bool isInData = false;
 	bool is_multiplicity_read = false;
 	int energy_count = 0;
@@ -392,6 +415,7 @@ void mcEndfProduct::Load(std::istream& is)
 			ZAP = (int)round(mcEndfRecord::ParseValue(record.c[0], 11));
 			AWP = mcEndfRecord::ParseValue(record.c[1], 11);
 			LAW = mcEndfRecord::iStrCrop(record.c[3], 11);
+
 			switch (ZAP) {
 			
 				case 1:
@@ -425,6 +449,11 @@ void mcEndfProduct::Load(std::istream& is)
 		}
 		else
 		{
+			if (LAW == 0)
+			{
+				EANuclearCrossSections.push_back(energyangle);
+				break;
+			}
 			if (LAW != 4)
 				energyangle->Load(is, LAW);
 			EANuclearCrossSections.push_back(energyangle);
@@ -435,8 +464,8 @@ void mcEndfProduct::Load(std::istream& is)
 
 void mcEndfCrossSectionTable::dump(std::ostream& os) const
 {
-	os << "NPoints = \t" << npoints << endl;
-	os << "InterpolationType = \t" << interpolationType << endl;
+	os << "NPoints = \t" << npoints[1] << endl;
+	os << "InterpolationType = \t" << interpolationType[1] << endl;
 	os << endl;
 	os << "Energy\tValue" << endl;
 
@@ -460,6 +489,8 @@ double mcEndfCrossSectionTable::get_lambda(double kE, double rho, double A)
 
 double mcEndfCrossSectionTable::get_sigma(double kE) const
 {
+	double _sigma = 0.0;
+	int interType = 2;
 	int i = 0;
 	for (i = 0; i < Energies.size(); i++)
 		if (Energies[i] > kE)
@@ -467,7 +498,28 @@ double mcEndfCrossSectionTable::get_sigma(double kE) const
 	if (i == Energies.size())
 		i--;
 	i--;
-	double _sigma = (Values[i + 1] - Values[i]) / (Energies[i + 1] - Energies[i]) * (kE - Energies[i]) + Values[i];
+	if (i < 0)
+		return _sigma;
+	if (i < npoints[0])
+		interType = interpolationType[0];
+	else interType = interpolationType[1];
+	switch (interType)
+	{
+	case 2: //lin-lin
+		_sigma = (Values[i + 1] - Values[i]) / (Energies[i + 1] - Energies[i]) * (kE - Energies[i]) + Values[i];
+		break;
+	case 3: //lin-log
+		_sigma = (Values[i + 1] - Values[i]) / (log(Energies[i + 1]) - log(Energies[i])) * (log(kE) - log(Energies[i])) + Values[i];
+		break;
+	case 5: //log-log
+		_sigma = exp((log(Values[i + 1]) - log(Values[i])) / (log(Energies[i + 1]) - log(Energies[i])) * (log(kE) - log(Energies[i]))) * Values[i];
+		break;
+	case 4: //log-lin
+		_sigma = exp((log(Values[i + 1]) - log(Values[i])) / (Energies[i + 1] - Energies[i]) * (kE - Energies[i])) * Values[i];
+		break;
+	default:  //undefined -> lin-lin
+		_sigma = (Values[i + 1] - Values[i]) / (Energies[i + 1] - Energies[i]) * (kE - Energies[i]) + Values[i];
+	}
 	return _sigma;
 }
 
@@ -688,9 +740,9 @@ double LegandreKM(int NA, double* f, double mu)
 	return output;
 }
 
-// TODO: так делать нельзя. Нужно использовать либо <vector<vector<double>>,
-// Либо shared_ptr<<vector<vector<double>>>
-// Кроме того, не все пути возвращают результат, что неприемлемо.
+// TODO: С‚Р°Рє РґРµР»Р°С‚СЊ РЅРµР»СЊР·СЏ. РќСѓР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»РёР±Рѕ <vector<vector<double>>,
+// Р›РёР±Рѕ shared_ptr<<vector<vector<double>>>
+// РљСЂРѕРјРµ С‚РѕРіРѕ, РЅРµ РІСЃРµ РїСѓС‚Рё РІРѕР·РІСЂР°С‰Р°СЋС‚ СЂРµР·СѓР»СЊС‚Р°С‚, С‡С‚Рѕ РЅРµРїСЂРёРµРјР»РµРјРѕ.
 double** mcEndfEANuclearCrossSectionTable::playpar(mcRng& rng, double kE, int LAW)
 {
 	if (LAW == 2)
@@ -1140,6 +1192,8 @@ double mcEndfEANuclearCrossSectionTable::playE(double kE, int &keIN, int &eoutID
 	for (keIN = 0; keIN < Energies.size(); keIN++)
 		if (Energies[keIN] > kE)
 			break;
+	if (keIN == Energies.size())
+		keIN-=2;
 	if (keIN == 0)
 	{
 		for (int i = 0; i < EA_par[keIN].size(); i++)
@@ -1211,11 +1265,11 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		throw exception((string("Can't open Proton data file: ") + ename).c_str());
 	ElementName = ename;
 
-	// Читаем строки текста одну за другой и выбираем нужную информацию
+	// Р§РёС‚Р°РµРј СЃС‚СЂРѕРєРё С‚РµРєСЃС‚Р° РѕРґРЅСѓ Р·Р° РґСЂСѓРіРѕР№ Рё РІС‹Р±РёСЂР°РµРј РЅСѓР¶РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ
 	string line, s1, s2, s3, s4;
 	getline(isEndf, line, '\n');
 
-	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
+	// РЎРѕСЃС‚РѕСЏРЅРёСЏ СѓРєР°Р·С‹РІР°С‚ РІ РєР°РєРѕРј РјРµСЃС‚Рµ РїР°СЂСЃРёРЅРіР° РјС‹ РЅР°С…РѕРґРёРјСЃСЏ Рё РїРѕС‚РѕРјСѓ РєР°Рє РёРЅС‚РµСЂРїРёС‚РёСЂСѓРµРј СЃС‚СЂРѕРєРё
 	bool isInData = false;
 	int pointCount = 0;
 
@@ -1227,7 +1281,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
 		::memcpy(&record, line.c_str(), 80);
 
-		// Начало новой энергии
+		// РќР°С‡Р°Р»Рѕ РЅРѕРІРѕР№ СЌРЅРµСЂРіРёРё
 		if (!isInData)
 		{
 			if (line.find(beginSeparator) != string::npos)
@@ -1243,20 +1297,20 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		
 		}
 
-		// Последняя строка файла. Прерываем не дожидаясь ошибки.
+		// РџРѕСЃР»РµРґРЅСЏСЏ СЃС‚СЂРѕРєР° С„Р°Р№Р»Р°. РџСЂРµСЂС‹РІР°РµРј РЅРµ РґРѕР¶РёРґР°СЏСЃСЊ РѕС€РёР±РєРё.
 		else if (record.Stblt[0] == '-' && record.Stblt[1] == '1')
 			break;
 
-		// Длина строки из девяток является разделителем между таблицами
+		// Р”Р»РёРЅР° СЃС‚СЂРѕРєРё РёР· РґРµРІСЏС‚РѕРє СЏРІР»СЏРµС‚СЃСЏ СЂР°Р·РґРµР»РёС‚РµР»РµРј РјРµР¶РґСѓ С‚Р°Р±Р»РёС†Р°РјРё
 		else if (string(record.LineNumber, 5) == "99999")
 		{
 			pointCount = 0;
 		}
 
-		// Используем только MF=3 (сечения реакций) / MT=5 (сумма всех реакций за исключением отдельно оговоренных)
-		// и     MF=6 (энерго-угловые распределени) / MT=5
+		// РСЃРїРѕР»СЊР·СѓРµРј С‚РѕР»СЊРєРѕ MF=3 (СЃРµС‡РµРЅРёСЏ СЂРµР°РєС†РёР№) / MT=5 (СЃСѓРјРјР° РІСЃРµС… СЂРµР°РєС†РёР№ Р·Р° РёСЃРєР»СЋС‡РµРЅРёРµРј РѕС‚РґРµР»СЊРЅРѕ РѕРіРѕРІРѕСЂРµРЅРЅС‹С…)
+		// Рё     MF=6 (СЌРЅРµСЂРіРѕ-СѓРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРё) / MT=5
 
-		// Сечения суммы эластичных рассеяний и ядерных реакций		
+		// РЎРµС‡РµРЅРёСЏ СЃСѓРјРјС‹ СЌР»Р°СЃС‚РёС‡РЅС‹С… СЂР°СЃСЃРµСЏРЅРёР№ Рё СЏРґРµСЂРЅС‹С… СЂРµР°РєС†РёР№		
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' && 
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
 		{
@@ -1264,7 +1318,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			TotalCrossSections.isEmpty = false;
 		}
 
-		// Сечения ядерных реакций
+		// РЎРµС‡РµРЅРёСЏ СЏРґРµСЂРЅС‹С… СЂРµР°РєС†РёР№
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
 		{
@@ -1272,7 +1326,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			NuclearCrossSections.isEmpty = false;
 		}
 
-		// Сечения (p,n) MT = 50 
+		// РЎРµС‡РµРЅРёСЏ (p,n) MT = 50 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')
 		{
@@ -1280,7 +1334,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron0CrossSection.isEmpty = false;
 		}
 
-		// Сечения (p,n) MT = 51 
+		// РЎРµС‡РµРЅРёСЏ (p,n) MT = 51 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
 		{
@@ -1288,7 +1342,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron1CrossSection.isEmpty = false;
 		}
 
-		// Сечения (p,n) MT = 52 
+		// РЎРµС‡РµРЅРёСЏ (p,n) MT = 52 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
 		{
@@ -1296,7 +1350,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron2CrossSection.isEmpty = false;
 		}
 
-		// Сечения (p,n) MT = 53 
+		// РЎРµС‡РµРЅРёСЏ (p,n) MT = 53 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
 		{
@@ -1304,7 +1358,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron3CrossSection.isEmpty = false;
 		}
 
-		// Сечения (p,n) MT = 54 
+		// РЎРµС‡РµРЅРёСЏ (p,n) MT = 54 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
 		{
@@ -1312,7 +1366,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron4CrossSection.isEmpty = false;
 		}
 
-		// Сечения (p,n) MT = 55 
+		// РЎРµС‡РµРЅРёСЏ (p,n) MT = 55 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
 		{
@@ -1320,9 +1374,9 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			Neutron5CrossSection.isEmpty = false;
 		}
 
-		// Энерго-угловые распределения
+		// Р­РЅРµСЂРіРѕ-СѓРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' && 
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //СЏРґРµСЂРЅС‹Рµ СЂРµР°РєС†РёРё (РѕСЃС‚Р°С‚РѕС‡РЅС‹Рµ)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -1341,7 +1395,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) реакции MT = 50 MF = 6
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) СЂРµР°РєС†РёРё MT = 50 MF = 6
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -1363,7 +1417,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')  // (p,n) реакции MT = 51 MF = 6
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')  // (p,n) СЂРµР°РєС†РёРё MT = 51 MF = 6
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -1385,7 +1439,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')  // (p,n) реакции MT = 52 MF = 6
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')  // (p,n) СЂРµР°РєС†РёРё MT = 52 MF = 6
 			{
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
@@ -1407,7 +1461,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			 }
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')  // (p,n) реакции MT = 53 MF = 6
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')  // (p,n) СЂРµР°РєС†РёРё MT = 53 MF = 6
 			{
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
@@ -1429,7 +1483,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			 }
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')  // (p,n) реакции MT = 54 MF = 6
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')  // (p,n) СЂРµР°РєС†РёРё MT = 54 MF = 6
 			{
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
@@ -1451,7 +1505,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			 }
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')  // (p,n) реакции MT = 55 MF = 6
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')  // (p,n) СЂРµР°РєС†РёРё MT = 55 MF = 6
 			{
 				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 				{
@@ -1561,6 +1615,92 @@ void mcEndfAngular::Load(std::istream& is)
 				break;
 			}
 		}
+		else if (LTT == 1)
+		{
+			if (isFirstTime)
+			{
+				LI = mcEndfRecord::iStrCrop(record.c[2], 11);
+				LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
+				isFirstTime = false;
+			}
+			else
+			{
+				getline(is, line, '\n');
+				::memcpy(&record, line.c_str(), 80);
+				NE1 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				LValues.resize(NE1);
+				getline(is, line, '\n');
+				for (int i = 0; i < NE1; i++)
+				{
+					getline(is, line, '\n');
+					::memcpy(&record, line.c_str(), 80);
+					LEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
+					int NL = mcEndfRecord::iStrCrop(record.c[4], 11);
+					int _lines = NL / 6;
+					int iStop = 0;
+					(NL % 6 > 0) ? (_lines++) : (0);
+					for (int j = 0; j < _lines; j++)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+						for (int k = 0; k < 6; k++)
+						{
+							iStop++;
+							LValues[i].push_back(mcEndfRecord::ParseValue(record.c[k], 11));
+							if (iStop >= NL)
+								break;
+						}
+					}
+				}
+				break;
+			}
+		}
+		else if (LTT == 2)
+		{
+			if (isFirstTime)
+			{
+				LI = mcEndfRecord::iStrCrop(record.c[2], 11);
+				LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
+				isFirstTime = false;
+			}
+			else
+			{
+				getline(is, line, '\n');
+				::memcpy(&record, line.c_str(), 80);
+				NE2 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				TValues.resize(NE2);
+				Cosines.resize(NE2);
+				getline(is, line, '\n');
+				for (int i = 0; i < NE2; i++)
+				{
+					getline(is, line, '\n');
+					::memcpy(&record, line.c_str(), 80);
+					TEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
+					int npoints = mcEndfRecord::iStrCrop(record.c[5], 11);
+					getline(is, line, '\n');
+					int _lines = npoints * 2 / 6;
+					(npoints % 6 > 0) ? (_lines++) : (0);
+					int iStop = 0;
+					for (int j = 0; j < _lines; j++)
+					{
+						getline(is, line, '\n');
+						::memcpy(&record, line.c_str(), 80);
+						for (int k = 0; k < 3; k++)
+						{
+							iStop++;
+							Cosines[i].push_back(mcEndfRecord::ParseValue(record.c[2 * k], 11));
+							TValues[i].push_back(mcEndfRecord::ParseValue(record.c[2 * k + 1], 11));
+							if (iStop >= npoints)
+								break;
+						}
+					}
+				}
+				break;
+			}
+		}
+		else if (LTT == 0)
+			break;
+		else throw exception((string("Current LCT is undefined. LTT = ") + std::to_string(LTT)).c_str());
 	}
 }
 
@@ -1583,11 +1723,11 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		throw exception((string("Can't open Neutron data file: ") + ename).c_str());
 	ElementName = ename;
 
-	// Читаем строки текста одну за другой и выбираем нужную информацию
+	// Р§РёС‚Р°РµРј СЃС‚СЂРѕРєРё С‚РµРєСЃС‚Р° РѕРґРЅСѓ Р·Р° РґСЂСѓРіРѕР№ Рё РІС‹Р±РёСЂР°РµРј РЅСѓР¶РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ
 	string line, s1, s2, s3, s4;
 	getline(isEndf, line, '\n');
 
-	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
+	// РЎРѕСЃС‚РѕСЏРЅРёСЏ СѓРєР°Р·С‹РІР°С‚ РІ РєР°РєРѕРј РјРµСЃС‚Рµ РїР°СЂСЃРёРЅРіР° РјС‹ РЅР°С…РѕРґРёРјСЃСЏ Рё РїРѕС‚РѕРјСѓ РєР°Рє РёРЅС‚РµСЂРїРёС‚РёСЂСѓРµРј СЃС‚СЂРѕРєРё
 	bool isInData = false;
 	int pointCount = 0;
 
@@ -1599,24 +1739,24 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
 		::memcpy(&record, line.c_str(), 80);
 
-		// Начало новой энергии
+		// РќР°С‡Р°Р»Рѕ РЅРѕРІРѕР№ СЌРЅРµСЂРіРёРё
 		if (!isInData)
 		{
 			if (line.find(beginSeparator) != string::npos || line.find(beginSeparator2) != string::npos)
 				isInData = true;
 		}
 
-		// Последняя строка файла. Прерываем не дожидаясь ошибки.
+		// РџРѕСЃР»РµРґРЅСЏСЏ СЃС‚СЂРѕРєР° С„Р°Р№Р»Р°. РџСЂРµСЂС‹РІР°РµРј РЅРµ РґРѕР¶РёРґР°СЏСЃСЊ РѕС€РёР±РєРё.
 		else if (record.Stblt[0] == '-' && record.Stblt[1] == '1')
 			break;
 
-		// Длина строки из девяток является разделителем между таблицами
+		// Р”Р»РёРЅР° СЃС‚СЂРѕРєРё РёР· РґРµРІСЏС‚РѕРє СЏРІР»СЏРµС‚СЃСЏ СЂР°Р·РґРµР»РёС‚РµР»РµРј РјРµР¶РґСѓ С‚Р°Р±Р»РёС†Р°РјРё
 		else if (string(record.LineNumber, 5) == "99999")
 		{
 			pointCount = 0;
 		}
 
-		// Полное сечение
+		// РџРѕР»РЅРѕРµ СЃРµС‡РµРЅРёРµ
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '1')
 		{
@@ -1624,7 +1764,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			TotalCrossSections.isEmpty = false;
 		}
 
-		// Сечения упругого рассеяния	
+		// РЎРµС‡РµРЅРёСЏ СѓРїСЂСѓРіРѕРіРѕ СЂР°СЃСЃРµСЏРЅРёСЏ	
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
 		{
@@ -1632,7 +1772,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			ElasticCrossSections.isEmpty = false;
 		}
 
-		// Сечения ядерных реакций
+		// РЎРµС‡РµРЅРёСЏ СЏРґРµСЂРЅС‹С… СЂРµР°РєС†РёР№
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
 		{
@@ -1640,7 +1780,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			NuclearCrossSections.isEmpty = false;
 		}
 
-		// Сечения (n,n') MT = 51 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 51 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
 		{
@@ -1650,7 +1790,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 52
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 52
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
 		{
@@ -1660,7 +1800,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 53 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 53 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
 		{
@@ -1670,7 +1810,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 54 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 54 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
 		{
@@ -1680,7 +1820,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 55 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 55 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
 		{
@@ -1690,7 +1830,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 56 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 56 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '6')
 		{
@@ -1700,7 +1840,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 57 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 57 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '7')
 		{
@@ -1710,7 +1850,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 58 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 58 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '8')
 		{
@@ -1720,7 +1860,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 59 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 59 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '9')
 		{
@@ -1730,7 +1870,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 60 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 60 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '0')
 		{
@@ -1740,7 +1880,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 61 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 61 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '1')
 		{
@@ -1750,7 +1890,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 62		
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 62		
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '2')
 		{
@@ -1760,7 +1900,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 63 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 63 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '3')
 		{
@@ -1770,7 +1910,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 64 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 64 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '4')
 		{
@@ -1780,7 +1920,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 65
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 65
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '5')
 		{
@@ -1790,7 +1930,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 66
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 66
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '6')
 		{
@@ -1800,7 +1940,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 67
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 67
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '7')
 		{
@@ -1810,7 +1950,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 68
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 68
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '8')
 		{
@@ -1820,7 +1960,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 69 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 69 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '9')
 		{
@@ -1830,7 +1970,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 70 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 70 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '0')
 		{
@@ -1840,7 +1980,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 71 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 71 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '1')
 		{
@@ -1850,7 +1990,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 72 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 72 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '2')
 		{
@@ -1860,7 +2000,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 73 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 73 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '3')
 		{
@@ -1870,7 +2010,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 74 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 74 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '4')
 		{
@@ -1880,7 +2020,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 75 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 75 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '5')
 		{
@@ -1890,7 +2030,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 76 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 76 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '6')
 		{
@@ -1900,7 +2040,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 77 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 77 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '7')
 		{
@@ -1910,7 +2050,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 78 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 78 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '8')
 		{
@@ -1920,7 +2060,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 79 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 79 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '9')
 		{
@@ -1930,7 +2070,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 80 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 80 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '0')
 		{
@@ -1940,7 +2080,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 81 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 81 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '1')
 		{
@@ -1950,7 +2090,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 82 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 82 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '2')
 		{
@@ -1960,7 +2100,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 83 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 83 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '3')
 		{
@@ -1970,7 +2110,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 84 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 84 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '4')
 		{
@@ -1980,7 +2120,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 85 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 85 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '5')
 		{
@@ -1990,7 +2130,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 86 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 86 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '6')
 		{
@@ -2000,7 +2140,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 87 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 87 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '7')
 		{
@@ -2010,7 +2150,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 88 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 88 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '8')
 		{
@@ -2020,7 +2160,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 89 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 89 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '9')
 		{
@@ -2030,7 +2170,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 90 
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 90 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '0')
 		{
@@ -2040,7 +2180,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			nInelasticCS.push_back(inelastic);
 		}
 
-		// Сечения (n,n') MT = 91
+		// РЎРµС‡РµРЅРёСЏ (n,n') MT = 91
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '1')
 			{
@@ -2048,21 +2188,560 @@ void mcEndfN::Load(const char* fname, const char* ename)
 				inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
 				inelastic->Load(isEndf);
 				nInelasticCS.push_back(inelastic);
-				}
+			}
+
+		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '4')
+			{
+				InelasticCrossSections.Load(isEndf);
+			}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
-		{
+			{
 				nElasticAngular.ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
 				nElasticAngular.AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				nElasticAngular.LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
 				nElasticAngular.Load(isEndf);
-		}
+			}
+
+			// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 51 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 52
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 53 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 54 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 55 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 56 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '6')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 57 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '7')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 58 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '8')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 59 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '9')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 60 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '0')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 61 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '1')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 62		
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '2')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 63 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '3')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 64 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '4')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 65
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '5')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 66
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '6')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 67
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '7')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 68
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '8')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 69 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '9')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 70 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '0')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 71 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '1')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 72 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '2')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 73 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '4')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 74 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '4')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 75 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '5')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 76 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '6')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 77 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '7')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 78 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '8')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 79 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '9')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 80 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '0')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 81 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '1')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 82 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '2')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 83 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '4')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 84 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '4')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 85 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '5')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 86 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '6')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 87 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '7')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 88 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '8')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 89 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '9')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 90 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '0')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
+
+				// РЈРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ (n,n') MT = 91 
+		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
+			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '1')
+			{
+				auto inelasticLevels = new mcEndfAngular();
+				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				inelasticLevels->AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				inelasticLevels->LTT = (short)mcEndfRecord::ParseValue(record.c[3], 11);
+				inelasticLevels->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
+				inelasticLevels->Load(isEndf);
+				inelasticLevelsAng.push_back(inelasticLevels);
+				}
 
 
-		// Энерго-угловые распределения
+		// Р­РЅРµСЂРіРѕ-СѓРіР»РѕРІС‹Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
+			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //СЏРґРµСЂРЅС‹Рµ СЂРµР°РєС†РёРё (РѕСЃС‚Р°С‚РѕС‡РЅС‹Рµ)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -2081,7 +2760,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '1')  // (n,n) реакции MT = 91 MF = 6
+			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '1')  // (n,n) СЂРµР°РєС†РёРё MT = 91 MF = 6
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{

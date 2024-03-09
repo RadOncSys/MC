@@ -1,4 +1,4 @@
-#include "mcMediumNeutron.h"
+п»ї#include "mcMediumNeutron.h"
 #include "../geometry/text.h"
 #include <iostream>
 #include "mcPhysicsCommon.h"
@@ -6,6 +6,16 @@
 #ifndef InverseRadiationLengthNeutron
 #define InverseRadiationLengthNeutron InverseRadiationLength_DahlApproximationNeutron
 #endif InverseRadiationLengthNeutron
+
+string CLEARFROMALPHA_(string x)
+{
+	for (int i = 0; i < x.length(); i++)
+		if (x[i] > '9')
+			x.erase(i, 1);
+	return x;
+}
+
+double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF);
 
 double InverseRadiationLength_DahlApproximationNeutron(const double A, const double Z)
 {
@@ -20,6 +30,37 @@ double InverseRadiationLengthNeutron(const double* A, const double* Z, const dou
 	return s;
 }
 
+double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE) const
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDFdata->size(); i++)
+	{
+		if (CLEARFROMALPHA_(ENDFdata->at(i)->ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ENDF пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDFdata->at(i)->TotalCrossSections.isEmpty)
+		return SIGMA;	//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ MF=3 MT=5 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0
+	if (kE <= ENDFdata->at(i)->TotalCrossSections.Energies[0])
+		return SIGMA;
+	SIGMA = ENDFdata->at(i)->TotalCrossSections.get_sigma(kE);
+	return SIGMA / pow(10, 24);
+}
+
 double rmsNuclearRadiusNeutron(int At)
 {
 	double ac =
@@ -30,39 +71,39 @@ double rmsNuclearRadiusNeutron(int At)
 		((At >= 6) && (At <= 14)) ? 2.4 :
 		(0.82 * pow(At, 1.0 / 3.0) + 0.58);	// At>=16
 
-	// Предполагаем, что в формуле 4.84 ошибка - лишний корень
+	// РџСЂРµРґРїРѕР»Р°РіР°РµРј, С‡С‚Рѕ РІ С„РѕСЂРјСѓР»Рµ 4.84 РѕС€РёР±РєР° - Р»РёС€РЅРёР№ РєРѕСЂРµРЅСЊ
 	return sqrt(SQUARE(ac) - 0.64);
 }
 
 double sigmaTripathiLightNeutron(int Ap, int Zp, int At, int Zt, double KE) {
-	double r0 = 100.0 * 1.1E-15; // в сантиметрах, чтобы сразу возвращать рез. в см2
+	double r0 = 100.0 * 1.1E-15; // РІ СЃР°РЅС‚РёРјРµС‚СЂР°С…, С‡С‚РѕР±С‹ СЃСЂР°Р·Сѓ РІРѕР·РІСЂР°С‰Р°С‚СЊ СЂРµР·. РІ СЃРј2
 	double Z3 = 1.0 / 3.0;
 	double Ap3 = pow(Ap, Z3);
 	double At3 = pow(At, Z3);
 	double Apt3 = Ap3 + At3;
-	double Ecm = ECenterOfMass(At * PMASS, Ap * PMASS, Ap * PMASS + KE); // приближённое вычисление масс
+	double Ecm = ECenterOfMass(At * PMASS, Ap * PMASS, Ap * PMASS + KE); // РїСЂРёР±Р»РёР¶С‘РЅРЅРѕРµ РІС‹С‡РёСЃР»РµРЅРёРµ РјР°СЃСЃ
 	double Ecm3 = pow(Ecm, Z3);
 	double SL = 1.2 + 1.6 * (1 - exp(-KE / 15.0));
-	double X1 = 2.83 - 3.1E-2 * At + 1.7E-4 * SQUARE(At); // для протонов
+	double X1 = 2.83 - 3.1E-2 * At + 1.7E-4 * SQUARE(At); // РґР»СЏ РїСЂРѕС‚РѕРЅРѕРІ
 	double Xm = 1.0 - X1 * exp(-KE / (X1 * SL));
 	double D = 1.85 + 0.16 / (1.0 + exp((500.0 - KE) / 200.0));
-	double T1 = 18; // для протонов, хотя есть подозрение, что 18 
-	double CE = D * (1.0 - exp(-KE / T1)) - 0.292 * exp(-KE / 792.0) * cos(0.229 * pow(KE, 0.453));// было ошибочно 0.291,
+	double T1 = 18; // РґР»СЏ РїСЂРѕС‚РѕРЅРѕРІ, С…РѕС‚СЏ РµСЃС‚СЊ РїРѕРґРѕР·СЂРµРЅРёРµ, С‡С‚Рѕ 18 
+	double CE = D * (1.0 - exp(-KE / T1)) - 0.292 * exp(-KE / 792.0) * cos(0.229 * pow(KE, 0.453));// Р±С‹Р»Рѕ РѕС€РёР±РѕС‡РЅРѕ 0.291,
 	double S = Ap3 * At3 / Apt3;
 	double deltaE = (1.85 + 0.16 / Ecm3) * S - CE + 0.91 * (At - 2 * Zt) * Zp / (At * Ap);
 	double rTrms = rmsNuclearRadiusNeutron(At); // root mean square radius in fm 
-	double rPrms = rmsNuclearRadiusNeutron(Ap); // аппроксимация Willson et al. 1991 [VK add 06.08]
+	double rPrms = rmsNuclearRadiusNeutron(Ap); // Р°РїРїСЂРѕРєСЃРёРјР°С†РёСЏ Willson et al. 1991 [VK add 06.08]
 	double rT = 1.29 * rTrms;
 	double rP = 1.29 * rPrms;
 	double R = rP + rT + 1.2 * (Apt3) / Ecm3;
 	double B = 1.44 * Zp * Zt / R;
 	double RC =
-		(At == 1 && Zt == 1) ? 7.0 : // p+p - моё предположение - линейная экстарполяция. Если это всё вообще применимо для pp
+		(At == 1 && Zt == 1) ? 7.0 : // p+p - РјРѕС‘ РїСЂРµРґРїРѕР»РѕР¶РµРЅРёРµ - Р»РёРЅРµР№РЅР°СЏ СЌРєСЃС‚Р°СЂРїРѕР»СЏС†РёСЏ. Р•СЃР»Рё СЌС‚Рѕ РІСЃС‘ РІРѕРѕР±С‰Рµ РїСЂРёРјРµРЅРёРјРѕ РґР»СЏ pp
 		(At == 2 && Zt == 1) ? 13.5 : // p+d
 		(At == 3 && Zt == 2) ? 21.0 : // p+3He
 		(At == 4 && Zt == 2) ? 27.0 : // p+4He
 		(At == 6 && Zt == 3) ? 2.2 : // p+4He
-		1.0; // по аналогии с другими формулами где нет этого множителя и общей тенденцией
+		1.0; // РїРѕ Р°РЅР°Р»РѕРіРёРё СЃ РґСЂСѓРіРёРјРё С„РѕСЂРјСѓР»Р°РјРё РіРґРµ РЅРµС‚ СЌС‚РѕРіРѕ РјРЅРѕР¶РёС‚РµР»СЏ Рё РѕР±С‰РµР№ С‚РµРЅРґРµРЅС†РёРµР№
 	double fff = r0 * (Apt3 + deltaE);
 	double sigmaTL = PI * SQUARE(fff) * (1 - RC * B / Ecm) * Xm;
 	sigmaTL = (sigmaTL > 0.0) ? sigmaTL : 0.0;
@@ -76,11 +117,75 @@ void coeff_calcNeutron(const vector<double>& s, vector<double>& a, vector<double
 	for (int i = 0; i < n - 1; i++)
 	{
 		a[i] = s[i + 1] - s[i];
-		b[i] = s[i] - a[i] * i;
+		b[i] = s[i];
 	}
 	a[n - 1] = a[n - 2];
 	b[n - 1] = b[n - 2];
 	return;
+}
+
+void mcMediumNeutron::createNDB()
+{
+	double S;
+	vector<double>sigma_endf;
+	vector<double>sigma_;
+	for (int i = 0; i < kEmax(); i++) {
+		S = 0.0; // РґР»РёРЅР° СЃРІРѕР±РѕРґРЅРѕРіРѕ РїСЂРѕР±РµРіР°
+		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+			S += sigmaENDFN(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get()) / pow(10, 24) * el->partsByNumber;
+		}
+		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
+		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+		sigma_.push_back(S); // mfp=1/(sigma_in)
+	}
+	// РќРµ РѕРїС‚РёРјРёР·РјСЂСѓРµРј, С‡С‚РѕР±С‹ РЅРµ Р·Р°РїСѓС‚Р°С‚СЊСЃСЏ, РІС‹С‡РёСЃР»СЏРµРј РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ РІРѕ РІС‚РѕСЂРѕРј РїСЂРѕС…РѕРґРµ
+	coeff_calcNeutron(sigma_endf, sigma1_neutro, sigma0_neutro);
+}
+
+double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDF->size(); i++)
+	{
+		if (CLEARFROMALPHA_(ENDF->at(i)->ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ENDF пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDF->at(i)->TotalCrossSections.isEmpty)
+		return SIGMA;	//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ MF=3 MT=5 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 0
+	if (kE <= ENDF->at(i)->TotalCrossSections.Energies[0])
+		return SIGMA;
+	if (kE > ENDF->at(i)->TotalCrossSections.Energies[ENDF->at(i)->TotalCrossSections.Energies.size() - 1])
+		return SIGMA;
+	else
+	{
+		for (int j = 0; j < ENDF->at(i)->TotalCrossSections.Energies.size(); j++)
+			if (kE < ENDF->at(i)->TotalCrossSections.Energies[j])
+			{
+				if (j == 0)
+					break;
+				SIGMA = ENDF->at(i)->TotalCrossSections.Values[j - 1] +
+					(kE - ENDF->at(i)->TotalCrossSections.Energies[j - 1]) *
+					(ENDF->at(i)->TotalCrossSections.Values[j] - ENDF->at(i)->TotalCrossSections.Values[j - 1]) /
+					(ENDF->at(i)->TotalCrossSections.Energies[j] - ENDF->at(i)->TotalCrossSections.Energies[j - 1]);
+				break;
+			}
+	}
+	return SIGMA;
 }
 
 mcMediumNeutron::mcMediumNeutron()
@@ -105,13 +210,13 @@ void mcMediumNeutron::read(istream& is)
 	getline(is, line, '\n');
 	if (is.fail()) return;
 
-	// Тип среды, плотность
+	// РўРёРї СЃСЂРµРґС‹, РїР»РѕС‚РЅРѕСЃС‚СЊ
 	string eletype;
 	GetTwoStringsFromLine(line, eletype, s2);
 	line = s2;
 	this->density_ = atof(ParseLine(line, "RHO").c_str());
 
-	// Элементарный состав
+	// Р­Р»РµРјРµРЅС‚Р°СЂРЅС‹Р№ СЃРѕСЃС‚Р°РІ
 	int i, ne = atoi(ParseLine(line, "NE").c_str());
 	this->elements_.resize(ne);
 	for (i = 0; i < ne; i++) {
@@ -136,7 +241,7 @@ void mcMediumNeutron::read(istream& is)
 	getline(is, line, '\n');
 	if (is.fail()) return;
 	vector<string> ss; int nl;
-	nl = GetStringArray(line, ss, "\t"); // разбираем заголовок на столбцы
+	nl = GetStringArray(line, ss, "\t"); // СЂР°Р·Р±РёСЂР°РµРј Р·Р°РіРѕР»РѕРІРѕРє РЅР° СЃС‚РѕР»Р±С†С‹
 	int ikE = -1, idEdx = -1;
 	for (int i = 0; i < nl; i++) { 
 		if (ss[i] == "kE") { ikE = i; }
@@ -202,7 +307,7 @@ const void	mcMediumNeutron::gSigmaInelastic(int Ap, int Zp)
 
 	for (int i = 0; i < kEmax(); i++) 
 	{
-		S = 0.0; // длина свободного пробега
+		S = 0.0; // РґР»РёРЅР° СЃРІРѕР±РѕРґРЅРѕРіРѕ РїСЂРѕР±РµРіР°
 		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) 
 		{
 			S += sigmaTripathiLightNeutron(Ap, Zp,

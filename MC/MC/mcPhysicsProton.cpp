@@ -232,6 +232,8 @@ void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, 
 			else if (pID == 1 && pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->LANG[0] == 2)
 			{
 				mcParticle* pNewProton = DuplicateParticle(primary);
+				pNewProton->t = MCP_PROTON;
+				pNewProton->q = 1;
 				int eoutID = 0, keIN = 0;
 				pNewProton->ke = pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
 				getKallbachMannAngle(rng, endfID, pNewProton, pmed, keIN, eoutID);
@@ -239,9 +241,13 @@ void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, 
 			}
 			else
 			{
+				//mcParticle* pNewNeutron = DuplicateParticle(primary);
+				//pNewNeutron->t = MCP_NEUTRON;
+				//pNewNeutron->q = 0;
 				int eoutID = 0, keIN = 0;
 				double neutron_ke = pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
 				primary->ke -= neutron_ke;
+				//pNewNeutron->ke = neutron_ke;
 			}
 		}
 	}
