@@ -241,13 +241,13 @@ void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, 
 			}
 			else
 			{
-				//mcParticle* pNewNeutron = DuplicateParticle(primary);
-				//pNewNeutron->t = MCP_NEUTRON;
-				//pNewNeutron->q = 0;
+				mcParticle* pNewNeutron = DuplicateParticle(primary);
+				pNewNeutron->t = MCP_NEUTRON;
+				pNewNeutron->q = 0;
 				int eoutID = 0, keIN = 0;
 				double neutron_ke = pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
 				primary->ke -= neutron_ke;
-				//pNewNeutron->ke = neutron_ke;
+				pNewNeutron->ke = neutron_ke;
 			}
 		}
 	}

@@ -58,7 +58,7 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 	double psum = 0;
 	for (int i = 0; i < m->elements_.size(); i++)
 	{
-		sigmaratio.push_back(m->elements_[i].partsByNumber * (m->Nmicrosigmaforelement(ROUND(m->elements_[i].atomicMass), ROUND(m->elements_[i].atomicNumber), p->ke)) / microsigma_total);
+		sigmaratio.push_back(m->elements_[i].partsByNumber * (m->Nmicrosigmaforelement(ROUND(m->elements_[i].atomicMass), ROUND(m->elements_[i].atomicNumber), p->ke, 0)) / microsigma_total);
 
 		psum += sigmaratio[i];
 	}
@@ -98,11 +98,11 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 			break;
 		}
 	}
+	//Теперь реакция осуществляется на endfID-ом ядре
 
 	double El = 0, Inel = 0;
-	El = m->ENDFdata->at(endfID)->ElasticCrossSections.get_sigma(p->ke * 1000000);
-	if (!m->ENDFdata->at(endfID)->InelasticCrossSections.isEmpty)
-		Inel = m->ENDFdata->at(endfID)->InelasticCrossSections.get_sigma(p->ke * 1000000);
+	El = m->Nmicrosigmaforelement(A, Z, p->ke, 1);
+	Inel = m->Nmicrosigmaforelement(A, Z, p->ke, 2);
 	double Tot = El + Inel;
 	El /= Tot;
 	if (rng.rnd() < El)

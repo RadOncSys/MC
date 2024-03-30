@@ -32,11 +32,17 @@ public:
 
 	vector<double> sigma0_neutro;
 	vector<double> sigma1_neutro;
+	vector<double> inel0_neutro;
+	vector<double> inel1_neutro;
+	vector<double> elas0_neutro;
+	vector<double> elas1_neutro;
+	vector<vector<double>> inel_lvl_neutro0;
+	vector<vector<double>> inel_lvl_neutro1;
 	vector<double> dedx0_neutro;
 	vector<double> dedx1_neutro;
 
 	double transCutoff_neutron;
 
 	std::shared_ptr<std::vector<std::shared_ptr<mcEndfN>>> ENDFdata;
-	double Nmicrosigmaforelement(int A, int Z, double kE) const;
+	double Nmicrosigmaforelement(int A, int Z, double kE, int MTid) const;
 };

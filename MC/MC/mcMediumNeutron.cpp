@@ -17,6 +17,12 @@ string CLEARFROMALPHA_(string x)
 
 double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF);
 
+double sigmaENDFN_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF);
+
+double sigmaENDFN_elas(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF);
+
+double sigmaENDFN_level_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF, int MT_);
+
 double InverseRadiationLength_DahlApproximationNeutron(const double A, const double Z)
 {
 	return Z * (Z + 1) * log(287 / sqrt(Z)) / (716.4 * A);
@@ -30,7 +36,7 @@ double InverseRadiationLengthNeutron(const double* A, const double* Z, const dou
 	return s;
 }
 
-double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE) const
+double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE, int MTid) const
 {
 	double SIGMA = 0.0;
 	kE *= 1000000;
@@ -53,12 +59,33 @@ double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE) const
 	if (!isFound)
 		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
 	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
-	if (ENDFdata->at(i)->TotalCrossSections.isEmpty)
-		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
-	if (kE <= ENDFdata->at(i)->TotalCrossSections.Energies[0])
-		return SIGMA;
-	SIGMA = ENDFdata->at(i)->TotalCrossSections.get_sigma(kE);
-	return SIGMA / pow(10, 24);
+	if (MTid == 0)
+	{
+		if (ENDFdata->at(i)->TotalCrossSections.isEmpty)
+			return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+		if (kE <= ENDFdata->at(i)->TotalCrossSections.Energies[0])
+			return SIGMA;
+		SIGMA = ENDFdata->at(i)->TotalCrossSections.get_sigma(kE);
+		return SIGMA / pow(10, 24);
+	}
+	else if (MTid == 1)
+	{
+		if (ENDFdata->at(i)->ElasticCrossSections.isEmpty)
+			return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+		if (kE <= ENDFdata->at(i)->ElasticCrossSections.Energies[0])
+			return SIGMA;
+		SIGMA = ENDFdata->at(i)->ElasticCrossSections.get_sigma(kE);
+		return SIGMA / pow(10, 24);
+	}
+	else
+	{
+		if (ENDFdata->at(i)->InelasticCrossSections.isEmpty)
+			return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+		if (kE <= ENDFdata->at(i)->InelasticCrossSections.Energies[0])
+			return SIGMA;
+		SIGMA = ENDFdata->at(i)->InelasticCrossSections.get_sigma(kE);
+		return SIGMA / pow(10, 24);
+	}
 }
 
 double rmsNuclearRadiusNeutron(int At)
@@ -140,6 +167,56 @@ void mcMediumNeutron::createNDB()
 	}
 	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
 	coeff_calcNeutron(sigma_endf, sigma1_neutro, sigma0_neutro);
+
+
+	sigma_endf.clear();
+	sigma_.clear();
+	for (int i = 0; i < kEmax(); i++) {
+		S = 0.0; // длина свободного пробега
+		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+			S += sigmaENDFN_inel (ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get()) / pow(10, 24) * el->partsByNumber;
+		}
+		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
+		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+		sigma_.push_back(S); // mfp=1/(sigma_in)
+	}
+	coeff_calcNeutron(sigma_endf, inel1_neutro, inel0_neutro);
+
+
+	sigma_endf.clear();
+	sigma_.clear();
+	for (int i = 0; i < kEmax(); i++) {
+		S = 0.0; // длина свободного пробега
+		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+			S += sigmaENDFN_elas(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get()) / pow(10, 24) * el->partsByNumber;
+		}
+		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
+		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+		sigma_.push_back(S); // mfp=1/(sigma_in)
+	}
+	coeff_calcNeutron(sigma_endf, elas1_neutro, elas0_neutro);
+
+	inel_lvl_neutro0.resize(41);
+	inel_lvl_neutro1.resize(41);
+
+	for (int MT_ = 51; MT_ < 91; MT_++)
+	{
+		sigma_endf.clear();
+		sigma_.clear();
+
+		
+
+		for (int i = 0; i < kEmax(); i++) {
+			S = 0.0; // длина свободного пробега
+			for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+				S += sigmaENDFN_level_inel(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get(), MT_) / pow(10, 24) * el->partsByNumber;
+			}
+			//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
+			sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+			sigma_.push_back(S); // mfp=1/(sigma_in)
+		}
+		coeff_calcNeutron(sigma_endf, inel_lvl_neutro0[MT_ - 51], inel_lvl_neutro1[MT_ - 51]);
+	}
 }
 
 double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
@@ -182,6 +259,146 @@ double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
 					(kE - ENDF->at(i)->TotalCrossSections.Energies[j - 1]) *
 					(ENDF->at(i)->TotalCrossSections.Values[j] - ENDF->at(i)->TotalCrossSections.Values[j - 1]) /
 					(ENDF->at(i)->TotalCrossSections.Energies[j] - ENDF->at(i)->TotalCrossSections.Energies[j - 1]);
+				break;
+			}
+	}
+	return SIGMA;
+}
+
+double sigmaENDFN_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDF->size(); i++)
+	{
+		if (CLEARFROMALPHA_(ENDF->at(i)->ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDF->at(i)->InelasticCrossSections.isEmpty)
+		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+	if (kE <= ENDF->at(i)->InelasticCrossSections.Energies[0])
+		return SIGMA;
+	if (kE > ENDF->at(i)->InelasticCrossSections.Energies[ENDF->at(i)->InelasticCrossSections.Energies.size() - 1])
+		return SIGMA;
+	else
+	{
+		for (int j = 0; j < ENDF->at(i)->InelasticCrossSections.Energies.size(); j++)
+			if (kE < ENDF->at(i)->InelasticCrossSections.Energies[j])
+			{
+				if (j == 0)
+					break;
+				SIGMA = ENDF->at(i)->InelasticCrossSections.Values[j - 1] +
+					(kE - ENDF->at(i)->InelasticCrossSections.Energies[j - 1]) *
+					(ENDF->at(i)->InelasticCrossSections.Values[j] - ENDF->at(i)->InelasticCrossSections.Values[j - 1]) /
+					(ENDF->at(i)->InelasticCrossSections.Energies[j] - ENDF->at(i)->InelasticCrossSections.Energies[j - 1]);
+				break;
+			}
+	}
+	return SIGMA;
+}
+
+double sigmaENDFN_elas(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDF->size(); i++)
+	{
+		if (CLEARFROMALPHA_(ENDF->at(i)->ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDF->at(i)->ElasticCrossSections.isEmpty)
+		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+	if (kE <= ENDF->at(i)->ElasticCrossSections.Energies[0])
+		return SIGMA;
+	if (kE > ENDF->at(i)->ElasticCrossSections.Energies[ENDF->at(i)->ElasticCrossSections.Energies.size() - 1])
+		return SIGMA;
+	else
+	{
+		for (int j = 0; j < ENDF->at(i)->ElasticCrossSections.Energies.size(); j++)
+			if (kE < ENDF->at(i)->ElasticCrossSections.Energies[j])
+			{
+				if (j == 0)
+					break;
+				SIGMA = ENDF->at(i)->ElasticCrossSections.Values[j - 1] +
+					(kE - ENDF->at(i)->ElasticCrossSections.Energies[j - 1]) *
+					(ENDF->at(i)->ElasticCrossSections.Values[j] - ENDF->at(i)->ElasticCrossSections.Values[j - 1]) /
+					(ENDF->at(i)->ElasticCrossSections.Energies[j] - ENDF->at(i)->ElasticCrossSections.Energies[j - 1]);
+				break;
+			}
+	}
+	return SIGMA;
+}
+
+double sigmaENDFN_level_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF, int MT_)
+{
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDF->size(); i++)
+	{
+		if (CLEARFROMALPHA_(ENDF->at(i)->ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (MT_ - 50 > ENDF->at(i)->nInelasticCS.size())
+		return SIGMA;
+	if (ENDF->at(i)->nInelasticCS[MT_- 51]->isEmpty)
+		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+	if (kE <= ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies[0])
+		return SIGMA;
+	if (kE > ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies[ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies.size() - 1])
+		return SIGMA;
+	else
+	{
+		for (int j = 0; j < ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies.size(); j++)
+			if (kE < ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies[j])
+			{
+				if (j == 0)
+					break;
+				SIGMA = ENDF->at(i)->nInelasticCS[MT_ - 51]->Values[j - 1] +
+					(kE - ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies[j - 1]) *
+					(ENDF->at(i)->nInelasticCS[MT_ - 51]->Values[j] - ENDF->at(i)->nInelasticCS[MT_ - 51]->Values[j - 1]) /
+					(ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies[j] - ENDF->at(i)->nInelasticCS[MT_ - 51]->Energies[j - 1]);
 				break;
 			}
 	}
