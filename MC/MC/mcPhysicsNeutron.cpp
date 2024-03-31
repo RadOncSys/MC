@@ -101,13 +101,32 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 	//Теперь реакция осуществляется на endfID-ом ядре
 
 	double El = 0, Inel = 0;
+	std::vector<double> InelLVL;
 	El = m->Nmicrosigmaforelement(A, Z, p->ke, 1);
 	Inel = m->Nmicrosigmaforelement(A, Z, p->ke, 2);
 	double Tot = El + Inel;
 	El /= Tot;
 	if (rng.rnd() < El)
 		DoElastic(rng, endfID, p, m);
-	else DoInelastic();
+	else
+	{
+		for (int i = 0; i < m->ENDFdata->at(endfID)->nInelasticCS.size(); i++)
+			InelLVL.push_back(m->Nmicrosigmaforelement(A, Z, p->ke, m->ENDFdata->at(endfID)->nInelasticCS[i]->MT));
+
+		for (int i = 1; i < InelLVL.size(); i++)
+		{
+			InelLVL[i] += InelLVL[i - 1];
+		}
+		for (int i = 0; i < InelLVL.size(); i++)
+		{
+			InelLVL[i] /= InelLVL[InelLVL.size() - 1];
+		}
+		int LVLid = 0;
+		double ksi1 = rng.rnd();
+		for (LVLid = 0; LVLid < InelLVL.size(); LVLid++)
+			if (InelLVL[LVLid] > ksi1)
+				break;
+	}
 	double edep = p->ke / 2;
 	p->ke = 0.0;
 	return edep * p->weight;
@@ -115,6 +134,24 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 
 void mcPhysicsNeutron::DoElastic(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed)
 {
+	int i = 0;
+	bool isLegendre = false;
+	for (i = 0; i < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size(); i++)
+	{
+		if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies[i])
+			break;
+	}
+	if (i < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size())
+		isLegendre = true;
+	else for (i = 0; i < pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies.size(); i++)
+	{
+		if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies[i])
+			break;
+	}
+	if (isLegendre)
+	{
+		double cosCM = pmed->ENDFdata->at(endfID)->nElasticAngular.LegendreScat(i, rng);
+	}
 }
 
 void mcPhysicsNeutron::DoInelastic()

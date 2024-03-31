@@ -62,7 +62,7 @@ double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE, int MTid)
 	if (MTid == 0)
 	{
 		if (ENDFdata->at(i)->TotalCrossSections.isEmpty)
-			return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+			return SIGMA;	//���� ��� ������ �� MF=3 MT=1 ������������ 0
 		if (kE <= ENDFdata->at(i)->TotalCrossSections.Energies[0])
 			return SIGMA;
 		SIGMA = ENDFdata->at(i)->TotalCrossSections.get_sigma(kE);
@@ -71,19 +71,39 @@ double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE, int MTid)
 	else if (MTid == 1)
 	{
 		if (ENDFdata->at(i)->ElasticCrossSections.isEmpty)
-			return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+			return SIGMA;	//���� ��� ������ �� MF=3 MT=2 ������������ 0
 		if (kE <= ENDFdata->at(i)->ElasticCrossSections.Energies[0])
 			return SIGMA;
 		SIGMA = ENDFdata->at(i)->ElasticCrossSections.get_sigma(kE);
 		return SIGMA / pow(10, 24);
 	}
-	else
+	else if (MTid == 2)
 	{
 		if (ENDFdata->at(i)->InelasticCrossSections.isEmpty)
-			return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+			return SIGMA;	//���� ��� ������ �� MF=3 MT=4 ������������ 0
 		if (kE <= ENDFdata->at(i)->InelasticCrossSections.Energies[0])
 			return SIGMA;
 		SIGMA = ENDFdata->at(i)->InelasticCrossSections.get_sigma(kE);
+		return SIGMA / pow(10, 24);
+	}
+	else
+	{
+		if (MTid != 91)
+		{
+			if (ENDFdata->at(i)->nInelasticCS[MTid - 51]->isEmpty)
+				return SIGMA;	//���� ��� ������ �� MF=3 MT=51-91 ������������ 0
+			if (kE <= ENDFdata->at(i)->nInelasticCS[MTid - 51]->Energies[0])
+				return SIGMA;
+			SIGMA = ENDFdata->at(i)->nInelasticCS[MTid - 51]->get_sigma(kE);
+		}
+		else
+		{
+			if (ENDFdata->at(i)->nInelasticCS[ENDFdata->at(i)->nInelasticCS.size() - 1]->isEmpty)
+				return SIGMA;	//���� ��� ������ �� MF=3 MT=51-91 ������������ 0
+			if (kE <= ENDFdata->at(i)->nInelasticCS[ENDFdata->at(i)->nInelasticCS.size() - 1]->Energies[0])
+				return SIGMA;
+			SIGMA = ENDFdata->at(i)->nInelasticCS[ENDFdata->at(i)->nInelasticCS.size() - 1]->get_sigma(kE);
+		}
 		return SIGMA / pow(10, 24);
 	}
 }

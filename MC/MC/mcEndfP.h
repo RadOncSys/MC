@@ -267,6 +267,8 @@ public:
 		MT = -1;
 	}
 
+	double LegendreScat(int keID, mcRng& rng);
+
 	void Load(std::istream& is);
 
 	short MT;

@@ -717,11 +717,34 @@ double mcEndfEANuclearCrossSectionTable::playmu(double kE, int LAW, int keIN, in
 	}
 }
 
-double Pn(double x, int n)
+double mcEndfAngular::LegendreScat(int keID, mcRng& rng)
 {
-	if (n == 0) return 1;
-	if (n == 1) return x;
-	return ((2 * n - 1) * Pn(x, n - 1) - (n - 1) * Pn(x, n - 2)) / n;
+	vector<long double> L;
+	long double temp = 0;
+	double mu = -1.0;
+	double ksi = rng.rnd();
+	for (mu; mu <= 1; mu += 0.04)
+	{
+		for (int j = 0; j < LValues[keID].size(); j++)
+			temp += (legendre(j + 1, mu) * LValues[keID][j] * (2.0 * j + 1.0) / 2.0);
+		L.push_back(temp);
+		temp = 0;
+	}
+	for (int i = 0; i < L.size(); i++)
+	{
+		if (i == 0)
+			L[i] += 0.5;
+		else
+			L[i] += 0.5 + L[i - 1];
+	}
+	for (int i = 0; i < L.size(); i++)
+		L[i] /= L[L.size() - 1];
+	int muID = 0;
+	for (muID; muID < L.size(); muID++)
+		if (ksi < L[muID])
+			break;
+	double output = -1 + 0.04 * muID;
+	return output;
 }
 
 double Legandre(int NL, double* a, double mu)
