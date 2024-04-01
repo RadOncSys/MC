@@ -106,8 +106,13 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 	Inel = m->Nmicrosigmaforelement(A, Z, p->ke, 2);
 	double Tot = El + Inel;
 	El /= Tot;
+	double edep = 0;
 	if (rng.rnd() < El)
-		DoElastic(rng, endfID, p, m);
+	{
+		double ke_before = p->ke;
+		DoElastic(rng, endfID, p, m, A);
+		edep = ke_before - p->ke;
+	}
 	else
 	{
 		for (int i = 0; i < m->ENDFdata->at(endfID)->nInelasticCS.size(); i++)
@@ -126,34 +131,165 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 		for (LVLid = 0; LVLid < InelLVL.size(); LVLid++)
 			if (InelLVL[LVLid] > ksi1)
 				break;
+		if (LVLid < m->ENDFdata->at(endfID)->nInelasticCS.size() - 1)
+		{
+			double ke_before = p->ke;
+			DoInelastic(rng, endfID, LVLid, p, m, A);
+		}
+		else
+		{
+			double ke_before = p->ke;
+			DoInelasticCont(rng, endfID, LVLid, p, m);
+			edep = ke_before - p->ke;
+		}
 	}
-	double edep = p->ke / 2;
-	p->ke = 0.0;
 	return edep * p->weight;
 }
 
-void mcPhysicsNeutron::DoElastic(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed)
+void mcPhysicsNeutron::DoElastic(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed, int A)
 {
 	int i = 0;
 	bool isLegendre = false;
-	for (i = 0; i < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size(); i++)
+	double cosCM = 0;
+	if (pmed->ENDFdata->at(endfID)->nElasticAngular.LI == 1)
 	{
-		if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies[i])
-			break;
+		cosCM = rng.rnd();
+		if (rng.rnd() > 0.5)
+			cosCM *= -1;
 	}
-	if (i < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size())
-		isLegendre = true;
-	else for (i = 0; i < pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies.size(); i++)
+	else
 	{
-		if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies[i])
-			break;
+		for (i = 0; i < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size(); i++)
+		{
+			if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies[i])
+				break;
+		}
+		if (i < pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size() || i < pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies.size() == 0)
+			isLegendre = true;
+		else for (i = 0; i < pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies.size(); i++)
+		{
+			if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies[i])
+				break;
+		}
+		if (isLegendre)
+		{
+			if (i == pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size())
+				i--;
+			if (pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies[i] - p->ke > p->ke - pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies[i - 1] && i != 0)
+				i--;
+			cosCM = pmed->ENDFdata->at(endfID)->nElasticAngular.LegendreScat(i, rng);
+		}
+		else
+		{
+			if (i == pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies.size())
+				i--;
+			if (pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies[i] - p->ke > p->ke - pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies[i - 1] && i != 0)
+				i--;
+			cosCM = pmed->ENDFdata->at(endfID)->nElasticAngular.TableScat(i, rng);
+		}
 	}
-	if (isLegendre)
-	{
-		double cosCM = pmed->ENDFdata->at(endfID)->nElasticAngular.LegendreScat(i, rng);
-	}
+	double ke_ = p->ke * (A * A + 2 * A * cosCM + 1) / (1 + 2 * A + A * A);
+	double cosLS = (A + 1) / 2 * sqrt(ke_ / p->ke) - (A - 1) / 2 * sqrt(p->ke / ke_);
+	double sinphi = sin(2 * PI * rng.rnd());
+	double cosphi = cos(2 * PI * rng.rnd());
+	ChangeDirection(cosLS, sin(acos(cosLS)), cosphi, sinphi, p->u);
+	p->ke = ke_;
 }
 
-void mcPhysicsNeutron::DoInelastic()
+void mcPhysicsNeutron::DoInelastic(mcRng& rng, int endfID, int LVLid, mcParticle* p, const mcMediumNeutron* pmed, int A)
 {
+	int i = 0;
+	bool isLegendre = false;
+	double cosCM = 0;
+	if (pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->LI == 1)
+	{
+		cosCM = rng.rnd();
+		if (rng.rnd() > 0.5)
+			cosCM *= -1;
+	}
+	else
+	{
+		for (i = 0; i < pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->LEnergies.size(); i++)
+		{
+			if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->LEnergies[i])
+				break;
+		}
+		if (i < pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->LEnergies.size() || i < pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies.size() == 0)
+			isLegendre = true;
+		else for (i = 0; i < pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->TEnergies.size(); i++)
+		{
+			if (p->ke * 1000000 < pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->TEnergies[i])
+				break;
+		}
+		if (isLegendre)
+		{
+			if (i == pmed->ENDFdata->at(endfID)->nElasticAngular.LEnergies.size())
+				i--;
+			if (pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->LEnergies[i] - p->ke > p->ke - pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->LEnergies[i - 1] && i != 0)
+				i--;
+			cosCM = pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->LegendreScat(i, rng);
+		}
+		else
+		{
+			if (i == pmed->ENDFdata->at(endfID)->nElasticAngular.TEnergies.size())
+				i--;
+			if (pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->TEnergies[i] - p->ke > p->ke - pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->TEnergies[i - 1] && i != 0)
+				i--;
+			cosCM = pmed->ENDFdata->at(endfID)->inelasticLevelsAng[LVLid]->TableScat(i, rng);
+		}
+	}
+	double Q = pmed->ENDFdata->at(endfID)->nInelasticCS[LVLid]->Q;
+	double alpha = (A * A - 2 * A + 1) / (A * A + 2 * A + 1);
+	double ke_ = p->ke / 2 * (1 + alpha - 2 * A / (1 + A) * Q / p->ke + (1 - alpha) * cosCM * sqrt(1 - (A + 1) / A * Q / p->ke));
+	double cosLS = (1 + A * cosCM) / sqrt(1 + 2 * A * cosCM + A * A);
+	double sinphi = sin(2 * PI * rng.rnd());
+	double cosphi = cos(2 * PI * rng.rnd());
+	ChangeDirection(cosLS, sin(acos(cosLS)), cosphi, sinphi, p->u);
+	p->ke = ke_;
+}
+
+void mcPhysicsNeutron::DoInelasticCont(mcRng& rng, int endfID, int LVLid, mcParticle* p, const mcMediumNeutron* pmed)
+{
+	int Nquantity = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playMulti(p->ke * 1000000, rng);
+	if (Nquantity > 1)
+		throw exception("Multi neutron during inelastic scattering!?");
+	int Gquantity = pmed->ENDFdata->at(endfID)->nInelasticContin[2]->EANuclearCrossSections[0]->playMulti(p->ke * 1000000, rng);
+	if (pmed->ENDFdata->at(endfID)->nInelasticContin[0]->LAW != 1)
+		throw exception("This LAW doesn't exist in ENDF play-block.");
+	for (int i = 0; i < Gquantity; i++)
+	{
+		mcParticle* pNewPhoton = DuplicateParticle(p);
+		pNewPhoton->t = MCP_PHOTON;
+		pNewPhoton->q = 0;
+		int eoutID = 0, keIN = 0;
+		pNewPhoton->ke = pmed->ENDFdata->at(endfID)->nInelasticContin[2]->EANuclearCrossSections[0]->playE(p->ke, keIN, eoutID, rng);
+		GoInRandomDirection(rng.rnd(), rng.rnd(), pNewPhoton->u);
+		p->ke -= pNewPhoton->ke;
+	}
+	mcParticle* pNewNeutron = DuplicateParticle(p);
+	pNewNeutron->t = MCP_NEUTRON;
+	pNewNeutron->q = 0;
+	int eoutID = 0, keIN = 0;
+	double neutron_ke = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playE(p->ke, keIN, eoutID, rng);
+	getKallbachMannAngle(rng, endfID, pNewNeutron, pmed, keIN, eoutID);
+	p->ke -= neutron_ke;
+	pNewNeutron->ke = neutron_ke;
+}
+
+void mcPhysicsNeutron::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed, int keIN, int eoutID)
+{
+	double ke_ = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->Energies[keIN]; //В первом приближении энергия без интерполяции
+	double costheta = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playmu(ke_, pmed->ENDFdata->at(endfID)->nInelasticContin[0]->LAW, keIN, eoutID, 0, rng);
+	double phi = 2 * PI * rng.rnd();
+	double cosphi = cos(phi);
+	double sinphi = sin(phi);
+	double AWRa = 1, AWRA = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->AWR_nucl;
+	double AWRb = 0;
+	double Eb = p->ke;
+	ke_ /= 1000000;
+	p->ke = Eb + AWRa * AWRb * ke_ / (AWRA + AWRa) / (AWRA + AWRa) + 2 * sqrt(AWRa * AWRb * ke_ * Eb) * costheta / (AWRA + AWRa);
+	costheta = sqrt(Eb / p->ke) * costheta + sqrt(AWRa * AWRb * ke_ / p->ke) / (AWRA + AWRa);
+	double sintheta = sin(acos(costheta));
+	ChangeDirection(costheta, sintheta, cosphi, sinphi, p->u);
+	return;
 }

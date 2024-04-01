@@ -245,7 +245,6 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		// ГЃГ Г§Г  Г¤Г Г­Г­Г»Гµ ГЁГ§Г®ГІГ®ГЇГ 
 		//mcCSNuclear csForElement;
 		auto csForElement = std::make_shared<mcEndfP>();
-		csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 		if (Table.isNecessary[Z])
 		{
 			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());

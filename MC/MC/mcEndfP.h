@@ -54,6 +54,9 @@ public:
 	//Статус, показывающий не пуста ли таблица
 	bool isEmpty;
 
+	//Энергия возбуждения уровня
+	double Q;
+
 	// Количество пар энергия падающей частицы / сечение
 	std::vector<int> npoints;
 
@@ -268,6 +271,8 @@ public:
 	}
 
 	double LegendreScat(int keID, mcRng& rng);
+
+	double TableScat(int keID, mcRng& rng);
 
 	void Load(std::istream& is);
 

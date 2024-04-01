@@ -45,6 +45,9 @@ void mcEndfCrossSectionTable::Load(istream& is)
 		// Сечения 
 		if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '2')
 		{
+			Q = mcEndfRecord::ParseValue(record.c[1], 11);
+			Q *= -1;
+			Q /= 1000000;
 			ninterpolations = atoi(record.c[4]);
 			if (ninterpolations > 2)
 				throw exception((string("Unexpected multiple interpolation types, Z = ") + record.Z[0] + record.Z[1] + "\n" + string("line:") + "\n" + line).c_str());
@@ -732,10 +735,17 @@ double mcEndfAngular::LegendreScat(int keID, mcRng& rng)
 	}
 	for (int i = 0; i < L.size(); i++)
 	{
-		if (i == 0)
 			L[i] += 0.5;
-		else
-			L[i] += 0.5 + L[i - 1];
+	}
+	for (int i = 0; i < L.size(); i++)
+	{
+		if (i == 0)
+			L[i] *= 0.04 / 2.0;
+		else L[i] = (L[i - 1] + L[i]) / 2 * 0.04;
+	}
+	for (int i = 1; i < L.size(); i++)
+	{
+		L[i] += L[i - 1];
 	}
 	for (int i = 0; i < L.size(); i++)
 		L[i] /= L[L.size() - 1];
@@ -744,6 +754,33 @@ double mcEndfAngular::LegendreScat(int keID, mcRng& rng)
 		if (ksi < L[muID])
 			break;
 	double output = -1 + 0.04 * muID;
+	return output;
+}
+
+double mcEndfAngular::TableScat(int keID, mcRng& rng)
+{
+	vector<double> T;
+	int cosID = 0;
+	double ksi = rng.rnd();
+	for (cosID; cosID < Cosines[keID].size(); cosID++)
+	{
+		T.push_back(TValues[keID][cosID]);
+	}
+	for (int i = 1; i < T.size(); i++)
+	{
+		T[i] = (T[i - 1] + T[i]) / 2 * (Cosines[keID][i] - Cosines[keID][i - 1]);
+	}
+	for (int i = 1; i < T.size(); i++)
+	{
+		T[i] += T[i - 1];
+	}
+	for (int i = 0; i < T.size(); i++)
+		T[i] /= T[T.size() - 1];
+	int muID = 0;
+	for (muID; muID < T.size(); muID++)
+		if (ksi < T[muID])
+			break;
+	double output = Cosines[keID][muID];
 	return output;
 }
 
@@ -1200,7 +1237,7 @@ int mcEndfEANuclearCrossSectionTable::playMulti(double kE, mcRng& rng) const
 	int quantity = int(multiplicity);
 	double additional = multiplicity - quantity;
 	double random = rng.rnd();
-	if (random > additional)
+	if (random > (1 -additional) && additional != 0)
 		quantity++;
 
 	return quantity;
@@ -1722,7 +1759,11 @@ void mcEndfAngular::Load(std::istream& is)
 			}
 		}
 		else if (LTT == 0)
+		{
+			LI = mcEndfRecord::iStrCrop(record.c[2], 11);
+			LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
 			break;
+		}
 		else throw exception((string("Current LCT is undefined. LTT = ") + std::to_string(LTT)).c_str());
 	}
 }
@@ -2256,7 +2297,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 
 				// Угловые распределения (n,n') MT = 53 
 		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
+			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
 			{
 				auto inelasticLevels = new mcEndfAngular();
 				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);

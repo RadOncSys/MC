@@ -247,6 +247,7 @@ void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, 
 				int eoutID = 0, keIN = 0;
 				double neutron_ke = pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->playE(primary->ke, keIN, eoutID, rng);
 				primary->ke -= neutron_ke;
+				getKallbachMannAngle(rng, endfID, pNewNeutron, pmed, keIN, eoutID);
 				pNewNeutron->ke = neutron_ke;
 			}
 		}
