@@ -5,6 +5,9 @@
 #pragma once
 #include "mcPhysicsCharged.h"
 
+class mcMediumNeutron;
+class mcRng;
+
 class mcPhysicsNeutron : public mcPhysics
 {
 public:
@@ -16,6 +19,11 @@ public:
 	double MeanFreePath(double ke, const mcMedium& med, double dens) const override;
 
 	double DoInterruction(mcParticle* p, const mcMedium* med) const override;
+
+	static void DoElastic(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed, int A);
+	static void DoInelastic(mcRng& rng, int endfID, int LVLid, mcParticle* p, const mcMediumNeutron* pmed, int A);
+	static void DoInelasticCont(mcRng& rng, int endfID, int LVLid, mcParticle* p, const mcMediumNeutron* pmed);
+	static void getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed, int keIN, int eoutID);
 
 	// Изменяет энергию частицы в соответствии с de/dx и расчитывает передачу энергии на отрезке step.
 	double TakeOneStep(mcParticle* p, const mcMedium& med, double& step) const override;

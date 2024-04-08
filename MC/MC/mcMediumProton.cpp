@@ -38,7 +38,14 @@ double InverseRadiationLength(const double* A, const double* Z, const double* w,
 	return s;
 }
 
-string CLEARFROMALPHA(string x);
+
+string CLEARFROMALPHA(string x)
+{
+	for (int i = 0; i < x.length(); i++)
+		if (x[i] > '9')
+			x.erase(i, 1);
+	return x;
+}
 
 //Необходимо задать конкретную формулу соответствующим с макросом, например:
 #ifndef InverseRadiationLength
@@ -302,7 +309,7 @@ void mcMediumProton::read(istream& is)
 	const double distanceUnit = 1.0;
 	status_ = FAILED;
 
-	string line, s1, s2;
+	std::string line, s1, s2;
 	vector<double> a;
 	vector<int> ia;
 
@@ -311,7 +318,7 @@ void mcMediumProton::read(istream& is)
 	if (is.fail()) return;
 
 	// Тип среды, плотность
-	string eletype;
+	std::string eletype;
 	GetTwoStringsFromLine(line, eletype, s2);
 	line = s2;
 	this->density_ = atof(ParseLine(line, "RHO").c_str());
@@ -347,7 +354,7 @@ void mcMediumProton::read(istream& is)
 	// По идее надо иметь возможность опускать 1 и вторую строки
 	getline(is, line, '\n');
 	if (is.fail()) return;
-	vector<string> ss; int nl;
+	std::vector<std::string> ss; int nl;
 	nl = GetStringArray(line, ss, "\t"); // разбираем заголовок на столбцы
 	int ikE = -1, idEdx = -1;
 	for (int i = 0; i < nl; i++) { // Ищем столбец с энергией и столбец с dEdx
@@ -403,12 +410,4 @@ void mcMediumProton::createDB()
 	}
 	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
 	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
-}
-
-string CLEARFROMALPHA (string x)
-{
-	for (int i = 0; i < x.length(); i++)
-		if (x[i] > '9')
-			x.erase(i, 1);
-	return x;
 }

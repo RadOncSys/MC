@@ -15,6 +15,7 @@ class mcMediumProton;
 class mcMediumNeutron;
 class mcPhysics;
 class mcEndfP;
+class mcEndfN;
 
 class mcMedia
 {
@@ -41,12 +42,13 @@ public:
 	// fname - файл, содержащий заголовки сред, соглсованные с PEGS4
 	// pstardir - файлы с тормозными способностями отдельных атомов по базе данных PSTAR
 	// icrudir63 - файлы сечений ядерных реакций из протокола ICRU63
-	void initProtonFromFiles(const string& fname, const string& icru63dir);
+	void initProtonFromFiles(const string& fname, const string& nucleardir);
 	void initProtonDeDxFromStream(istream&);
 	void initProtonCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfP>>> dbData);
 
 	void initNeutronFromStream(istream&);
-	void initNeutronFromFile(const string& nuclearDir);
+	void initNeutronFromFiles(const string& fname, const string& nuclearDir);
+	void initNeutronCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfN>>> dbData);
 
 	// Возвращает указатель объекта физических расчетов для частицы указанного типа
 	const mcPhysics* getPhysics(int ptype) const;

@@ -1,367 +1,97 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Common">
-      <UniqueIdentifier>{e9a78d38-f017-494a-9d4b-f6e1614681ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Geometry">
-      <UniqueIdentifier>{38505b60-f130-41fe-aa99-aa804990d67e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Transport">
-      <UniqueIdentifier>{87722d64-8b3c-4f34-a966-8a0273ebe26c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Score">
-      <UniqueIdentifier>{dc717d50-143d-4c83-b567-a840af0cdf33}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source">
-      <UniqueIdentifier>{93b81870-1658-4d13-8d7c-8e8824c0cc9b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Math">
-      <UniqueIdentifier>{43d9735d-8245-4c79-9b82-661491871009}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics">
-      <UniqueIdentifier>{9a42c657-85cf-40ba-a0dd-71d97b31098c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Media">
-      <UniqueIdentifier>{1cc6ff2b-8246-4bb5-83b7-6c5da6c7ec4f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PhantomTransport">
-      <UniqueIdentifier>{d5f45633-9bfa-4435-abf4-7a6ffb8c0da6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ToRemove">
-      <UniqueIdentifier>{8545635e-9deb-4ac0-919f-98518422906e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Util">
-      <UniqueIdentifier>{f446f936-044b-4a9b-8c47-e848899835c9}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="mcTransportWedge.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransport.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportAxialSymmetricSplitter.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportCone.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportConicalHole.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportConicalRing.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportCylinder.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportCylinderStack.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportPlaneFilter.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportPolygon.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportPrimaryCollimator.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportPrism.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportRectanglePolygonSideHole.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportRectangleRing.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportRectangleTrap.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportRing.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportSimpleSplitter.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportSlab.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportTrap.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcGeometry.h">
+    <ClCompile Include="mcObj.cpp" />
+    <ClCompile Include="mcParticle.cpp" />
+    <ClCompile Include="mcParticleStack.cpp" />
+    <ClCompile Include="mcRng.cpp" />
+    <ClCompile Include="mcThread.cpp" />
+    <ClCompile Include="mcVRMLDumper.cpp" />
+    <ClCompile Include="ProfileProcessor.cpp" />
+    <ClCompile Include="mcCSNuclear.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcEndfP.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcMedia.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcMedium.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcMediumNeutron.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcMediumProton.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcMediumXE.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcRegionReference.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcGeometry.cpp">
       <Filter>Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="mcGeomRectSide.h">
+    </ClCompile>
+    <ClCompile Include="mcGeomRectSide.cpp">
       <Filter>Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="mcGeomShape.h">
+    </ClCompile>
+    <ClCompile Include="mcGeomShape.cpp">
       <Filter>Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="mcGeomSide.h">
+    </ClCompile>
+    <ClCompile Include="mcGeomTriangleSide.cpp">
       <Filter>Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="mcGeomTriangleSide.h">
+    </ClCompile>
+    <ClCompile Include="mcGeomWedgeTriangle.cpp">
       <Filter>Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="mcGeomWedgeTriangle.h">
-      <Filter>Geometry</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScore.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreAcceleratedBeam.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreBeamFluence.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreBeamFluence2.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreBeamFluenceSubsource.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreBeamFluenceXY.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreConicalRZ.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreEnergyFluence.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreEnergySpectrum.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreMatrix2D.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreMatrixRZ.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreMatrixXY.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreParticleContainer.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScorePHSP.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreSphereFluence.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreTrack.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSource.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceAccelerator.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceCylindricalC60.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceDistributed.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceLEBA.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceSimpleMono.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceSimpleParallel.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceSphereC60.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceXraySigmaR.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysics.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysicsCharged.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysicsCommon.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysicsElectron.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysicsPhoton.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysicsPositron.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSamplers.h">
+    </ClCompile>
+    <ClCompile Include="mcHistogram.cpp">
       <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="mcHistogram.h">
+    </ClCompile>
+    <ClCompile Include="mcHistogramSampler.cpp">
       <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="mcHistogramSampler.h">
+    </ClCompile>
+    <ClCompile Include="mcSamplers.cpp">
       <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="mcDefs.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="mcObj.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="mcParticle.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="mcParticleStack.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="mcRng.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="mcThread.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="mcVRMLDumper.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="mcElement.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcETransportSphere.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcETransportTrap.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcMedia.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcMedium.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcMediumXE.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPTGrid3D.h">
+    </ClCompile>
+    <ClCompile Include="mcPTGrid3D.cpp">
       <Filter>PhantomTransport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPTLasVegas.h">
+    </ClCompile>
+    <ClCompile Include="mcPTLasVegas.cpp">
       <Filter>PhantomTransport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPTQc3.h">
+    </ClCompile>
+    <ClCompile Include="mcPTQc3.cpp">
       <Filter>PhantomTransport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcRegionReference.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="ProfileProcessor.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhaseSpaceIO.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceXrayBeam.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreMatrixCylinderAzimut.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreSpectraFluence.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcETransportConvexPolygonCircle.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScorePhaseSpaceConcentrator.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreSphereMatrix.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceAcceleratedBeam.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceModelRadialPhsp.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportEmbeddedGroup.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportJawPairRounded.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportLinearChain.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportMLC.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcClinicalElectronBeam.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreSpectraFluenceSphere.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportSphereTrap.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcTransportJawPairFocused.h">
-      <Filter>Transport</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceModelRadialDirect.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScorePhaseSpaceDirect.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysicsProton.h">
+    </ClCompile>
+    <ClCompile Include="mcPhysics.cpp">
       <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcMediumProton.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcMediumNeutron.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPhysicsNeutron.h">
+    </ClCompile>
+    <ClCompile Include="mcPhysicsCharged.cpp">
       <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSourceUniformCone.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcCSNuclear.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcEndfP.h">
-      <Filter>Media</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreTest.h">
+    </ClCompile>
+    <ClCompile Include="mcPhysicsCommon.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhysicsElectron.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhysicsNeutron.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhysicsPhoton.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhysicsPositron.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhysicsProton.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPhaseSpaceIO.cpp">
       <Filter>Score</Filter>
-    </ClInclude>
-    <ClInclude Include="mcSpline.h">
-      <Filter>Media</Filter>
-    <ClInclude Include="mcBrachySource.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="mcScoreBrachy.h">
-      <Filter>Score</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
+    </ClCompile>
     <ClCompile Include="mcScore.cpp">
       <Filter>Score</Filter>
     </ClCompile>
@@ -380,6 +110,9 @@
     <ClCompile Include="mcScoreBeamFluenceXY.cpp">
       <Filter>Score</Filter>
     </ClCompile>
+    <ClCompile Include="mcScoreBrachy.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
     <ClCompile Include="mcScoreConicalRZ.cpp">
       <Filter>Score</Filter>
     </ClCompile>
@@ -392,6 +125,9 @@
     <ClCompile Include="mcScoreMatrix2D.cpp">
       <Filter>Score</Filter>
     </ClCompile>
+    <ClCompile Include="mcScoreMatrixCylinderAzimut.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
     <ClCompile Include="mcScoreMatrixRZ.cpp">
       <Filter>Score</Filter>
     </ClCompile>
@@ -401,76 +137,37 @@
     <ClCompile Include="mcScoreParticleContainer.cpp">
       <Filter>Score</Filter>
     </ClCompile>
+    <ClCompile Include="mcScorePhaseSpaceConcentrator.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScorePhaseSpaceDirect.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
     <ClCompile Include="mcScorePHSP.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreSpectraFluence.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreSpectraFluenceSphere.cpp">
       <Filter>Score</Filter>
     </ClCompile>
     <ClCompile Include="mcScoreSphereFluence.cpp">
       <Filter>Score</Filter>
     </ClCompile>
+    <ClCompile Include="mcScoreSphereMatrix.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
+    <ClCompile Include="mcScoreTest.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
     <ClCompile Include="mcScoreTrack.cpp">
       <Filter>Score</Filter>
     </ClCompile>
-    <ClCompile Include="mcPhysics.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhysicsCharged.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhysicsCommon.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhysicsElectron.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhysicsPhoton.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhysicsPositron.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcGeomWedgeTriangle.cpp">
-      <Filter>Geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="mcGeometry.cpp">
-      <Filter>Geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="mcGeomRectSide.cpp">
-      <Filter>Geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="mcGeomShape.cpp">
-      <Filter>Geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="mcGeomTriangleSide.cpp">
-      <Filter>Geometry</Filter>
-    </ClCompile>
-    <ClCompile Include="mcETransportSphere.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcETransportTrap.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcMedia.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcMedium.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcMediumXE.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcObj.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="mcParticle.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="mcParticleStack.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="mcRng.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="mcSource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceAcceleratedBeam.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="mcSourceAccelerator.cpp">
@@ -485,6 +182,12 @@
     <ClCompile Include="mcSourceLEBA.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="mcSourceModelRadialDirect.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceModelRadialPhsp.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="mcSourceSimpleMono.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -494,11 +197,26 @@
     <ClCompile Include="mcSourceSphereC60.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="mcSourceUniformCone.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcSourceXrayBeam.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="mcSourceXraySigmaR.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="mcThread.cpp">
-      <Filter>Common</Filter>
+    <ClCompile Include="mcClinicalElectronBeam.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcETransportConvexPolygonCircle.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcETransportSphere.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcETransportTrap.cpp">
+      <Filter>Transport</Filter>
     </ClCompile>
     <ClCompile Include="mcTransport.cpp">
       <Filter>Transport</Filter>
@@ -519,6 +237,21 @@
       <Filter>Transport</Filter>
     </ClCompile>
     <ClCompile Include="mcTransportCylinderStack.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportEmbeddedGroup.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportJawPairFocused.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportJawPairRounded.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportLinearChain.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportMLC.cpp">
       <Filter>Transport</Filter>
     </ClCompile>
     <ClCompile Include="mcTransportPlaneFilter.cpp">
@@ -551,120 +284,345 @@
     <ClCompile Include="mcTransportSlab.cpp">
       <Filter>Transport</Filter>
     </ClCompile>
-    <ClCompile Include="mcTransportWedge.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcHistogram.cpp">
-      <Filter>Math</Filter>
-    </ClCompile>
-    <ClCompile Include="mcHistogramSampler.cpp">
-      <Filter>Math</Filter>
-    </ClCompile>
-    <ClCompile Include="mcSamplers.cpp">
-      <Filter>Math</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhaseSpaceIO.cpp">
-      <Filter>Score</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPTGrid3D.cpp">
-      <Filter>PhantomTransport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPTLasVegas.cpp">
-      <Filter>PhantomTransport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPTQc3.cpp">
-      <Filter>PhantomTransport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcRegionReference.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcVRMLDumper.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="ProfileProcessor.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="mcSourceXrayBeam.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="mcScoreMatrixCylinderAzimut.cpp">
-      <Filter>Score</Filter>
-    </ClCompile>
-    <ClCompile Include="mcScoreSpectraFluence.cpp">
-      <Filter>Score</Filter>
-    </ClCompile>
-    <ClCompile Include="mcETransportConvexPolygonCircle.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcScorePhaseSpaceConcentrator.cpp">
-      <Filter>Score</Filter>
-    </ClCompile>
-    <ClCompile Include="mcScoreSphereMatrix.cpp">
-      <Filter>Score</Filter>
-    </ClCompile>
-    <ClCompile Include="mcSourceAcceleratedBeam.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="mcSourceModelRadialPhsp.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="mcTransportEmbeddedGroup.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcTransportJawPairRounded.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcTransportLinearChain.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcTransportMLC.cpp">
-      <Filter>Transport</Filter>
-    </ClCompile>
-    <ClCompile Include="mcClinicalElectronBeam.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="mcScoreSpectraFluenceSphere.cpp">
-      <Filter>Score</Filter>
-    </ClCompile>
     <ClCompile Include="mcTransportSphereTrap.cpp">
       <Filter>Transport</Filter>
     </ClCompile>
-    <ClCompile Include="mcTransportJawPairFocused.cpp">
+    <ClCompile Include="mcTransportWedge.cpp">
       <Filter>Transport</Filter>
     </ClCompile>
-    <ClCompile Include="mcSourceModelRadialDirect.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="mcScorePhaseSpaceDirect.cpp">
-      <Filter>Score</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhysicsProton.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcMediumProton.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcMediumNeutron.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcPhysicsNeutron.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="mcSourceUniformCone.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="mcCSNuclear.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcEndfP.cpp">
-      <Filter>Media</Filter>
-    </ClCompile>
-    <ClCompile Include="mcScoreTest.cpp" />
     <ClCompile Include="mcBrachySource.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="mcScoreBrachy.cpp">
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mcDefs.h" />
+    <ClInclude Include="mcObj.h" />
+    <ClInclude Include="mcParticle.h" />
+    <ClInclude Include="mcParticleStack.h" />
+    <ClInclude Include="mcRng.h" />
+    <ClInclude Include="mcSpline.h" />
+    <ClInclude Include="mcThread.h" />
+    <ClInclude Include="mcVRMLDumper.h" />
+    <ClInclude Include="ProfileProcessor.h" />
+    <ClInclude Include="mcCSNuclear.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcElement.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcEndfP.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMedia.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMedium.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMediumNeutron.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMediumProton.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMediumXE.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcRegionReference.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcGeometry.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="mcGeomRectSide.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="mcGeomShape.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="mcGeomSide.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="mcGeomTriangleSide.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="mcGeomWedgeTriangle.h">
+      <Filter>Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="mcHistogram.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="mcHistogramSampler.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSamplers.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPTGrid3D.h">
+      <Filter>PhantomTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPTLasVegas.h">
+      <Filter>PhantomTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPTQc3.h">
+      <Filter>PhantomTransport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysics.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsCharged.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsCommon.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsElectron.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsNeutron.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsPhoton.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsPositron.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhysicsProton.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPhaseSpaceIO.h">
       <Filter>Score</Filter>
-    </ClCompile>
+    </ClInclude>
+    <ClInclude Include="mcScore.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreAcceleratedBeam.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreBeamFluence.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreBeamFluence2.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreBeamFluenceSubsource.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreBeamFluenceXY.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreBrachy.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreConicalRZ.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreEnergyFluence.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreEnergySpectrum.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreMatrix2D.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreMatrixCylinderAzimut.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreMatrixRZ.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreMatrixXY.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreParticleContainer.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScorePhaseSpaceConcentrator.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScorePhaseSpaceDirect.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScorePHSP.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreSpectraFluence.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreSpectraFluenceSphere.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreSphereFluence.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreSphereMatrix.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreTest.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreTrack.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSource.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceAcceleratedBeam.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceAccelerator.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceCylindricalC60.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceDistributed.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceLEBA.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceModelRadialDirect.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceModelRadialPhsp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceSimpleMono.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceSimpleParallel.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceSphereC60.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceUniformCone.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceXrayBeam.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceXraySigmaR.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcClinicalElectronBeam.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcETransportConvexPolygonCircle.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcETransportSphere.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcETransportTrap.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransport.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportAxialSymmetricSplitter.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportCone.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportConicalHole.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportConicalRing.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportCylinder.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportCylinderStack.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportEmbeddedGroup.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportJawPairFocused.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportJawPairRounded.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportLinearChain.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportMLC.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportPlaneFilter.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportPolygon.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportPrimaryCollimator.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportPrism.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportRectanglePolygonSideHole.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportRectangleRing.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportRectangleTrap.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportRing.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportSimpleSplitter.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportSlab.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportSphereTrap.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportTrap.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportWedge.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcBrachySource.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Media">
+      <UniqueIdentifier>{dc7d9efc-1206-4a96-a9be-bdca9aae5c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{ff4a8d89-a90b-449e-b0ce-2728629e8da7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{17d2c37e-b6f4-4871-9973-d9851cc3d7f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PhantomTransport">
+      <UniqueIdentifier>{03607374-59c7-4725-b193-6f5d73951c4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{e4cb3231-5992-40b2-916b-08cbb7785f18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Score">
+      <UniqueIdentifier>{e4a0d2fe-34ae-46fd-a964-60a4a07ba760}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{a1b61e22-91c8-4174-add4-a3cad51118e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Transport">
+      <UniqueIdentifier>{a13d7c41-bcc6-402a-808f-7fdf24c0bc18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
