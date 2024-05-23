@@ -270,7 +270,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		}
 
 		if (source == nullptr)
-			throw exception("Particles ource must be provided");
+			throw exception("Particles source must be provided");
 		bool startinside = source->IsGamma() || source->IsStartInside();
 		if (doTrack)
 			source->setScoreTrack(trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons, doTrackProtons, doTrackNeutrons);
