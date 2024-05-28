@@ -230,7 +230,7 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		// ГЊГҐГІГЄГі Г ГІГ®Г¬Г­Г®ГЈГ® ГЅГ«ГҐГ¬ГҐГ­ГІГ  ГЎГҐГ°ГҐГ¬ ГЁГ§ ГЁГ¬ГҐГ­ГЁ ГґГ Г©Г«Г .
 		string elementName = std::string(&fname[2]);
 		string AtNum = elementName;
-		int Z;
+		int Z = 0;
 
 		for (int i = 0; i < AtNum.size(); i++)
 		{

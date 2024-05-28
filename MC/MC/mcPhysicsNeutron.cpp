@@ -53,6 +53,8 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 	double logKE = p->ke;//log(ke);
 	int iLogKE = int(p->ke);//int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
 	double microsigma_total = (m->sigma0_neutro[iLogKE] + (logKE - iLogKE) * m->sigma1_neutro[iLogKE]) / m->density_ / NAVOGADRO * m->AtomicWeight();
+	if (microsigma_total <= 0)
+		return 0;
 	vector<double> sigmaratio;
 	vector<double> probability;
 	double psum = 0;
@@ -131,7 +133,7 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 		for (LVLid = 0; LVLid < InelLVL.size(); LVLid++)
 			if (InelLVL[LVLid] > ksi1)
 				break;
-		if (LVLid < m->ENDFdata->at(endfID)->nInelasticCS.size() - 1)
+		if (LVLid < m->ENDFdata->at(endfID)->nInelasticCS.size() - 1 || m->ENDFdata->at(endfID)->nInelasticCS.back()->MT != 91)
 		{
 			double ke_before = p->ke;
 			DoInelastic(rng, endfID, LVLid, p, m, A);
@@ -250,6 +252,7 @@ void mcPhysicsNeutron::DoInelastic(mcRng& rng, int endfID, int LVLid, mcParticle
 
 void mcPhysicsNeutron::DoInelasticCont(mcRng& rng, int endfID, int LVLid, mcParticle* p, const mcMediumNeutron* pmed)
 {
+	double primary_ke = p->ke;
 	int Nquantity = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playMulti(p->ke * 1000000, rng);
 	if (Nquantity > 1)
 		throw exception("Multi neutron during inelastic scattering!?");
@@ -262,7 +265,7 @@ void mcPhysicsNeutron::DoInelasticCont(mcRng& rng, int endfID, int LVLid, mcPart
 		pNewPhoton->t = MCP_PHOTON;
 		pNewPhoton->q = 0;
 		int eoutID = 0, keIN = 0;
-		pNewPhoton->ke = pmed->ENDFdata->at(endfID)->nInelasticContin[2]->EANuclearCrossSections[0]->playE(p->ke, keIN, eoutID, rng);
+		pNewPhoton->ke = pmed->ENDFdata->at(endfID)->nInelasticContin[2]->EANuclearCrossSections[0]->playE(primary_ke, keIN, eoutID, rng);
 		GoInRandomDirection(rng.rnd(), rng.rnd(), pNewPhoton->u);
 		p->ke -= pNewPhoton->ke;
 	}
@@ -270,7 +273,7 @@ void mcPhysicsNeutron::DoInelasticCont(mcRng& rng, int endfID, int LVLid, mcPart
 	pNewNeutron->t = MCP_NEUTRON;
 	pNewNeutron->q = 0;
 	int eoutID = 0, keIN = 0;
-	double neutron_ke = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playE(p->ke, keIN, eoutID, rng);
+	double neutron_ke = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playE(primary_ke, keIN, eoutID, rng);
 	getKallbachMannAngle(rng, endfID, pNewNeutron, pmed, keIN, eoutID);
 	p->ke -= neutron_ke;
 	pNewNeutron->ke = neutron_ke;
