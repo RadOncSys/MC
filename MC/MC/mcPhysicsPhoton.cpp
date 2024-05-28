@@ -62,6 +62,8 @@ double mcPhysicsPhoton::DoInterruction(mcParticle* p, const mcMedium* med) const
 
 	double logKE = log(p->ke);
 	int iLogKE = (int)(m->iLogKE0_phot + logKE * m->iLogKE1_phot);
+	if (iLogKE >= 200)
+		iLogKE = 199;		//BUG??? При симуляции получил iLogKE = 204, что выходит за границы массива
 	mcRng& rng = p->thread_->rng();
 
 	double rayleighFactor = 1;

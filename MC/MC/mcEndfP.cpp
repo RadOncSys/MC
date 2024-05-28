@@ -2557,7 +2557,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 
 				// Угловые распределения (n,n') MT = 73 
 		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
-			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '4')
+			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '3')
 			{
 				auto inelasticLevels = new mcEndfAngular();
 				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
@@ -2687,7 +2687,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 
 				// Угловые распределения (n,n') MT = 83 
 		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
-			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '4')
+			record.MT[0] == ' ' && record.MT[1] == '8' && record.MT[2] == '3')
 			{
 				auto inelasticLevels = new mcEndfAngular();
 				inelasticLevels->ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);

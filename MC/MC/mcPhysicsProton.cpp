@@ -137,6 +137,8 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	double logKE = p->ke;//log(ke);
 	int iLogKE = int(p->ke);//int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
 	double microsigma_total = (m->sigma0_proto[iLogKE] + (logKE - iLogKE) * m->sigma1_proto[iLogKE]) / m->density_ / NAVOGADRO * m->AtomicWeight();
+	if (microsigma_total <= 0)
+		return 0;
 	vector<double> sigmaratio;
 	vector<double> probability;
 	double psum = 0;
