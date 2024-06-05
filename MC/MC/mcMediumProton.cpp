@@ -174,8 +174,8 @@ double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfP>>* ENDF)
 		}
 	}
 	if (!isFound)
-		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
-		//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+		//return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
+		throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
 	if (ENDF->at(i)->NuclearCrossSections.isEmpty)
 		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
 	if (kE <= ENDF->at(i)->NuclearCrossSections.Energies[0])
