@@ -41,7 +41,7 @@ double InverseRadiationLength(const double* A, const double* Z, const double* w,
 
 string CLEARFROMALPHA(string x)
 {
-	for (int i = 0; i < x.length(); i++)
+	for (int i = x.length() - 1; i >= 0 ; i--)
 		if (x[i] > '9')
 			x.erase(i, 1);
 	return x;

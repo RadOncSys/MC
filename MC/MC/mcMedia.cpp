@@ -241,12 +241,28 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		auto csForElement = std::make_shared<mcEndfP>();
 		if (Table.isNecessary[Z])
 		{
+			if(Table.isLoad[Z])
+				throw std::exception((
+					string("Something wrong with proton ENDF data! Attempt to load data for element Z= ") +
+					to_string(Z) + ", while data alreadt loaded.").c_str());
 			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 			dbData->push_back(csForElement);
+			Table.isLoad[Z] = true;
 		}
 
 		//ifstream isIcru(entry.path().c_str());
 	}
+
+	// Чтобы не мучиться с отладкой в случае проблем сразу проверяем чего не хватает.
+	string info;
+	for (int i = 0; i < Table.isLoad.size(); i++)
+	{
+		if (Table.isNecessary[i] && !Table.isLoad[i])
+			info += string("Not found proton ENDF element with Z = ") + to_string(i) + "\r\n";
+	}
+	if(info.size() != 0)
+		throw std::exception(info.c_str());
+
 	initProtonCSFromVector(dbData);
 }
 
@@ -327,10 +343,7 @@ void mcMedia::initNeutronFromFiles(const string& fname, const string& nuclearDir
 
 	for (int i = 0; i < xes_.size(); i++)
 		for (int j = 0; j < xes_[i]->elements_.size(); j++)
-		{
-			if (Table.isNecessary[xes_[i]->elements_[j].atomicNumber] == false)
-				Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
-		}
+			Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
 
 	// ENDF
 	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfN>>>();
@@ -369,10 +382,25 @@ void mcMedia::initNeutronFromFiles(const string& fname, const string& nuclearDir
 		auto csForElement = std::make_shared<mcEndfN>();
 		if (Table.isNecessary[Z])
 		{
+			if (Table.isLoad[Z])
+				throw std::exception((
+					string("Something wrong with neutron ENDF data! Attempt to load data for element Z= ") +
+					to_string(Z) + ", while data alreadt loaded.").c_str());
 			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 			dbData->push_back(csForElement);
+			Table.isLoad[Z] = true;
 		}
 	}
+
+	string info;
+	for (int i = 0; i < Table.isLoad.size(); i++)
+	{
+		if (Table.isNecessary[i] && !Table.isLoad[i])
+			info += string("Not found neutron ENDF element with Z = ") + to_string(i) + "\r\n";
+	}
+	if (info.size() != 0)
+		throw std::exception(info.c_str());
+
 	initNeutronCSFromVector(dbData);
 }
 
