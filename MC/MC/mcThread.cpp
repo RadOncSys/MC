@@ -1,7 +1,7 @@
 #include "mcThread.h"
 #include "mcParticle.h"
 
-#define MC_STACK_SIZE   15
+#define MC_STACK_SIZE   100
 
 mcThread::mcThread() : threadIdx_(0)
 {
