@@ -1,5 +1,6 @@
 #include "mcPTLasVegas.h"
 #include "mcGeometry.h"
+#include "mcDefs.h"
 #include <float.h>
 
 mcPTLasVegas::mcPTLasVegas(const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x) : mcTransport(orgn, z, x)
@@ -99,14 +100,14 @@ double mcPTLasVegas::getDistanceOutside(mcParticle& p) const
 		pp(0) -= xs_[i]; pp(1) -= ys_[j];
 		double dcyl = mcGeometry::getDistanceToCylinderInside(pp, p.u, ds_[i] / 2, hs_[j]);
 		pp = p.p + (p.u * dcyl);
-		if (pp.z() < DBL_EPSILON)	// столкновение с наружным торцом означает вылет
+		if (pp.z() < MINDELTA)	// столкновение с наружным торцом означает вылет
 			return DBL_MAX;
 		else
 			return dcyl;
 	}
 	else
 	{
-		double dprism = mcGeometry::getDistanceToPrismOutside(p.p, p.u, a_, a_, z_) + DBL_EPSILON;
+		double dprism = mcGeometry::getDistanceToPrismOutside(p.p, p.u, a_, a_, z_) + MINDELTA;
 		if (dprism == DBL_MAX)
 			return DBL_MAX;
 

@@ -1,4 +1,5 @@
-#include ".\mcgeomrectside.h"
+#include "mcgeomrectside.h"
+#include "mcDefs.h"
 #include <float.h>
 
 mcGeomRectSide::
@@ -24,10 +25,10 @@ double mcGeomRectSide::getDistance(const geomVector3D& p, const geomVector3D& v,
 
 	// Наклон вектора направления к плоскости
 	double cosn = v*N_;
-	if (fabs(cosn) < DBL_EPSILON)
+	if (fabs(cosn) < MINDELTA)
 		return DBL_MAX; // параллельно плоскости
 
-	if (fabs(h) < DBL_EPSILON && ((inside && cosn < 0) || (!inside && cosn > 0)))
+	if (fabs(h) < MINDELTA && ((inside && cosn < 0) || (!inside && cosn > 0)))
 		return DBL_MAX; // движение от поверхности
 
 	// Точка пересечения вектора направления с плоскостью

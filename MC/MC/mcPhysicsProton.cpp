@@ -108,6 +108,7 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	// p->mfps = 0; // VK Это зачем? Если мы не разыгрываем каждый раз mfp, а редуцируем его, то эта строка кажестя не верна 
 
 	p->ke -= e_dep;
+	p->dnear -= step;
 	return e_dep;
 }
 

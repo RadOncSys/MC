@@ -33,7 +33,7 @@ double mcTransportRing::getDistanceInside(mcParticle& p) const
 	// Плоскости
 	double vz = p.u.z();
 	double pd = (vz < 0) ? -p.p.z() / vz : (vz > 0) ? (h_ - p.p.z()) / vz : DBL_MAX;
-	return NNEG(MIN(MIN(cd1, cd2), pd));
+	return MIN(MIN(cd1, cd2), pd);
 }
 
 double mcTransportRing::getDistanceOutside(mcParticle& p) const
@@ -116,7 +116,7 @@ double mcTransportRing::getDNearInside(const geomVector3D& p) const
 	double z = p.z();
 	double r = p.lengthXY();
 	double d1 = h_ - z, d2 = r - r0_, d3 = r1_ - r;
-	return NNEG(MIN(MIN(z, d1), MIN(d2, d3)));
+	return MIN(MIN(z, d1), MIN(d2, d3));
 }
 
 void mcTransportRing::dump(ostream& os) const

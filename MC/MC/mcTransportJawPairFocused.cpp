@@ -132,18 +132,18 @@ double mcTransportJawPairFocused::getDistanceOutside(mcParticle& p) const
 		x = pp.x(); y = pp.y(); z = pp.z();
 
 		// ѕровер€ем, не попали ли в дырку
-		if (v.z() > 0 && fabs(z) <= DBL_EPSILON) // частица летит вверх -> 
+		if (v.z() > 0 && fabs(z) <= MINDELTA) // частица летит вверх -> 
 		{
 			if (x > x2l_ && x < x2r_)
 				isInside = true;
 		}
-		else if (v.z() < 0 && fabs(z - h_) <= DBL_EPSILON) // частица летит вниз -> 
+		else if (v.z() < 0 && fabs(z - h_) <= MINDELTA) // частица летит вниз -> 
 		{
 			if (x > (x2l_ * (scd_ - h_) / scd_) && x < (x2r_ * (scd_ - h_) / scd_))
 				isInside = true;
 		}
-		else if ((v.y() < 0 && fabs(2 * y - dy_) <= DBL_EPSILON) ||
-			(v.y() > 0 && fabs(2 * y + dy_) <= DBL_EPSILON))
+		else if ((v.y() < 0 && fabs(2 * y - dy_) <= MINDELTA) ||
+			(v.y() > 0 && fabs(2 * y + dy_) <= MINDELTA))
 		{
 			double xx = x * (scd_ - x) / scd_;
 			if (xx > x2l_&& xx < x2r_)

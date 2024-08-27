@@ -21,7 +21,7 @@ double mcTransportSlab::getDistanceInside(mcParticle& p) const
 {
 	double vz = p.u.z();
 	double pd = (vz < 0) ? -p.p.z() / vz : (vz > 0) ? (h_ - p.p.z()) / vz : DBL_MAX;
-	return NNEG(pd);
+	return pd;
 }
 
 double mcTransportSlab::getDistanceOutside(mcParticle& p) const
@@ -32,13 +32,13 @@ double mcTransportSlab::getDistanceOutside(mcParticle& p) const
 	if (z >= h_ && vz >= 0) return DBL_MAX;
 
 	double pd = (vz > 0) ? -p.p.z() / vz : (h_ - p.p.z()) / vz;
-	return NNEG(pd);
+	return pd;
 }
 
 double mcTransportSlab::getDNearInside(const geomVector3D& p) const
 {
 	double dnear = MIN(p.z(), h_ - p.z());
-	return NNEG(dnear);
+	return dnear;
 }
 
 void mcTransportSlab::dump(ostream& os) const

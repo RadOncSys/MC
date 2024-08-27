@@ -1,4 +1,5 @@
 #include "mcTransportMLC.h"
+#include "mcDefs.h"
 #include "mcGeometry.h"
 #include <float.h>
 
@@ -391,14 +392,14 @@ double mcTransportMLC::getDistanceToMlcInsideField(const geomVector3D& p, const 
 			pp += u * d;
 			dist += d;
 			y = pp.y() * focus_ / (focus_ - pp.z());
-			if (fabs(y - fsy1_) <= DBL_EPSILON)
+			if (fabs(y - fsy1_) <= MINDELTA)
 			{
 				y = fsy1_;
 				// Проверяем не уперлись ли в лепесток сбоку
 				if (isOnOnTheLeftLeaf(pp, y, fsx1_) || isOnOnTheLeftLeaf(geomVector3D(-pp.x(), pp.y(), pp.z()), y, -fsx2_))
 					break;
 			}
-			else if (fabs(y + w_/2) <= DBL_EPSILON) return DBL_MAX;
+			else if (fabs(y + w_/2) <= MINDELTA) return DBL_MAX;
 			else break;		// попали в торец лепестков
 		}
 		if (y >= fsy1_ && y < fsy2_)
@@ -408,13 +409,13 @@ double mcTransportMLC::getDistanceToMlcInsideField(const geomVector3D& p, const 
 			pp += u * d;
 			dist += d;
 			y = pp.y() * focus_ / (focus_ - pp.z());
-			if (fabs(y - fsy2_) <= DBL_EPSILON)
+			if (fabs(y - fsy2_) <= MINDELTA)
 			{
 				y = fsy2_;
 				if (isOnOnTheLeftLeaf(pp, y, fsx1_) || isOnOnTheLeftLeaf(geomVector3D(-pp.x(), pp.y(), pp.z()), y, 0))
 					break;
 			}
-			else if (fabs(y - fsy1_) <= DBL_EPSILON)
+			else if (fabs(y - fsy1_) <= MINDELTA)
 			{
 				y = fsy1_;
 				if (isOnOnTheLeftLeaf(pp, y, fsx1_) || isOnOnTheLeftLeaf(geomVector3D(-pp.x(), pp.y(), pp.z()), y, 0))
@@ -429,13 +430,13 @@ double mcTransportMLC::getDistanceToMlcInsideField(const geomVector3D& p, const 
 			pp += u * d;
 			dist += d;
 			y = pp.y() * focus_ / (focus_ - pp.z());
-			if (fabs(y - fsy2_) <= DBL_EPSILON)
+			if (fabs(y - fsy2_) <= MINDELTA)
 			{
 				y = fsy2_;
 				if (isOnOnTheLeftLeaf(pp, y, fsx1_) || isOnOnTheLeftLeaf(geomVector3D(-pp.x(), pp.y(), pp.z()), y, -fsx2_))
 					break;
 			}
-			else if (fabs(y - w_/2) <= DBL_EPSILON) return DBL_MAX;
+			else if (fabs(y - w_/2) <= MINDELTA) return DBL_MAX;
 			else break;		// попали в торец лепестков
 		}
 	}
@@ -558,7 +559,7 @@ bool mcTransportMLC::isOnOnTheLeftLeaf(const geomVector3D& p, double y0, double 
 	if (z < 0 || z > h_) return false;
 
 	double y = p.y() * focus_ / (focus_ - z);
-	if (fabs(y - y0) > DBL_EPSILON) return false;
+	if (fabs(y - y0) > MINDELTA) return false;
 
 	double x = p.x();
 	if(x < xx - l_) return false;

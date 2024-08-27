@@ -63,7 +63,10 @@ double mcPhysicsPhoton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	double logKE = log(p->ke);
 	int iLogKE = (int)(m->iLogKE0_phot + logKE * m->iLogKE1_phot);
 	if (iLogKE >= m->br10_phot.size())
-		throw std::exception("mcPhysicsPhoton: iLogKE out of range");
+	{
+		cout << "mcPhysicsPhoton: iLogKE out of range, ke = " << p->ke << ", iLogKE = " << iLogKE << ", br10_phot.size() = " << m->br10_phot.size() << endl;
+		iLogKE = m->br10_phot.size() - 1;
+	}
 	mcRng& rng = p->thread_->rng();
 
 	double rayleighFactor = 1;

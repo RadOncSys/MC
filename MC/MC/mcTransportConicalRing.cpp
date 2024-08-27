@@ -40,7 +40,7 @@ double mcTransportConicalRing::getDistanceInside(mcParticle& p) const
 	// Плоскости
 	double vz = p.u.z();
 	double pd = (vz < 0) ? -p.p.z() / vz : (vz > 0) ? (h_ - p.p.z()) / vz : DBL_MAX;
-	return NNEG(MIN(MIN(cd1, cd2), pd));
+	return MIN(MIN(cd1, cd2), pd);
 }
 
 double mcTransportConicalRing::getDistanceOutside(mcParticle& p) const
@@ -93,7 +93,7 @@ double mcTransportConicalRing::getDNearInside(const geomVector3D& p) const
 	double d1 = h_ - z;
 	double d2 = fabs((r - r0_*(f_ - z) / f_) * cosr0_);
 	double d3 = fabs((r1_*(f_ - z) / f_ - r) * cosr1_);
-	return NNEG(MIN(MIN(z, d1), MIN(d2, d3)));
+	return MIN(MIN(z, d1), MIN(d2, d3));
 }
 
 void mcTransportConicalRing::dump(ostream& os) const

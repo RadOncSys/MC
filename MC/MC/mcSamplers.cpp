@@ -59,8 +59,8 @@ double mcSamplers::SampleExponent2D(double C)
 
 	// —оотвествует очень большому рассто€нию.
 	// »сключаетс€ из расчета, так как может создать проблемы.
-	if (C < DBL_EPSILON)
-		return 1.0 / DBL_EPSILON;
+	if (C < MINDELTA)
+		return 1.0 / MINDELTA;
 
 	// Ќа каждом шаге решаем задачу пересечени параболы с пр€мой линией
 

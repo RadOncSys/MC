@@ -1,4 +1,5 @@
 #include "mcScoreConicalRZ.h"
+#include "mcDefs.h"
 #include "mcGeometry.h"
 #include "mcTransport.h"
 #include <float.h>
@@ -85,9 +86,9 @@ void mcScoreConicalRZ::ScoreLine(double edep
 		return;
 
 	if (iz1 < 0)
-		vz1 += (vz2 - vz1) * ((m_zmin - vz1.z()) / (vz2.z() - vz1.z()) + DBL_EPSILON);
+		vz1 += (vz2 - vz1) * ((m_zmin - vz1.z()) / (vz2.z() - vz1.z()) + MINDELTA);
 	if (iz2 >= m_nz)
-		vz2 += (vz1 - vz2) * ((vz2.z() - m_zmax) / (vz1.z() - vz2.z()) + DBL_EPSILON);
+		vz2 += (vz1 - vz2) * ((vz2.z() - m_zmax) / (vz1.z() - vz2.z()) + MINDELTA);
 
 	// ѕоскольку расчет пересечени€ с цилиндром задача более трудоемка€
 	// и на практике пересечений цилиндров меньше пересечений плоскостей Z
@@ -104,7 +105,7 @@ void mcScoreConicalRZ::ScoreLine(double edep
 		double d = mcGeometry::getDistanceToConeOutside(geomVector3D(vz1.x(), vz1.y(), m_iso - vz1.z()), geomVector3D(v.x(), v.y(), -v.z()), m_rmax, m_sad);
 		if (d == DBL_MAX)
 			return;		// Ћибо от, либо мимо внешней поверхности
-		vz1 += v * (d + DBL_EPSILON);
+		vz1 += v * (d + MINDELTA);
 		rr = m_rmax;
 	}
 	int ir = int(rr / m_rstep);
@@ -114,7 +115,7 @@ void mcScoreConicalRZ::ScoreLine(double edep
 	double eddens = edep / (p1 - p0).length();
 	int irnext = ir;
 
-	while ((vz2 - vz1) * v > DBL_EPSILON)
+	while ((vz2 - vz1) * v > MINDELTA)
 	{
 		ir = irnext;
 		double r = ir * m_rstep;
@@ -140,7 +141,7 @@ void mcScoreConicalRZ::ScoreLine(double edep
 
 		//  онец трека в цилиндрическом кольце.
 		// „астица может не пересекать внешний контур, что означает, что ее траектори€ целиком находитс€ внутри текущего кольца.
-		geomVector3D vz12 = d == DBL_MAX ? vz2 : vz1 + (v * (d + DBL_EPSILON));
+		geomVector3D vz12 = d == DBL_MAX ? vz2 : vz1 + (v * (d + MINDELTA));
 
 		// ѕровер€ем не прошли ли мы дальнюю точку глобального трека.
 		if ((vz12 - vz2) * v > 0)
@@ -156,7 +157,7 @@ void mcScoreConicalRZ::ScoreLine(double edep
 		else
 		{
 			// ѕеребираем слои по Z
-			while ((vz12 - vz1) * v > DBL_EPSILON)
+			while ((vz12 - vz1) * v > MINDELTA)
 			{
 				geomVector3D pz2 = vz1 + (v * ((z2 - vz1.z()) / v.z()));
 				if (pz2.z() > vz12.z())

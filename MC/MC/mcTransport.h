@@ -14,10 +14,6 @@ class mcRng;
 class mcScore;
 class mcMediumXE;
 
-#ifndef NNEG
-#define  NNEG(a)    ((a) >= 0  ? (a) : -(a))
-#endif
-
 #ifndef ZORP
 #define  ZORP(a)    ((a) >= 0  ? (a) : 0)
 #endif

@@ -36,7 +36,11 @@ double mcTransportConicalHole::getDistanceInside(mcParticle& p)	const
 	// Плоскости
 	double vz = p.u.z();
 	double pd = (vz < 0) ? -p.p.z() / vz : (vz > 0) ? (h_ - p.p.z()) / vz : DBL_MAX;
-	return NNEG(MIN(MIN(cd1, cd2), pd));
+	if (pd < -0.01 || cd1 < -0.01 || cd2 < -0.01)
+	{
+		cout << "Negative distance to mcTransportConicalHole inside: pd = " << pd << ", cd1 = " << cd1 << ", cd2 = " << cd2 << endl;
+	}
+	return MIN(MIN(cd1, cd2), pd);
 }
 
 double mcTransportConicalHole::getDistanceOutside(mcParticle& p) const
@@ -90,7 +94,7 @@ double mcTransportConicalHole::getDNearInside(const geomVector3D& p) const
 	double d1 = h_ - z;
 	double d2 = fabs((r - r0_*(f_ - z) / f_) * cosr0_);
 	double d3 = r < r1_ ? r1_ - r : 0;
-	return NNEG(MIN(MIN(z, d1), MIN(d2, d3)));
+	return MIN(MIN(z, d1), MIN(d2, d3));
 }
 
 void mcTransportConicalHole::dump(ostream& os) const

@@ -36,7 +36,10 @@ double mcPhysicsElectron::MeanFreePath(double ke, const mcMedium& med, double de
 	double logKE = log(ke);
 	int iLogKE = int(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
 	if (iLogKE >= m.sigma0_nega.size())
-		throw std::exception("mcPhysicsElectron: iLogKE out of range");
+	{
+		cout << "mcPhysicsElectron: iLogKE out of range, ke = " << ke << ", iLogKE = " << iLogKE << ", sigma0_nega.size() = " << m.sigma0_nega.size() << endl;
+		iLogKE = m.sigma0_nega.size() - 1;
+	}
 	double sigma = (m.sigma0_nega[iLogKE] + logKE * m.sigma1_nega[iLogKE])* dens;
 	return (sigma > 0.0) ? 1 / sigma : DBL_MAX;
 }
@@ -59,7 +62,10 @@ double mcPhysicsElectron::TakeOneStep(mcParticle* p, const mcMedium& med, double
 	double logKE = log(p->ke);
 	int iLogKE = (int)(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
 	if (iLogKE >= m.dedx0_nega.size())
-		throw std::exception("mcPhysicsElectron: iLogKE out of range");
+	{
+		cout << "mcPhysicsElectron: iLogKE out of range, ke = " << p->ke << ", iLogKE = " << iLogKE << ", dedx0_nega.size() = " << m.dedx0_nega.size() << endl;
+		iLogKE = m.dedx0_nega.size() - 1;
+	}
 	double dedx = p->regDensityRatio * (m.dedx0_nega[iLogKE] + logKE * m.dedx1_nega[iLogKE]);
 
 	// Ситуация, когда частица заведомо не выйдет из области.
@@ -98,7 +104,10 @@ double mcPhysicsElectron::TakeOneStep(mcParticle* p, const mcMedium& med, double
 	iLogKE = int(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
 	if (iLogKE < 0) iLogKE = 0;  // вблизи энергии поглощения возможна проблема индексов
 	if (iLogKE >= m.dedx0_nega.size())
-		throw std::exception("mcPhysicsElectron: iLogKE out of range");
+	{
+		cout << "mcPhysicsElectron: iLogKE out of range, ke = " << p->ke << ", iLogKE = " << iLogKE << ", dedx0_nega.size() = " << m.dedx0_nega.size() << endl;
+		iLogKE = m.dedx0_nega.size() - 1;
+	}
 	dedx = p->regDensityRatio * (m.dedx0_nega[iLogKE] + logKE * m.dedx1_nega[iLogKE]);
 	e_dep = dedx * pathLength;
 	e_dep = MIN(e_dep, p->ke);
@@ -136,7 +145,10 @@ double mcPhysicsElectron::DoInterruction(mcParticle* p, const mcMedium* med) con
 			double logKE = log(p->ke);
 			int iLogKE = (int)(m->iLogKE0_elec + logKE * m->iLogKE1_elec);
 			if (iLogKE >= m->br10_nega.size())
-				throw std::exception("mcPhysicsElectron: iLogKE out of range");
+			{
+				cout << "mcPhysicsElectron: iLogKE out of range, ke = " << p->ke << ", iLogKE = " << iLogKE << ", br10_nega.size() = " << m->br10_nega.size() << endl;
+				iLogKE = m->br10_nega.size() - 1;
+			}
 			double br1 = m->br10_nega[iLogKE] + logKE * m->br11_nega[iLogKE];
 			if (rng.rnd() < br1)
 				DoBremsstrahlung(p, m);

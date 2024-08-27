@@ -1,4 +1,5 @@
-#include ".\mctransport.h"
+#include "mctransport.h"
+#include "mcDefs.h"
 #include "../geometry/vec3d.h"
 #include "mcMedia.h"
 #include "mcRng.h"
@@ -114,7 +115,7 @@ void mcTransport::beginTransport(mcParticle& p)
 
 	particle->region.idx_ = 0;
 	particle->region.medidx_ = 0;
-	particle->regDensityRatio = DBL_EPSILON;
+	particle->regDensityRatio = MINDELTA;
 
 	if (score_)
 		score_->ScoreFluence(*particle);
@@ -306,7 +307,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 		{
 			for (unsigned i = 0; i < regions_.size(); i++)
 			{
-				double f = regions_[i]->getDistanceOutside(*particle) + DBL_EPSILON;
+				double f = regions_[i]->getDistanceOutside(*particle) + MINDELTA;
 				if (f < step)
 				{
 					iregion = i;
@@ -318,7 +319,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 		// “о определенно речь не о повторной возможности входа в данный объект,
 		// а о преходе в следующий
 		else if (particle->exitSurface_ != mcParticle::temb_shit_t::Internal)
-			step = getDistanceOutside(*particle) + DBL_EPSILON;
+			step = getDistanceOutside(*particle) + MINDELTA;
 
 		if (step == DBL_MAX) { // промазали, летим в следующий слой
 			endTransport(particle);
@@ -347,7 +348,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 		// ¬озвращаемс€, чтобы повторить шаг.
 		// ¬ противном случае шаг до поверхности будет включен в
 		// потери энергии зар€женной частицы.
-		if (step > DBL_EPSILON)
+		if (step > MINDELTA)
 			return MCMR_CONTINUE;
 	}
 
@@ -369,6 +370,21 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	}
 
 	double freepath = phys->MeanFreePath(particle->ke, *med, defdensity_);
+
+	// GG 2024.08.27
+	// Ѕорьба с багами в физике транспорта.
+	// ≈сли у не зара€женной частицы бесконечны свободный путь то она вообще не может взаимодействовать.
+	// Ёто, конечно, ошибка с дальнейшим неопределенным поведением системы.
+	// ѕоэтому просто убиваем частицу вывешива€ предупреждение.
+	if (freepath == DBL_MAX && particle->regDensityRatio == 0)
+	{
+		cout << "Wrong mean free path" << this->getName() << endl;
+		cout << "Position: " << particle->p;
+		cout << "Direction: " << particle->u;
+		cout << "Type: " << particle->t;
+		particle->thread_->RemoveParticle();
+		return MCMR_DISCARGE;
+	}
 	step = freepath * particle->mfps;
 
 	if (step < particle->dnear)
@@ -397,7 +413,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	}
 	else
 	{
-		dist = getDistanceInside(*particle) + DBL_EPSILON;	// Ќовый трик с тем, чтобы частица чуть-чуть заступала за границу;
+		dist = getDistanceInside(*particle) + MINDELTA;	// Ќовый трик с тем, чтобы частица чуть-чуть заступала за границу;
 	}
 
 	// HACK!!
@@ -444,7 +460,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	else
 	{
 		// HACK! Ќа поверхности возможно залипание, если рассто€ние в пределах погрешности вычислений.
-		static const double epsln = DBL_EPSILON * 10;
+		static const double epsln = MINDELTA * 10;
 		if (dist < epsln)
 			dist = epsln;
 		step = dist;
@@ -469,7 +485,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 double mcTransport::HowManyMFPs(mcRng& rng)
 {
 	double howMany = -log(1.0 - rng.rnd());
-	return MAX(howMany, DBL_EPSILON);
+	return MAX(howMany, MINDELTA);
 }
 
 double mcTransport::etotal() const
@@ -544,7 +560,7 @@ double mcTransport::getDistanceOutside(mcParticle& p) const
 	{
 		for (unsigned i = 0; i < regions_.size(); i++)
 		{
-			double f = regions_[i]->getDistanceOutside(p) + DBL_EPSILON;
+			double f = regions_[i]->getDistanceOutside(p) + MINDELTA;
 			if (f < dist) dist = f;
 		}
 	}

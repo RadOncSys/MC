@@ -7,7 +7,7 @@ double mcGeometry::getDistanceToInfiniteCylinderInside(const geomVector3D& p, co
 {
 	double cd = 0;
 	double a = v.sqLengthXY();
-	if (a < DBL_EPSILON) return DBL_MAX;		// Параллельно оси
+	if (a < MINDELTA) return DBL_MAX;		// Параллельно оси
 	double b = (p.x()*v.x() + p.y()*v.y()) / a;
 	double c = (p.sqLengthXY() - r*r) / a;
 	double det = b*b - c;
@@ -21,7 +21,7 @@ double mcGeometry::getDistanceToInfiniteCylinderOutside(const geomVector3D& p, c
 	double b = (p.x()*v.x() + p.y()*v.y());
 	if (b >= 0) return DBL_MAX;
 	double a = v.sqLengthXY();
-	if (a < DBL_EPSILON) a = DBL_EPSILON;
+	if (a < MINDELTA) a = MINDELTA;
 	b /= a;
 	double c = (p.sqLengthXY() - r*r) / a;
 	double det = b*b - c;
@@ -38,6 +38,10 @@ double mcGeometry::getDistanceToCylinderInside(const geomVector3D& p, const geom
 	// Плоскости
 	double vz = v.z();
 	double pd = (vz < 0) ? -p.z() / vz : (vz > 0) ? (h - p.z()) / vz : DBL_MAX;
+	if (pd < -0.01 || cd < -0.01)
+	{
+		cout << "Negative distance to cylinder inside: pd = " << pd << ", cd = " << cd << endl;
+	}
 	return MIN(pd, cd);
 }
 
@@ -70,7 +74,7 @@ double mcGeometry::getDistanceToCylinderOutside(const geomVector3D& p, const geo
 		if (cd == DBL_MAX) return DBL_MAX;
 
 		if (z <= 0) {
-			if (fabs(vz) <= DBL_EPSILON) return DBL_MAX;
+			if (fabs(vz) <= MINDELTA) return DBL_MAX;
 			double pd = -z / vz;
 			geomVector3D pp = p + (v * pd);
 			if (pp.sqLengthXY() < R2)
@@ -78,7 +82,7 @@ double mcGeometry::getDistanceToCylinderOutside(const geomVector3D& p, const geo
 		}
 		else if (z >= h)
 		{
-			if (fabs(vz) <= DBL_EPSILON) return DBL_MAX;
+			if (fabs(vz) <= MINDELTA) return DBL_MAX;
 			double pd = (h - z) / vz;
 			geomVector3D pp = p + (v * pd);
 			if (pp.sqLengthXY() < R2)
@@ -556,7 +560,7 @@ double mcGeometry::getDistanceToConvexPolygonCircleInside(const geomVector3D& p,
 	double dcount = 0;
 	geomVector3D pcurrent(p);
 	double z = p.z();
-	for (i = 1; i < pz.size(); i++) if (z <= pz[i] + DBL_EPSILON) break;
+	for (i = 1; i < pz.size(); i++) if (z <= pz[i] + MINDELTA) break;
 	double z1 = pz[i - 1], z2 = pz[i];
 	double r1 = pr[i - 1], r2 = pr[i];
 
@@ -643,7 +647,7 @@ double mcGeometry::getDistanceToConvexPolygonCircleOutside(const geomVector3D & 
 	double z1 = pz[0], z2 = pz.back();
 	double r1 = pr[0], r2 = pr.back();
 
-	if (z <= z1 + DBL_EPSILON)
+	if (z <= z1 + MINDELTA)
 	{
 		if (vz <= 0)
 			return DBL_MAX;
@@ -661,7 +665,7 @@ double mcGeometry::getDistanceToConvexPolygonCircleOutside(const geomVector3D & 
 			r2 = pr[i];
 		}
 	}
-	else if (z >= z2 - DBL_EPSILON)
+	else if (z >= z2 - MINDELTA)
 	{
 		if (vz >= 0)
 			return DBL_MAX;
@@ -684,7 +688,7 @@ double mcGeometry::getDistanceToConvexPolygonCircleOutside(const geomVector3D & 
 	// При необходимости определяемся между какими.
 	if (i == -1)
 	{
-		for (i = 1; i < pz.size(); i++) if (z <= pz[i] + DBL_EPSILON) break;
+		for (i = 1; i < pz.size(); i++) if (z <= pz[i] + MINDELTA) break;
 		z1 = pz[i - 1]; z2 = pz[i];
 		r1 = pr[i - 1]; r2 = pr[i];
 	}

@@ -1,4 +1,5 @@
 #include "mcTransportRectanglePolygonSideHole.h"
+#include "mcDefs.h"
 #include "mcGeometry.h"
 #include <float.h>
 
@@ -109,7 +110,7 @@ double mcTransportRectanglePolygonSideHole::getDistanceOutside(mcParticle& p) co
 	geomVector3D c(p.p);	// Требуется для проекции на переднюю или заднюю область объекта
 
 	// Частица перед объектом
-	if (z <= DBL_EPSILON)
+	if (z <= MINDELTA)
 	{
 		if (vz <= 0) return DBL_MAX;
 
@@ -131,7 +132,7 @@ double mcTransportRectanglePolygonSideHole::getDistanceOutside(mcParticle& p) co
 	}
 
 	// Частица за объектом
-	else if (z >= zmax_ - DBL_EPSILON)
+	else if (z >= zmax_ - MINDELTA)
 	{
 		if (vz >= 0) return DBL_MAX;
 		double cd = fabs((zmax_ - z) / vz);

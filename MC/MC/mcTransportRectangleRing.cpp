@@ -21,7 +21,7 @@ double mcTransportRectangleRing::getDistanceInside(mcParticle& p) const
 	// Плоскости
 	double vz = p.u.z();
 	double pd = (vz < 0) ? -p.p.z() / vz : (vz > 0) ? (h_ - p.p.z()) / vz : DBL_MAX;
-	return NNEG(MIN(MIN(cd1, cd2), pd));
+	return MIN(MIN(cd1, cd2), pd);
 }
 
 double mcTransportRectangleRing::getDistanceOutside(mcParticle& p) const

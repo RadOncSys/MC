@@ -1,4 +1,5 @@
 #include "mcScoreBrachy.h"
+#include "mcDefs.h"
 #include "mcGeometry.h"
 #include "mcTransport.h"
 #include "ProfileProcessor.h"
@@ -75,7 +76,7 @@ void mcScoreBrachy::ScoreLine(double edep
 	v.normalize();
 
 	// ¬ектор направлени€, длина которого по Z равна 1.
-	bool isOrto = fabs(v.z()) <= DBL_EPSILON;
+	bool isOrto = fabs(v.z()) <= MINDELTA;
 	geomVector3D uz = isOrto ? geomVector3D() : v * (1. / v.z());
 
 	// ќбрезаем трек плоскост€ми торцов цилиндра.
@@ -88,9 +89,9 @@ void mcScoreBrachy::ScoreLine(double edep
 		return;
 
 	if (iz1 < 0)
-		vz1 += (vz2 - vz1) * ((m_zmin - vz1.z()) / (vz2.z() - vz1.z()) + DBL_EPSILON);
+		vz1 += (vz2 - vz1) * ((m_zmin - vz1.z()) / (vz2.z() - vz1.z()) + MINDELTA);
 	if (iz2 >= m_nz)
-		vz2 += (vz1 - vz2) * ((vz2.z() - m_zmax) / (vz1.z() - vz2.z()) + DBL_EPSILON);
+		vz2 += (vz1 - vz2) * ((vz2.z() - m_zmax) / (vz1.z() - vz2.z()) + MINDELTA);
 
 	// ѕоскольку расчет пересечени€ с цилиндром задача более трудоемка€
 	// и на практике пересечений цилиндров меньше пересечений плоскостей Z
@@ -105,7 +106,7 @@ void mcScoreBrachy::ScoreLine(double edep
 	int ir = int(rr / m_rstep);
 	if (ir > m_nr) ir = m_nr;
 
-	while ((vz2 - vz1) * v > DBL_EPSILON)
+	while ((vz2 - vz1) * v > MINDELTA)
 	{
 		double r = ir * m_rstep;
 		double d;
@@ -147,7 +148,7 @@ void mcScoreBrachy::ScoreLine(double edep
 		geomVector3D pz1 = vz1;
 		int iz = int((pz1.z() - m_zmin) / m_zstep);
 
-		while ((vz12 - pz1) * v > DBL_EPSILON)
+		while ((vz12 - pz1) * v > MINDELTA)
 		{
 			if (isOrto) {
 				ir = int(((vz12 + vz1) * 0.5).lengthXY() / m_rstep);
