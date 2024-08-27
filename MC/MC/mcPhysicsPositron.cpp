@@ -37,8 +37,8 @@ double mcPhysicsPositron::MeanFreePath(double ke, const mcMedium& med, double de
 	const mcMediumXE& m = (const mcMediumXE&)med;
 	double logKE = log(ke);
 	int iLogKE = int(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
-	if (iLogKE >= 149)								//BUG?! Out of range
-		iLogKE = 148;
+	if (iLogKE >= m.sigma0_posi.size())
+		throw std::exception("mcPhysicsPositron: iLogKE out of range");
 	double sigma = (m.sigma0_posi[iLogKE] + logKE * m.sigma1_posi[iLogKE])* dens;
 	return (sigma > 0.0) ? 1 / sigma : DBL_MAX;
 }
@@ -53,8 +53,8 @@ double mcPhysicsPositron::TakeOneStep(mcParticle* p, const mcMedium& med, double
 
 	double logKE = log(p->ke);
 	int iLogKE = (int)(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
-	if (iLogKE >= 149)								//BUG?! Out of range
-		iLogKE = 148;
+	if (iLogKE >= m.dedx0_posi.size())
+		throw std::exception("mcPhysicsPositron: iLogKE out of range");
 	double dedx = p->regDensityRatio * (m.dedx0_posi[iLogKE] + logKE * m.dedx1_posi[iLogKE]);
 
 	// Ситуация, когда частица заведомо не выйдет из области.
@@ -90,9 +90,9 @@ double mcPhysicsPositron::TakeOneStep(mcParticle* p, const mcMedium& med, double
 
 	logKE = log(p->ke - 0.5 * e_dep);
 	iLogKE = int(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
-	if (iLogKE >= 149)								//BUG?! Out of range
-		iLogKE = 148;
 	if (iLogKE < 0) iLogKE = 0;  // вблизи энергии поглощения возможна проблема индексов
+	if (iLogKE >= m.dedx0_posi.size())
+		throw std::exception("mcPhysicsPositron: iLogKE out of range");
 	dedx = p->regDensityRatio * (m.dedx0_posi[iLogKE] + logKE * m.dedx1_posi[iLogKE]);
 	e_dep = dedx * pathLength;
 	e_dep = MIN(e_dep, p->ke);
@@ -118,8 +118,8 @@ double mcPhysicsPositron::DoInterruction(mcParticle* p, const mcMedium* med) con
 
 	double logKE = log(p->ke);
 	int iLogKE = (int)(m->iLogKE0_elec + logKE * m->iLogKE1_elec);
-	if (iLogKE >= 149)								//BUG?! Out of range
-		iLogKE = 148;
+	if (iLogKE >= m->br10_posi.size())
+		throw std::exception("mcPhysicsPositron: iLogKE out of range");
 	bool bremsAllowed = p->ke > m->eventCutoff_phot;
 
 	// Use random numbers and tabulated branching ratios to

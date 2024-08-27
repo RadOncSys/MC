@@ -35,8 +35,8 @@ double mcPhysicsElectron::MeanFreePath(double ke, const mcMedium& med, double de
 	const mcMediumXE& m = (const mcMediumXE&)med;
 	double logKE = log(ke);
 	int iLogKE = int(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
-	if (iLogKE >= m.sigma0_nega.size())								//BUG?! Out of range
-		iLogKE = m.sigma0_nega.size() - 1;
+	if (iLogKE >= m.sigma0_nega.size())
+		throw std::exception("mcPhysicsElectron: iLogKE out of range");
 	double sigma = (m.sigma0_nega[iLogKE] + logKE * m.sigma1_nega[iLogKE])* dens;
 	return (sigma > 0.0) ? 1 / sigma : DBL_MAX;
 }
@@ -58,8 +58,8 @@ double mcPhysicsElectron::TakeOneStep(mcParticle* p, const mcMedium& med, double
 
 	double logKE = log(p->ke);
 	int iLogKE = (int)(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
-	if (iLogKE >= 149)								//BUG?! Out of range
-		iLogKE = 148;
+	if (iLogKE >= m.dedx0_nega.size())
+		throw std::exception("mcPhysicsElectron: iLogKE out of range");
 	double dedx = p->regDensityRatio * (m.dedx0_nega[iLogKE] + logKE * m.dedx1_nega[iLogKE]);
 
 	// Ситуация, когда частица заведомо не выйдет из области.
@@ -96,9 +96,9 @@ double mcPhysicsElectron::TakeOneStep(mcParticle* p, const mcMedium& med, double
 
 	logKE = log(p->ke - 0.5 * e_dep);
 	iLogKE = int(m.iLogKE0_elec + logKE * m.iLogKE1_elec);
-	if (iLogKE >= 149)								//BUG?! Out of range
-		iLogKE = 148;
 	if (iLogKE < 0) iLogKE = 0;  // вблизи энергии поглощения возможна проблема индексов
+	if (iLogKE >= m.dedx0_nega.size())
+		throw std::exception("mcPhysicsElectron: iLogKE out of range");
 	dedx = p->regDensityRatio * (m.dedx0_nega[iLogKE] + logKE * m.dedx1_nega[iLogKE]);
 	e_dep = dedx * pathLength;
 	e_dep = MIN(e_dep, p->ke);
@@ -135,8 +135,8 @@ double mcPhysicsElectron::DoInterruction(mcParticle* p, const mcMedium* med) con
 		{
 			double logKE = log(p->ke);
 			int iLogKE = (int)(m->iLogKE0_elec + logKE * m->iLogKE1_elec);
-			if (iLogKE >= 149)								//BUG?! Out of range
-				iLogKE = 148;
+			if (iLogKE >= m->br10_nega.size())
+				throw std::exception("mcPhysicsElectron: iLogKE out of range");
 			double br1 = m->br10_nega[iLogKE] + logKE * m->br11_nega[iLogKE];
 			if (rng.rnd() < br1)
 				DoBremsstrahlung(p, m);
