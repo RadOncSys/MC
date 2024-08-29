@@ -113,7 +113,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		int nBanches = 0;
 		wstring vrmlFile;
 		wstring statFile;
-		double trackR = DBL_MAX, trackZ1 = -DBL_MAX, trackZ2 = DBL_MAX, trackEMIN = 0;
+		double trackR0 = 0, trackR = DBL_MAX, trackZ1 = -DBL_MAX, trackZ2 = DBL_MAX, trackEMIN = 0;
 		bool doTrack = false, doTrackPhotons = true, doTrackElectrons = true, doTrackPositrons = true, doTrackProtons = true, doTrackNeutrons = true;
 
 		if (_wcsicmp(paramsDoc.Name.c_str(), L"input") != 0)
@@ -159,7 +159,9 @@ int _tmain(int argc, _TCHAR* argv [])
 							{
 								for (auto n3 : n2.Nodes)
 								{
-									if (_wcsicmp(n3.Name.c_str(), L"R") == 0)
+									if (_wcsicmp(n3.Name.c_str(), L"R0") == 0)
+										trackR0 = _wtof(n3.Text.c_str());
+									else if (_wcsicmp(n3.Name.c_str(), L"R") == 0)
 										trackR = _wtof(n3.Text.c_str());
 									else if (_wcsicmp(n3.Name.c_str(), L"Z1") == 0)
 										trackZ1 = _wtof(n3.Text.c_str());
@@ -273,7 +275,7 @@ int _tmain(int argc, _TCHAR* argv [])
 			throw exception("Particles source must be provided");
 		bool startinside = source->IsGamma() || source->IsStartInside();
 		if (doTrack)
-			source->setScoreTrack(trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons, doTrackProtons, doTrackNeutrons);
+			source->setScoreTrack(trackR0, trackR, trackZ1, trackZ2, trackEMIN, doTrackPhotons, doTrackElectrons, doTrackPositrons, doTrackProtons, doTrackNeutrons);
 
 		//
 		// Симуляция

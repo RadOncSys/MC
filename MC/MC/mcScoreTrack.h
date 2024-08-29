@@ -11,7 +11,7 @@
 class mcScoreTrack : public mcScore
 {
 public:
-	mcScoreTrack(int nThreads, double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons, bool doProtons, bool doNeutrons);
+	mcScoreTrack(int nThreads, double R0, double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons, bool doProtons, bool doNeutrons);
 	~mcScoreTrack(void);
 
 	void score(int iThread
@@ -30,7 +30,7 @@ protected:
 	vector<vector<geomVector3D>> neutrons_;
 
 	// –азмеры цилиндра, ограничивающие изображение треков
-	double R_, Z1_, Z2_;
+	double R0_, R_, Z1_, Z2_;
 
 	// ћинимальна€ энерги€, ниже которой треки не показываютс€
 	double EMIN_;

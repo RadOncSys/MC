@@ -1,8 +1,8 @@
 #include "mcScoreTrack.h"
 #include "mcGeometry.h"
 
-mcScoreTrack::mcScoreTrack(int nThreads, double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons, bool doProtons, bool doNeutrons) :
-	mcScore(nullptr, nThreads), R_(R), Z1_(Z1), Z2_(Z2), EMIN_(EMIN),
+mcScoreTrack::mcScoreTrack(int nThreads, double R0, double R, double Z1, double Z2, double EMIN, bool doPhotons, bool doElectrons, bool doPositrons, bool doProtons, bool doNeutrons) :
+	mcScore(nullptr, nThreads), R0_(R0), R_(R), Z1_(Z1), Z2_(Z2), EMIN_(EMIN),
 	doPhotons_(doPhotons), doElectrons_(doElectrons), doPositrons_(doPositrons), doProtons_(doProtons), doNeutrons_(doNeutrons)
 {
 	photons_.resize(nThreads);
@@ -31,7 +31,7 @@ void mcScoreTrack::score(int iThread
 
 	double r0 = pp0.lengthXY();
 	double r1 = pp1.lengthXY();
-	if (r0 >= R_ && r1 >= R_)
+	if ((r0 >= R_ && r1 >= R_) || (r0 <= R0_ && r1 <= R0_))
 		return;
 
 	if (r0 > R_)
@@ -132,8 +132,10 @@ void mcScoreTrack::dumpVRML(ostream& os) const
 			os << "            emissiveColor 0 1 0" << endl;
 		else if (ia == 2)
 			os << "            emissiveColor 0 0.5 1" << endl;
+		else if (ia == 3)
+			os << "            emissiveColor 1 1 0" << endl;
 		else
-			os << "            emissiveColor 1 0 0" << endl;
+			os << "            emissiveColor 0 1 1" << endl;
 
 		//if(ia == 0)
 		//	os << "            diffuseColor 0 1 0" << endl;
