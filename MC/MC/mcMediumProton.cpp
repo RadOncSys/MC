@@ -165,12 +165,11 @@ double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfP>>* ENDF)
 	return SIGMA;
 }
 
-mcMediumProton::mcMediumProton(void)
-	:transCutoff_proto(1.0)
+mcMediumProton::mcMediumProton(void) : transCutoff_proto(1.0)
 {
 }
 
-mcMediumProton::mcMediumProton(const mcMedium& m)
+mcMediumProton::mcMediumProton(const mcMedium& m) : transCutoff_proto(1.0)
 {
 	name_ = m.name_;
 	density_ = m.density_;
@@ -254,7 +253,7 @@ void mcMediumProton::SetElectrons(const mcPStar& starDB)
 	{
 		double e = exp((idx - iLogKE0_proto) / iLogKE1_proto);
 		for (int i = 0; i < elements_.size(); i++)
-			crs[idx] += tables[i]->GetDataForEnergy(e).D[0] * w[i];
+			crs[idx] += tables[i]->GetDataForEnergy(e).D[1] * w[i];
 	}
 
 	// Пересчитываем коэффициенты линейной интерполяции
@@ -293,6 +292,10 @@ void mcMediumProton::SetElectrons(const mcPStar& starDB)
 		sigma1_proto[i] = (sigma_in[i + 1] - crs[i]) / (log_e1 - log_e0);
 		sigma0_proto[i] = sigma_in[i] -log_e0 * sigma1_proto[i];
 	}
+
+	// Данные загрузили, но надо ещё и расчитать недостающие
+	gdEdxStragglingGaussVarianceConstPart();
+	gRadiationLength(); // ??? зачем то что нигде не используется?
 }
 
 //--------------------------------

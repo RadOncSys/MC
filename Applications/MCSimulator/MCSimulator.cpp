@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv [])
 	}
 
 	int i;
-	//int nThreads = concurrency::GetProcessorCount();
-	int nThreads = 1;
+	int nThreads = concurrency::GetProcessorCount();
+	//int nThreads = 1;
 
 	double simStartTime = TIME;
 

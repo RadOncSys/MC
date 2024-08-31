@@ -24,7 +24,7 @@ mcPStarRecord mcPStarTable::GetDataForEnergy(double e)
             }
         }
     }
-    return mcPStarRecord();
+    return record;
 }
 
 void mcPStarTable::LoadFromStream(std::istream& is)
