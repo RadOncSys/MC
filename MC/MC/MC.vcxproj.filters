@@ -293,6 +293,12 @@
     <ClCompile Include="mcBrachySource.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="mcMendeleev.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
+    <ClCompile Include="mcPStar.cpp">
+      <Filter>Media</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcDefs.h" />
@@ -597,6 +603,12 @@
     </ClInclude>
     <ClInclude Include="mcBrachySource.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcMendeleev.h">
+      <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcPStar.h">
+      <Filter>Media</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

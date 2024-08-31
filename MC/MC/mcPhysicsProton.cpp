@@ -35,9 +35,9 @@ double mcPhysicsProton::MeanFreePath(double ke, const mcMedium& med, double dens
 {
 	// вместо логарифма используем линейно энергию
 	const mcMediumProton& m = (const mcMediumProton&)med;
-	double logKE = ke;//log(ke);
-	int iLogKE = int(ke);//int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	double sigma = (m.sigma0_proto[iLogKE] + (logKE - iLogKE) * m.sigma1_proto[iLogKE]) * dens;
+	double logKE = log(ke);
+	int iLogKE = int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
+	double sigma = (m.sigma0_proto[iLogKE] + logKE * m.sigma1_proto[iLogKE]) * dens;
 	return (sigma > 0.0) ? 1 / sigma : DBL_MAX;
 }
 
@@ -61,9 +61,9 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	//double mE = kE;		// исходная версия (Отчёт)
 	double mE = p->ke - e_dep / 2.0;  // коррекция март 2008
 	// вместо логарифма используем линейно энергию
-	double logKE = mE; //p->ke;//log(p->ke);
-	int iLogKE = int(logKE);//(int) (m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + (logKE - iLogKE) * m.dedx1_proto[iLogKE]);			//BUG??? logKE заменен на (logKE - iLogKE)
+	double logKE = log(mE);
+	int iLogKE = int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
+	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);	
 	// более короткие шаги (до пересечения с границей или точечного вз. считаем без поправки
 	step = MIN(step, e_dep / dedx);
 	e_dep = step * dedx;	// если изменился шаг
@@ -132,12 +132,27 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	//cout << ".";
 
 	// Возвращаем энергию, выделившуюся в точке.
+	//return 2 * p->ke * p->weight;
+	
+
+
+
+
+	// Непонятный баг вероятно в ядерных реакциях.
+	// Временно их отключаем
+	
+	p->ke /= 3.0;
+	return 2 * p->ke * p->weight;
+
+
+
+
 
 	mcRng& rng = p->thread_->rng();
 	const mcMediumProton* m = (const mcMediumProton*)med;
-	double logKE = p->ke;//log(ke);
-	int iLogKE = int(p->ke);//int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
-	double microsigma_total = (m->sigma0_proto[iLogKE] + (logKE - iLogKE) * m->sigma1_proto[iLogKE]) / m->density_ / NAVOGADRO * m->AtomicWeight();
+	double logKE = log(p->ke);
+	int iLogKE = int(m->iLogKE0_proto + logKE * m->iLogKE1_proto);
+	double microsigma_total = (m->sigma0_proto[iLogKE] + logKE * m->sigma1_proto[iLogKE]) / (m->density_ * NAVOGADRO * m->atomicWeight);
 	if (microsigma_total <= 0)
 		return 0;
 	vector<double> sigmaratio;

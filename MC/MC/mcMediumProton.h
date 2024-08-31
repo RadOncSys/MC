@@ -6,6 +6,7 @@
 
 #include "mcEndfP.h"
 #include "mcMedium.h"
+#include "mcPStar.h"
 #include "mcDefs.h"
 
 // Класс описания параметров конкретной среды для транспорта протонов.
@@ -13,12 +14,16 @@ class mcMediumProton : public mcMedium
 {
 public:
 	mcMediumProton(void);
+	mcMediumProton(const mcMedium& m);
 	virtual ~mcMediumProton(void);
+
+	// Установка данных взаимодействия с электронами
+	// (которые и определяют дозовое распределение в CORE)
+	void SetElectrons(const mcPStar& starDB);
 
 	double kEmax(void)const { return (double)dedx1_proto.size(); }
 	virtual void read(istream& is);
 	void createDB();
-	const double AtomicWeight() const;	// Атомный вес среды, г/моль
 
 private:
 	//--------------------------------
@@ -26,8 +31,7 @@ private:
 	//--------------------------------
 	double gdEdxStragglingGaussVarianceConstPart();	// генерирует и возвращает постоянную (по энергии и пути) часть вариации Гаусссова приближения разброса dE/dx. 
 	double gRadiationLength();	// генерирует и возвращает величину обратную радиационной длине сложного вещества rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23) для расчёта радиационной длины отдельного элемента вызывает InverseRadiationLength  (принятое приближение (в версии 2007 года это приближение Dahl'а))
-	void gSigmaInelastic(int Ap = 1, int Zp = 1);	// генерирует величину сечения неупругого взаимодействия
-
+	
 public:
 	// не зависимая от энергии и пути часть Гауссовой вариации (sigma^2) dE/dx
 	double dEdxStragglingGaussVarianceConstPart_;
@@ -35,7 +39,16 @@ public:
 	//// Transport:
 	double radLength;          // Radiation length, [cm](!)
 
-	// Transport:
+	double atomicWeight;	// Атомный вес среды, г/моль
+
+	// Коэффициенты линейной формулы пересчета логарифма энергии в индексы
+	// idx = int(iLogKE0_elec + iLogKE1_elec * log(E, Mev))
+	double iLogKE0_proto;
+	double iLogKE1_proto;
+	double ke_min;
+	double ke_max;
+	int ndedx_bins;
+
 	// Коэффициенты интерполяции S(E)=S0[Ei]+S1[Ei]*E, Ei=int(E)
 	// В электронах вместо энергии используется логарифм
 	// Мы пока оставим линейную интерполяцию

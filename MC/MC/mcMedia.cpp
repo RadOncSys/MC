@@ -8,8 +8,9 @@
 #include "mcPhysicsProton.h"
 #include "mcPhysicsNeutron.h"
 #include "mcParticle.h"
-//#include "mcCSNuclear.h"
+#include "mcMendeleev.h"
 #include "mcEndfP.h"
+#include "mcPStar.h"
 #include "../geometry/text.h"
 #include <fstream>
 #include <filesystem>
@@ -126,83 +127,17 @@ void mcMedia::initXEFromFile(const string& fname)
 	initXEFromStream(is);
 }
 
-void mcMedia::initProtonDeDxFromStream(istream& is)
+void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearDir)
 {
-	if (!protons_.empty())
-		throw std::exception("Proton crossectons already initialized");
-	int i;
-	for (i = 0; i < (int)mnames_.size(); i++)
-		protons_.push_back(new mcMediumProton());
-
-	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
-	string line, s1, s2, s3, s4;
-	getline(is, line, '\n');
-	while (!is.fail())
-	{
-		if (line.find("MEDIUM=") != string::npos)
-		{
-			GetTwoStringsFromLine(line, s1, s2);
-			GetTwoStringsFromLine(s2, line, s1);
-
-			// Проверяем, нужна ли данная среда для загрузки?
-			int i;
-			for (i = 0; i < (int)mnames_.size(); i++)
-				if (mnames_[i] == line) break;
-
-			if (i < (int)mnames_.size()) {
-				// дополнительно проверяем версию input file VER=0.0.0
-				GetTwoStringsFromLine(s1, s2, s3);
-				GetTwoStringsFromLine(s3, s1, s4);
-				if ((s2 == "VER") || (s3 == "0.0.0")) {
-					protons_[i]->name_ = line;
-					((mcMediumProton*)protons_[i])->read(is);
-				}
-				else {
-					//throw std::exception("Wrong Proton media data version"); 
-					//в принципе данные могут быть дальше в этом же файле в другой версии, 
-					// так что просто не считываем данные
-				}
-			}
-		}
-		getline(is, line, '\n');
-	}
-
-	// Проверяем, все ли среды загружены
-	string errmedia;
-	for (int i = 0; i < (int)protons_.size(); i++)
-	{
-		if (protons_[i]->status_ != mcMedium::LOADED) {
-			errmedia += mnames_[i];
-			errmedia += "\n";
-		}
-	}
-	if (!errmedia.empty())
-		throw std::exception((string("The following Proton media were not loaded succcessfuly:\n") + errmedia).c_str());
-}
-
-void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
-{
-	// Старый вариант тормозных спопосбностей (Костюченко, 2008)
-	ifstream is(fname.c_str());
-	if (is.fail())
-		throw std::exception((string("Can't open Proton data file: ") + fname).c_str());
-	initProtonDeDxFromStream(is);
-
-	//TablicaMendeleeva H = Loaded O = Loaded
-	//for (media1:media_last)
-	//protons_->elements_->
-	Mendeleev Table;
-	Table.init();
-
+	mcMendeleev Table;
 	for (int i = 0; i < xes_.size(); i++)
 		for (int j = 0; j < xes_[i]->elements_.size(); j++)
-			Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
+			Table.IsNecessary[xes_[i]->elements_[j].atomicNumber - 1] = true;
 
-	// Объект, в который сначала закачиваем всю баз данных сечений
-	//auto dbData = std::make_unique<std::vector<std::unique_ptr<mcCSNuclear>>>();
-
-	// ICRU-63
-	//auto dbData = std::make_unique<std::vector<mcCSNuclear>>();
+	// DE/dx from PSTAR
+	mcPStar pstardb;
+	mcMendeleev ptable(Table);
+	pstardb.LoadFromPath(pstardir, ptable);
 
 	// ENDF
 	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfP>>>();
@@ -239,15 +174,15 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 		// База данных изотопа
 		//mcCSNuclear csForElement;
 		auto csForElement = std::make_shared<mcEndfP>();
-		if (Table.isNecessary[Z])
+		if (Table.IsNecessary[Z - 1])
 		{
-			if(Table.isLoad[Z])
+			if(Table.IsLoad[Z - 1])
 				throw std::exception((
 					string("Something wrong with proton ENDF data! Attempt to load data for element Z= ") +
 					to_string(Z) + ", while data alreadt loaded.").c_str());
 			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 			dbData->push_back(csForElement);
-			Table.isLoad[Z] = true;
+			Table.IsLoad[Z - 1] = true;
 		}
 
 		//ifstream isIcru(entry.path().c_str());
@@ -255,25 +190,33 @@ void mcMedia::initProtonFromFiles(const string& fname, const string& nuclearDir)
 
 	// Чтобы не мучиться с отладкой в случае проблем сразу проверяем чего не хватает.
 	string info;
-	for (int i = 0; i < Table.isLoad.size(); i++)
+	for (int i = 0; i < Table.IsLoad.size(); i++)
 	{
-		if (Table.isNecessary[i] && !Table.isLoad[i])
-			info += string("Not found proton ENDF element with Z = ") + to_string(i) + "\r\n";
+		if (Table.IsNecessary[i] && !Table.IsLoad[i])
+			info += string("Not found proton ENDF element with Z = ") + to_string(i + 1) + "\r\n";
 	}
 	if(info.size() != 0)
 		throw std::exception(info.c_str());
 
-	initProtonCSFromVector(dbData);
-}
-
-void mcMedia::initProtonCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfP>>> dbData)
-{
-	for (int i = 0; i < protons_.size(); i++)
+	// Подготавливаем среды для протонов по шаблону EGS
+	// и устанавливаем параметры среды в части взаимодействия с электронами (PSTAR)
+	if (!protons_.empty())
+		throw std::exception("Proton crossectons already initialized");
+	for (int i = 0; i < xes_.size(); i++)
 	{
-		if(dbData->size() == 0)
-			throw std::exception("Proton ENDF data not loaded");
-		((mcMediumProton*)protons_[i])->ENDFdata = dbData;
-		((mcMediumProton*)protons_[i])->createDB();
+		// Конструктор по шаблону EGS устанавливает и копию элементного состава среды
+		auto m = new mcMediumProton(*xes_[i]);
+
+		// Взаимодействие с электронами
+		m->SetElectrons(pstardb);
+
+		// Взаимодействие с ядрами
+		m->ENDFdata = dbData;
+		m->createDB();
+
+		m->status_ = mcMedium::LOADED;
+
+		protons_.push_back(m);
 	}
 }
 
@@ -331,19 +274,18 @@ void mcMedia::initNeutronFromStream(istream& is)
 		throw std::exception((string("The following Neutron media were not loaded succcessfuly:\n") + errmedia).c_str());
 }
 
-void mcMedia::initNeutronFromFiles(const string& fname, const string& nuclearDir)
+void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 {
-	ifstream is(fname.c_str());
+	ifstream is(path.c_str());
 	if (is.fail())
-		throw std::exception((string("Can't open Neutron data file: ") + fname).c_str());
+		throw std::exception((string("Can't open Neutron data file: ") + path).c_str());
 	initNeutronFromStream(is);
 
-	Mendeleev Table;
-	Table.init();
+	mcMendeleev Table;
 
 	for (int i = 0; i < xes_.size(); i++)
 		for (int j = 0; j < xes_[i]->elements_.size(); j++)
-			Table.isNecessary[xes_[i]->elements_[j].atomicNumber] = true;
+			Table.IsNecessary[xes_[i]->elements_[j].atomicNumber - 1] = true;
 
 	// ENDF
 	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfN>>>();
@@ -380,23 +322,23 @@ void mcMedia::initNeutronFromFiles(const string& fname, const string& nuclearDir
 		// База данных изотопа
 		//mcCSNuclear csForElement;
 		auto csForElement = std::make_shared<mcEndfN>();
-		if (Table.isNecessary[Z])
+		if (Table.IsNecessary[Z - 1])
 		{
-			if (Table.isLoad[Z])
+			if (Table.IsLoad[Z - 1])
 				throw std::exception((
 					string("Something wrong with neutron ENDF data! Attempt to load data for element Z= ") +
 					to_string(Z) + ", while data alreadt loaded.").c_str());
 			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 			dbData->push_back(csForElement);
-			Table.isLoad[Z] = true;
+			Table.IsLoad[Z - 1] = true;
 		}
 	}
 
 	string info;
-	for (int i = 0; i < Table.isLoad.size(); i++)
+	for (int i = 0; i < Table.IsLoad.size(); i++)
 	{
-		if (Table.isNecessary[i] && !Table.isLoad[i])
-			info += string("Not found neutron ENDF element with Z = ") + to_string(i) + "\r\n";
+		if (Table.IsNecessary[i] && !Table.IsLoad[i])
+			info += string("Not found neutron ENDF element with Z = ") + to_string(i + 1) + "\r\n";
 	}
 	if (info.size() != 0)
 		throw std::exception(info.c_str());
@@ -442,13 +384,4 @@ const mcMedium* mcMedia::getMedium(int ptype, int idx) const
 	}
 	else
 		throw std::exception("Unsupported particle type");
-}
-
-void Mendeleev::init()
-{
-	for (int i = 0; i < 119; i++)
-	{
-		isNecessary.push_back(false);
-		isLoad.push_back(false);
-	}
 }

@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv [])
 	}
 
 	int i;
-	int nThreads = concurrency::GetProcessorCount();
-	//int nThreads = 1;
+	//int nThreads = concurrency::GetProcessorCount();
+	int nThreads = 1;
 
 	double simStartTime = TIME;
 
@@ -64,13 +64,14 @@ int _tmain(int argc, _TCHAR* argv [])
 		//media.addName("SI700ICRU");
 		//media.addName("170C700ICRU");
 		//media.addName("226C700ICRU");
+
 		//media.addName("BE700ICRU");
+
 		//media.addName("TA700ICRU");
 		//media.addName("AU700ICRU");
 
 		media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
-		//media.initProtonFromFiles("../data/proton.dat", "../data/PSTAR", "../data/ICRU63");
-		media.initProtonFromFiles("../data/proton.dat", "../data/ENDFP");
+		media.initProtonFromFiles("../data/PSTAR", "../data/ENDFP");
 		media.initNeutronFromFiles("../data/neutron.dat", "../data/ENDFN");
 
 		// Pars input files

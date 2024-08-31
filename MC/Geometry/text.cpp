@@ -39,6 +39,36 @@ short GetTwoStringsFromLine(const string& line, string& s1, string& s2, const ch
 	return (short)s1.size();
 }
 
+short TrimLine(string& line)
+{
+	int index = (int)line.find_first_of('#');
+	if (index == 0) { line.erase(line.begin(), line.end()); return 0; }
+	if (index != string::npos)
+		line = string(line, 0, index);
+	int len = (int)line.size();
+	// trim head
+	int index1 = 0;
+	while (index1 < len) {
+		if (line[index1] == ' ' || line[index1] == '\t' || line[index1] == '=')
+			index1++;
+		else
+			break;
+	}
+	// trim head
+	int index2 = len - 1;
+	while (index2 > 0) {
+		if (line[index2] == ' ' || line[index2] == '\t' || line[index1] == '=')
+			index2--;
+		else
+			break;
+	}
+	if (index2 < index1)
+		line.erase(line.begin(), line.end());
+	else
+		line = string(line, index1, index2 - index1 + 1);
+	return (short)line.size();
+}
+
 int GetStringArray(const string& line, vector<string>& ss, const char* pmask)
 {
 	string l = line, l1, l2;

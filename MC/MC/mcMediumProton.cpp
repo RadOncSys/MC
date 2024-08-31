@@ -3,8 +3,8 @@
 #include <iostream>
 #include "mcPhysicsCommon.h"
 #include "mcEndfP.h"
-//#include <math.h>
-//���������� ������ ���������� ������� ��������������� � ��������, ��������:
+
+//Необходимо задать конкретную формулу соответствующим с макросом, например:
 #ifndef InverseRadiationLength
 #define InverseRadiationLength InverseRadiationLength_DahlApproximation
 #endif InverseRadiationLength
@@ -38,10 +38,9 @@ double InverseRadiationLength(const double* A, const double* Z, const double* w,
 	return s;
 }
 
-
 string CLEARFROMALPHA(string x)
 {
-	for (int i = x.length() - 1; i >= 0 ; i--)
+	for (int i = (int)x.length() - 1; i >= 0 ; i--)
 		if (x[i] > '9')
 			x.erase(i, 1);
 	return x;
@@ -122,37 +121,6 @@ double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE)
 	return sigmaTL;
 }
 
-double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
-{
-	double SIGMA = 0.0;
-	kE *= 1000000;
-	bool isFound = false;
-	int i = 0;
-	string elName = to_string(Z);
-	if (A < 10)
-		elName += "00" + to_string(A);
-	else if (A < 100)
-		elName += "0" + to_string(A);
-	else elName += to_string(A);
-	for (i = 0; i < ENDFdata->size(); i++)
-	{
-		if (CLEARFROMALPHA(ENDFdata->at(i)->ElementName) == elName)
-		{
-			isFound = true;
-			break;
-		}
-	}
-	if (!isFound)
-		return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
-	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
-	if (ENDFdata->at(i)->NuclearCrossSections.isEmpty)
-		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
-	if (kE <= ENDFdata->at(i)->NuclearCrossSections.Energies[0])
-		return SIGMA;
-	SIGMA = ENDFdata->at(i)->NuclearCrossSections.get_sigma(kE);
-	return SIGMA / pow(10,24);
-}
-
 double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfP>>* ENDF)
 {
 	double SIGMA = 0.0;
@@ -174,10 +142,10 @@ double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfP>>* ENDF)
 		}
 	}
 	if (!isFound)
-		//return SIGMA;	//���� ������ �� ������ � ���� ������ ENDF ������������ 0
+		//return SIGMA;	//Если нуклид не найден в базе данных ENDF возвращается 0
 		throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
 	if (ENDF->at(i)->NuclearCrossSections.isEmpty)
-		return SIGMA;	//���� ��� ������ �� MF=3 MT=5 ������������ 0
+		return SIGMA;	//Если нет данных по MF=3 MT=5 возвращается 0
 	if (kE <= ENDF->at(i)->NuclearCrossSections.Energies[0])
 		return SIGMA;
 	else
@@ -202,19 +170,129 @@ mcMediumProton::mcMediumProton(void)
 {
 }
 
+mcMediumProton::mcMediumProton(const mcMedium& m)
+{
+	name_ = m.name_;
+	density_ = m.density_;
+	elements_ = m.elements_;
+
+	atomicWeight = 0.0;
+	for (vector<mcElement>::const_iterator el = elements_.begin(); el != elements_.end(); el++)
+		atomicWeight += el->atomicMass * el->partsByNumber;
+}
+
 mcMediumProton::~mcMediumProton(void)
 {
 }
 
-// Атомный вес среды, г/моль SUM{Ni*Ai}
-const double mcMediumProton::AtomicWeight() const
+double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 {
-	double A = 0.0; // Атомный вес
-	for (vector<mcElement>::const_iterator el = elements_.begin(); el != elements_.end(); el++) 
+	double SIGMA = 0.0;
+	kE *= 1000000;
+	bool isFound = false;
+	int i = 0;
+	string elName = to_string(Z);
+	if (A < 10)
+		elName += "00" + to_string(A);
+	else if (A < 100)
+		elName += "0" + to_string(A);
+	else elName += to_string(A);
+	for (i = 0; i < ENDFdata->size(); i++)
 	{
-		A += el->atomicMass * el->partsByNumber;
-	};
-	return A;
+		if (CLEARFROMALPHA(ENDFdata->at(i)->ElementName) == elName)
+		{
+			isFound = true;
+			break;
+		}
+	}
+	if (!isFound)
+		return SIGMA;	//Если нуклид не найден в базе данных ENDF возвращается 0
+	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
+	if (ENDFdata->at(i)->NuclearCrossSections.isEmpty)
+		return SIGMA;	//Если нет данных по MF=3 MT=5 возвращается 0
+	if (kE <= ENDFdata->at(i)->NuclearCrossSections.Energies[0])
+		return SIGMA;
+	SIGMA = ENDFdata->at(i)->NuclearCrossSections.get_sigma(kE);
+	return SIGMA / pow(10,24);
+}
+
+void mcMediumProton::SetElectrons(const mcPStar& starDB)
+{
+	ndedx_bins = 100;
+	ke_min = 0.1;
+	ke_max = 1000;
+	dedx0_proto.resize(ndedx_bins, 0);
+	dedx1_proto.resize(ndedx_bins, 0);
+	sigma0_proto.resize(ndedx_bins, 0);
+	sigma1_proto.resize(ndedx_bins, 0);
+	iLogKE1_proto = ndedx_bins / (log(ke_max) - log(ke_min));
+	iLogKE0_proto = -iLogKE1_proto * log(ke_min);
+
+	// Рассчитываем тормозные способности среды по составу и элементным данным
+	double wtotal = 0;
+	std::vector<double> w(elements_.size());
+	for (int i = 0; i < elements_.size(); i++)
+	{
+		double f = elements_[i].atomicMass * elements_[i].partsByNumber;
+		w[i] = f;
+		wtotal += f;
+	}
+	wtotal *= density_;
+	for (int i = 0; i < elements_.size(); i++) w[i] /= wtotal;
+
+	std::vector<std::shared_ptr<mcPStarTable>> tables(elements_.size());
+	for (int i = 0; i < elements_.size(); i++)
+	{
+		tables[i] = starDB.GetTableForElement(elements_[i].atomicNumber);
+		if (tables[i] == nullptr)
+			std::exception("PSTAR for element not found");
+	}
+
+	// sampling вектора тормозных способностей среды в точках таблицы среды
+	vector<double> crs(ndedx_bins + 1, 0);
+	for (int idx = 0; idx <= ndedx_bins; idx++)
+	{
+		double e = exp((idx - iLogKE0_proto) / iLogKE1_proto);
+		for (int i = 0; i < elements_.size(); i++)
+			crs[idx] += tables[i]->GetDataForEnergy(e).D[0] * w[i];
+	}
+
+	// Пересчитываем коэффициенты линейной интерполяции
+	for (int idx = 0; idx < ndedx_bins; idx++)
+	{
+		double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
+		double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
+		dedx1_proto[idx] = (crs[idx + 1] - crs[idx]) / (log_e1 - log_e0);
+		dedx0_proto[idx] = crs[idx] -log_e0 * dedx1_proto[idx];
+	}
+
+	// Таблицы рассеяния на ядрах.
+	// TODO: Разобраться с физикой. Текущее понимание в следующем.
+	// Торможение в подавляющей степени происходит на электронах.
+	// Рассеяние на малые углы происходит на ядрах по модели Tripathi.
+	// Предварительно казалось, что рассеяние тоже на электронах.
+	// Поэтому код здесь, где и остается с формулировкой 
+	// что это вся физика, не включающая ядерные реакции.
+	double aweight = NAVOGADRO * density_ / atomicWeight;
+	vector<double> sigma_in(ndedx_bins + 1, 0);
+	
+	for (int i = 0; i <= ndedx_bins; i++)
+	{
+		double e = exp((i - iLogKE0_proto) / iLogKE1_proto);
+		double S = 0.0; // длина свободного пробега
+		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++)
+			S += sigmaTripathiLight(1, 1, ROUND(el->atomicMass), ROUND(el->atomicNumber), e) * 
+			     el->partsByNumber;
+		sigma_in[i] = S * aweight;
+	}
+
+	for (int i = 0; i < ndedx_bins; i++)
+	{
+		double log_e0 = (i - iLogKE0_proto) / iLogKE1_proto;
+		double log_e1 = (i + 1 - iLogKE0_proto) / iLogKE1_proto;
+		sigma1_proto[i] = (sigma_in[i + 1] - crs[i]) / (log_e1 - log_e0);
+		sigma0_proto[i] = sigma_in[i] -log_e0 * sigma1_proto[i];
+	}
 }
 
 //--------------------------------
@@ -245,7 +323,7 @@ double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 		dEdxStragglingGaussVarianceConstPart_ += el->partsByNumber * el->atomicNumber; // wi*Zi/Ai=ni*Zi/A
 	}
 
-	dEdxStragglingGaussVarianceConstPart_ *= 0.3 * SQUARE(EMASS) * density_ / AtomicWeight(); //0.3*SQUARE(EMASS)/A=0.07833601179626508/A
+	dEdxStragglingGaussVarianceConstPart_ *= 0.3 * SQUARE(EMASS) * density_ / atomicWeight; //0.3*SQUARE(EMASS)/A=0.07833601179626508/A
 	return dEdxStragglingGaussVarianceConstPart_;
 };
 
@@ -260,7 +338,7 @@ double mcMediumProton::gRadiationLength()
 	for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
 		radLength += InverseRadiationLength(el->atomicMass, el->atomicNumber) * el->partsByNumber * el->atomicMass;
 	}
-	radLength = AtomicWeight() / (radLength * density_);
+	radLength = atomicWeight / (radLength * density_);
 	return radLength;
 }
 
@@ -280,117 +358,11 @@ void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
 	return;
 }
 
-// mfp=1/(S) 
-// даёт sigma*dens*Na/A [1/cm]
-// для налетающей частицы с массой (в единицах массы протона) Ap 
-// и зарядом (в единицах заряда электрона) Zp
-// По умолчанию для протона (Ap = Zp = 1)
-void mcMediumProton::gSigmaInelastic(int Ap, int Zp)
-{
-	double S;
-	vector<double>sigma_in;
-
-	for (int i = 0; i < kEmax(); i++) {
-		S = 0.0; // длина свободного пробега
-		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-			S += sigmaTripathiLight(Ap, Zp,
-				ROUND(el->atomicMass), ROUND(el->atomicNumber),
-				i + 1) * el->partsByNumber;
-		}
-		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
-		sigma_in.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
-	}
-	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
-	coeff_calc(sigma_in, sigma1_proto, sigma0_proto);
-}
-
 void mcMediumProton::read(istream& is)
 {
-	const double distanceUnit = 1.0;
-	status_ = FAILED;
-
-	std::string line, s1, s2;
-	vector<double> a;
-	vector<int> ia;
-
-	// Line
-	getline(is, line, '\n');
-	if (is.fail()) return;
-
-	// Тип среды, плотность
-	std::string eletype;
-	GetTwoStringsFromLine(line, eletype, s2);
-	line = s2;
-	this->density_ = atof(ParseLine(line, "RHO").c_str());
-
-	// Элементарный состав
-	int i, ne = atoi(ParseLine(line, "NE").c_str());
-	this->elements_.resize(ne);
-	for (i = 0; i < ne; i++)
-	{
-		// Line
-		getline(is, line, '\n');
-		if (is.fail()) return;
-
-		mcElement& e = this->elements_[i];
-		strcpy_s(e.atomicSymbol, 3, ParseLine(line, "ASYM").c_str());
-		e.atomicNumber = atoi(ParseLine(line, "Z").c_str());
-		e.atomicMass = atof(ParseLine(line, "A").c_str());
-		e.partsByNumber = atof(ParseLine(line, "PZ").c_str());
-	}
-
-	// Выше стандарт из Nova
-	// Больше нам пока ничего не надо, кроме таблицы, из которой надо взять dE/dx
-	// Это уже таблица нашего типа
-	for (;;) { // Ищем начало таблицы TABLE
-		// Line
-		getline(is, line, '\n');
-		if (is.fail()) return;
-		if (line.substr(0, 5) == "TABLE")break;
-	}
-	// 1 строка - имена переменных
-	// 2 строка - размерности
-	// 3 строка и далее - данные, до END
-	// По идее надо иметь возможность опускать 1 и вторую строки
-	getline(is, line, '\n');
-	if (is.fail()) return;
-	std::vector<std::string> ss; int nl;
-	nl = GetStringArray(line, ss, "\t"); // разбираем заголовок на столбцы
-	int ikE = -1, idEdx = -1;
-	for (int i = 0; i < nl; i++) { // Ищем столбец с энергией и столбец с dEdx
-		if (ss[i] == "kE") { ikE = i; }
-		if (ss[i] == "dE/dx") { idEdx = i; }
-	}
-	// В общем случае надо просто переходить к следующей таблице. 
-	// Сейчас полагаем, что таблица одна и если данных в ней нет, то всё
-	if ((ikE == -1) || (idEdx == -1)) { throw std::exception("kE or dE/dx data not found"); }
-	getline(is, line, '\n'); // строка с размерностями - не проверяем, просто пропукскаем
-	vector<double>kE, dEdx;
-	getline(is, line, '\n');
-	i = 0;
-	while (line.substr(0, 3) != "END") {// проверяем конец таблицы или нет
-		vector<double> data;
-		int nd = GetFloatArray(line, data);
-		if (nd != nl) { throw std::exception("Wrong Table"); }
-		// В файле данных dE/dx в МэВ*см^2/г, адалее будем работать в линейных единицах, 
-		// поэтому сразу перводим, домножая на плотность, которую уже считали
-		kE.push_back(data[ikE]); dEdx.push_back(data[idEdx] * density_); //забираем данные
-		getline(is, line, '\n');
-		i++;
-	}
-	// Сейчас предполагаем, что в файле данных kE=[1,2,...?], в противном случае данные отвергаем
-	for (i = 0; i < kE.size(); i++) {
-		if (kE[i] != double(i + 1)) { throw std::exception("kE is not [1,2,...]"); }
-	};
-	coeff_calc(dEdx, dedx1_proto, dedx0_proto); // вычисляем коэффициенты для линейной интерполяции
-
-	// Данные загрузили, но надо ещё и расчитать недостающие
-	gdEdxStragglingGaussVarianceConstPart();
-	gRadiationLength();
-	gSigmaInelastic();
-	gRadiationLength();
-
-	status_ = LOADED;
+	// Оставлено, так как метод в базовом классе объявлен как абсрактный.
+	// Но данные для протонов формируются налету из элементного состава среды
+	// и баз данных PSTAR и ENDF, а не загружаются из специально подготовленных файлов.
 }
 
 void mcMediumProton::createDB()
@@ -404,8 +376,8 @@ void mcMediumProton::createDB()
 		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
 			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get())/pow(10,24) * el->partsByNumber;
 		}
-		//mfp_in_1_[i]=S*density_*NAVOGADRO/AtomicWeight();
-		sigma_endf.push_back(S * NAVOGADRO * density_ / AtomicWeight()); // mfp=1/(sigma_in)
+		//mfp_in_1_[i]=S*density_*NAVOGADRO/atomicWeight;
+		sigma_endf.push_back(S * NAVOGADRO * density_ / atomicWeight); // mfp=1/(sigma_in)
 		sigma_.push_back(S); // mfp=1/(sigma_in)
 	}
 	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе

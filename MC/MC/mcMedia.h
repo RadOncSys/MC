@@ -42,12 +42,10 @@ public:
 	// fname - файл, содержащий заголовки сред, соглсованные с PEGS4
 	// pstardir - файлы с тормозными способностями отдельных атомов по базе данных PSTAR
 	// icrudir63 - файлы сечений ядерных реакций из протокола ICRU63
-	void initProtonFromFiles(const string& fname, const string& nucleardir);
-	void initProtonDeDxFromStream(istream&);
-	void initProtonCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfP>>> dbData);
+	void initProtonFromFiles(const string& pstardir, const string& nucleardir);
 
 	void initNeutronFromStream(istream&);
-	void initNeutronFromFiles(const string& fname, const string& nuclearDir);
+	void initNeutronFromFiles(const string& path, const string& nuclearDir);
 	void initNeutronCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfN>>> dbData);
 
 	// Возвращает указатель объекта физических расчетов для частицы указанного типа
@@ -68,12 +66,4 @@ protected:
 	vector<mcMedium*> neutrons_;
 
 	vector<mcPhysics*> physics_;
-};
-
-struct Mendeleev
-{
-	vector<bool> isNecessary;
-	vector<bool> isLoad;
-
-	void init();
 };

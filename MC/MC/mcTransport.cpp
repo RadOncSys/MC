@@ -376,7 +376,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	// Если у не зараяженной частицы бесконечны свободный путь то она вообще не может взаимодействовать.
 	// Это, конечно, ошибка с дальнейшим неопределенным поведением системы.
 	// Поэтому просто убиваем частицу вывешивая предупреждение.
-	if (freepath == DBL_MAX && particle->regDensityRatio == 0)
+	if (freepath == DBL_MAX && particle->q == 0)
 	{
 		cout << "Wrong mean free path" << this->getName() << endl;
 		cout << "Position: " << particle->p;
@@ -460,7 +460,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	else
 	{
 		// HACK! На поверхности возможно залипание, если расстояние в пределах погрешности вычислений.
-		static const double epsln = MINDELTA * 10;
+		static const double epsln = MINDELTA;
 		if (dist < epsln)
 			dist = epsln;
 		step = dist;

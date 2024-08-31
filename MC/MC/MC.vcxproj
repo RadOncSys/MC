@@ -177,6 +177,7 @@
     <ClInclude Include="mcMediumNeutron.h" />
     <ClInclude Include="mcMediumProton.h" />
     <ClInclude Include="mcMediumXE.h" />
+    <ClInclude Include="mcMendeleev.h" />
     <ClInclude Include="mcObj.h" />
     <ClInclude Include="mcParticle.h" />
     <ClInclude Include="mcParticleStack.h" />
@@ -189,6 +190,7 @@
     <ClInclude Include="mcPhysicsPhoton.h" />
     <ClInclude Include="mcPhysicsPositron.h" />
     <ClInclude Include="mcPhysicsProton.h" />
+    <ClInclude Include="mcPStar.h" />
     <ClInclude Include="mcPTGrid3D.h" />
     <ClInclude Include="mcPTLasVegas.h" />
     <ClInclude Include="mcPTQc3.h" />
@@ -283,6 +285,7 @@
     <ClCompile Include="mcMediumNeutron.cpp" />
     <ClCompile Include="mcMediumProton.cpp" />
     <ClCompile Include="mcMediumXE.cpp" />
+    <ClCompile Include="mcMendeleev.cpp" />
     <ClCompile Include="mcObj.cpp" />
     <ClCompile Include="mcParticle.cpp" />
     <ClCompile Include="mcParticleStack.cpp" />
@@ -295,6 +298,7 @@
     <ClCompile Include="mcPhysicsPhoton.cpp" />
     <ClCompile Include="mcPhysicsPositron.cpp" />
     <ClCompile Include="mcPhysicsProton.cpp" />
+    <ClCompile Include="mcPStar.cpp" />
     <ClCompile Include="mcPTGrid3D.cpp" />
     <ClCompile Include="mcPTLasVegas.cpp" />
     <ClCompile Include="mcPTQc3.cpp" />
