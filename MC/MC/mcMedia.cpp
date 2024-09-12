@@ -212,7 +212,9 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 
 		// Взаимодействие с ядрами
 		m->ENDFdata = dbData;
-		m->createDB();
+		
+		// TODO: Разобраться с этим кодом. Он заменяет сигма от Thripati
+		//m->createDB();
 
 		m->status_ = mcMedium::LOADED;
 

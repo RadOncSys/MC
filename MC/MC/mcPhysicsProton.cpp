@@ -54,6 +54,10 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	// Разыграть рассеяние - изменить направление
 
 	// 1. Определяем средние потери энергии
+	// 
+	// TODO: У электронов и позитронов есть отдельные таблицы PEGS, которые ограничивают шаг.
+	// Вероятно и для протонов нужна похожая модель максимальной величины шага в среде в зависимости от энергии!
+	// 
 	// Пока полагаем, что протон на каждом шаге теряет не больше 1% энергии
 	e_dep = 0.01 * p->ke;	// Задаём максимальную величину потерь энергии на шаге
 
@@ -138,14 +142,6 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 
 	// Возвращаем энергию, выделившуюся в точке.
 	//return 2 * p->ke * p->weight;
-
-
-	// TODO:
-	// Ядерные реакции временно отключены, так как код требует отладки!
-	p->ke /= 3.0;
-	return 2 * p->ke * p->weight;
-
-
 
 	mcRng& rng = p->thread_->rng();
 	const mcMediumProton* m = (const mcMediumProton*)med;

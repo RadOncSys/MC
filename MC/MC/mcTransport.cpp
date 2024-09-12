@@ -391,6 +391,7 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 	{
 		double stepRequested = step;
 		edep = phys->TakeOneStep(particle, *med, step);
+		particle->mfps -= step / freepath;
 
 		// Сохраняем фрагмент трека после шага, который может меняться в процессе последнего.
 		// К тому же координаты точки имеют значение после шага. Поэтому в следующих расчетах шаг отрицательный.

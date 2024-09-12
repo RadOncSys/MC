@@ -253,7 +253,9 @@ void mcMediumProton::SetElectrons(const mcPStar& starDB)
 	{
 		double e = exp((idx - iLogKE0_proto) / iLogKE1_proto);
 		for (int i = 0; i < elements_.size(); i++)
-			crs[idx] += tables[i]->GetDataForEnergy(e).D[1] * w[i];
+			// Берем суммарную тормозную способность. 
+			// При этом понимаем ядерную часть как такое же кулоновское взаимодействие как и с электронами.
+			crs[idx] += tables[i]->GetDataForEnergy(e).D[3] * w[i];
 	}
 
 	// Пересчитываем коэффициенты линейной интерполяции
