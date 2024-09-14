@@ -393,3 +393,7 @@ void mcMediumXE::InitializeAngularDistribution()
 	this->zFactor_angDist /= norm;
 	this->zFactor_angDist = oneOver111Squared * pow(this->zFactor_angDist, oneThird);
 }
+
+void mcMediumXE::dump(std::ostream& os) const
+{
+}

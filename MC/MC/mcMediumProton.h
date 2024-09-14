@@ -27,6 +27,8 @@ public:
 	double kEmax(void)const { return (double)dedx1_proto.size(); }
 	virtual void read(istream& is);
 
+	virtual void dump(std::ostream& os) const;
+
 private:
 	//--------------------------------
 	// Генерация данных (физика!)

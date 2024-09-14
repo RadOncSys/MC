@@ -20,6 +20,8 @@ public:
 
     const double kEmax(void)const{return (double)dedx1_neutro.size();}
 	const double AtomicWeight() const;
+	
+	virtual void dump(std::ostream& os) const;
 
 private:
 	const double	gdEdxStragglingGaussVarianceConstPart(); 

@@ -467,8 +467,8 @@ void mcEndfProduct::Load(std::istream& is)
 
 void mcEndfCrossSectionTable::dump(std::ostream& os) const
 {
-	os << "NPoints = \t" << npoints[1] << endl;
-	os << "InterpolationType = \t" << interpolationType[1] << endl;
+	os << "NPoints = \t" << npoints[0] << endl;
+	os << "InterpolationType = \t" << interpolationType[0] << endl;
 	os << endl;
 	os << "Energy\tValue" << endl;
 
@@ -490,7 +490,7 @@ double mcEndfCrossSectionTable::get_lambda(double kE, double rho, double A)
 	return 1 / (rho * _sigma * Na / A / 10);
 }
 
-double mcEndfCrossSectionTable::get_sigma(double kE) const
+double mcEndfCrossSectionTable::get_value(double kE) const
 {
 	double _sigma = 0.0;
 	int interType = 2;

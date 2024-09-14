@@ -16,6 +16,17 @@
 #include <filesystem>
 #include <ctype.h>
 
+// Флаги вывода служебной информации в процесе отладки
+// Вывод осуществляется в корневую папку расчета.
+// Имя файла зависит от типа вывода и назначается непосредственно в коде.
+// 0 - ничего не выводить
+// 1 - вывод сечений реакций протонов
+#define MEDIA_TRACE 1
+
+#if MEDIA_TRACE > 0
+#include "sstream"
+#endif
+
 namespace fs = std::filesystem;
 
 mcMedia::mcMedia(void)
@@ -129,6 +140,12 @@ void mcMedia::initXEFromFile(const string& fname)
 
 void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearDir)
 {
+#if MEDIA_TRACE > 0
+	ofstream fos("ProtonEndfLog.dat");
+	fos << "Report about parsing proton database" << endl;
+	fos << "----------------------------------------------" << endl;
+#endif
+
 	mcMendeleev Table;
 	for (int i = 0; i < xes_.size(); i++)
 		for (int j = 0; j < xes_[i]->elements_.size(); j++)
@@ -141,7 +158,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 
 	// ENDF
 	mcEndfDB endfdb;
-	
+
 	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
@@ -172,17 +189,35 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 		}
 
 		// База данных изотопа для протонов
-		auto csForElement = std::make_shared<mcEndfNP>();
 		if (Table.IsNecessary[Z - 1])
 		{
 			if(Table.IsLoad[Z - 1])
 				throw std::exception((
 					string("Something wrong with proton ENDF data! Attempt to load data for element Z= ") +
 					to_string(Z) + ", while data alreadt loaded.").c_str());
+		
+			auto csForElement = std::make_shared<mcEndfNP>();
 			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
 			csForElement->Z = Z;
 			endfdb.Isotopes.push_back(csForElement);
 			Table.IsLoad[Z - 1] = true;
+
+#if MEDIA_TRACE == 1
+			fos << "Element:\t" << csForElement->ElementName << endl;
+			fos << "----------------------------------------------" << endl << endl;
+			fos << "Elastic crosssections (MF=3 MT=2)" << endl;
+			if (!csForElement->ElasticCrossSections.isEmpty)
+				csForElement->ElasticCrossSections.dump(fos);
+			else
+				fos << endl << "NO Elastic crosssections !!!" << endl << endl;
+			fos << endl << endl;
+			fos << "Nuclear crosssections (MF=3 MT=5)" << endl;
+			if (!csForElement->NuclearCrossSections.isEmpty)
+				csForElement->NuclearCrossSections.dump(fos);
+			else
+				fos << endl << "NO Nuclear crosssections !!!" << endl << endl;
+			fos << endl << endl;
+#endif
 		}
 	}
 
@@ -213,6 +248,10 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 		
 		m->status_ = mcMedium::LOADED;
 		protons_.push_back(m);
+
+#if MEDIA_TRACE > 0
+		m->dump(fos);
+#endif
 	}
 }
 

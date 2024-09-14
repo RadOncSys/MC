@@ -165,21 +165,6 @@ double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF)
 	return SIGMA;
 }
 
-// Вычисляет коэффициенты линейной аппроксимации для каждого диапазона s по двум точкам ax+b,
-void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
-{
-	int n = (int)s.size();
-	a.assign(n, 0.0); b.assign(n, 0.0); // очищаем вектора, устанавливаем размер
-	for (int i = 0; i < n - 1; i++) {
-		a[i] = s[i + 1] - s[i]; // делим на (i+1) - (i)
-		b[i] = s[i];
-	}
-	//экстраполяция в область больших значений - с коэффициентами предыдущей ячейки
-	a[n - 1] = a[n - 2];
-	b[n - 1] = b[n - 2];
-	return;
-}
-
 mcMediumProton::mcMediumProton(void) : transCutoff_proto(1.0)
 {
 }
@@ -229,7 +214,7 @@ double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 		return SIGMA;	//Если нет данных по MF=3 MT=5 возвращается 0
 	if (kE <= ENDFdata->at(i)->NuclearCrossSections.Energies[0])
 		return SIGMA;
-	SIGMA = ENDFdata->at(i)->NuclearCrossSections.get_sigma(kE);
+	SIGMA = ENDFdata->at(i)->NuclearCrossSections.get_value(kE);
 	return SIGMA / pow(10,24);
 }
 
@@ -240,8 +225,8 @@ double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 void mcMediumProton::SetEnergyLoses(const mcPStar& starDB)
 {
 	ndedx_bins = 100;
-	ke_min = 0.1;
-	ke_max = 1000;
+	ke_min = 0.5;
+	ke_max = 500;
 	dedx0_proto.resize(ndedx_bins, 0);
 	dedx1_proto.resize(ndedx_bins, 0);
 	sigma0_proto.resize(ndedx_bins, 0);
@@ -289,41 +274,91 @@ void mcMediumProton::SetEnergyLoses(const mcPStar& starDB)
 		dedx0_proto[idx] = crs[idx] -log_e0 * dedx1_proto[idx];
 	}
 
-	// Таблицы рассеяния на ядрах.
-	// TODO: Разобраться с физикой. Текущее понимание в следующем.
-	// Торможение в подавляющей степени происходит на электронах.
-	// Рассеяние на малые углы происходит на ядрах по модели Tripathi.
-	// Предварительно казалось, что рассеяние тоже на электронах.
-	// Поэтому код здесь, где и остается с формулировкой 
-	// что это вся физика, не включающая ядерные реакции.
+	// Таблицы взаимодействия с ядрами включающие упругие рассеяния за вычетом
+	// чисто кулоновского взаимодействия и реакции с образованием вторичных частиц.
+	// Здесь старый расчет по модели Tripathi.
+	// Новая версия берет сечения из базы данных ENDF.
+	/*
 	double aweight = NAVOGADRO * density_ / atomicWeight;
 	vector<double> sigma_in(ndedx_bins + 1, 0);
 	
-	for (int i = 0; i <= ndedx_bins; i++)
+	for (int idx = 0; idx <= ndedx_bins; idx++)
 	{
-		double e = exp((i - iLogKE0_proto) / iLogKE1_proto);
+		double e = exp((idx - iLogKE0_proto) / iLogKE1_proto);
 		double S = 0.0; // длина свободного пробега
 		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++)
 			S += sigmaTripathiLight(1, 1, ROUND(el->atomicMass), ROUND(el->atomicNumber), e) * 
 			     el->partsByNumber;
-		sigma_in[i] = S * aweight;
+		sigma_in[idx] = S * aweight;
 	}
 
-	for (int i = 0; i < ndedx_bins; i++)
+	for (int idx = 0; idx < ndedx_bins; idx++)
 	{
-		double log_e0 = (i - iLogKE0_proto) / iLogKE1_proto;
-		double log_e1 = (i + 1 - iLogKE0_proto) / iLogKE1_proto;
-		sigma1_proto[i] = (sigma_in[i + 1] - crs[i]) / (log_e1 - log_e0);
-		sigma0_proto[i] = sigma_in[i] -log_e0 * sigma1_proto[i];
+		double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
+		double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
+		sigma1_proto[idx] = (sigma_in[idx + 1] - sigma_in[idx]) / (log_e1 - log_e0);
+		sigma0_proto[idx] = sigma_in[idx] -log_e0 * sigma1_proto[idx];
 	}
+	*/
 
 	// Данные загрузили, но надо ещё и расчитать недостающие
 	gdEdxStragglingGaussVarianceConstPart();
-	gRadiationLength(); // ??? зачем то что нигде не используется?
 }
 
 void mcMediumProton::SetNuclearCrossSections(const mcEndfDB& endfdb)
 {
+	// В формате mcMedia интегральные сечения взаимодействий (за исключением непрерывного торможения и рассеяния)
+	// представляются в виде суммарных сечений (sigmaN+proto) и порогов конкретных событий (brXXX_proto).
+	// Сечения представляютс в единицах ... , т.е. для конкретной среды с конкретной плотностью.
+
+	// Сигма считаем в той же сетке, что и dE/dX
+
+	vector<const mcEndfNP*> endfElements(elements_.size(), nullptr);
+	for (int i = 0; i < elements_.size(); i++)
+	{
+		auto& data = endfdb.GetDataForElement(elements_[i].atomicNumber);
+		if(&data == nullptr)
+			throw exception("mcMediumProton::SetNuclearCrossSections: endf not available for element");
+		endfElements[i] = &data;
+	}
+
+	//double aweight = NAVOGADRO * density_ / atomicWeight;
+	double aweight = 1E-24 * NAVOGADRO * density_ / atomicWeight;
+	vector<double> sigma_in(ndedx_bins + 1, 0);
+	for (int idx = 0; idx <= ndedx_bins; idx++)
+	{
+		double ke = 1e6 * exp((idx - iLogKE0_proto) / iLogKE1_proto);
+		for (int i = 0; i < elements_.size(); i++)
+		{
+			double ew = elements_[i].partsByNumber;
+
+			// Для некоторых несущественных элементов таблицы может не быть.
+			// Чтобы не ломать всю программу считаем, что взаимодействия на них нет.
+			if (!endfElements[i]->ElasticCrossSections.isEmpty)
+			{
+				double s = endfElements[i]->ElasticCrossSections.get_value(ke);
+				// С упругим рассеянием бывает проблема из-за различия используемых моделей.
+				// В ENDF из суммарного рассеяния вычитается кулоновское, 
+				// в результате чего при н=малых энергиях сечения получаются отрицательными.
+				// Решаем проблему обнуляя отрицательные сечения сечения.
+				if(s > 0)
+					sigma_in[idx] += s * ew;
+			}
+			if (!endfElements[i]->NuclearCrossSections.isEmpty)
+				sigma_in[idx] += endfElements[i]->NuclearCrossSections.get_value(ke) * ew;
+		}
+		sigma_in[idx] *= aweight;
+	}
+
+	for (int idx = 0; idx < ndedx_bins; idx++)
+	{
+		double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
+		double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
+		sigma1_proto[idx] = (sigma_in[idx + 1] - sigma_in[idx]) / (log_e1 - log_e0);
+		sigma0_proto[idx] = sigma_in[idx] - log_e0 * sigma1_proto[idx];
+	}
+
+	/*
 	double S;
 	vector<double>sigma_endf;
 	vector<double>sigma_;
@@ -339,6 +374,7 @@ void mcMediumProton::SetNuclearCrossSections(const mcEndfDB& endfdb)
 	}
 	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
 	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
+	*/
 }
 
 //--------------------------------
@@ -393,4 +429,75 @@ void mcMediumProton::read(istream& is)
 	// Оставлено, так как метод в базовом классе объявлен как абсрактный.
 	// Но данные для протонов формируются налету из элементного состава среды
 	// и баз данных PSTAR и ENDF, а не загружаются из специально подготовленных файлов.
+}
+
+void mcMediumProton::dump(std::ostream& os) const
+{
+	os << endl;
+	os << "---------------------------------------------" << endl;
+	os << "PROTON MEDIUM DATA" << endl;
+	os << "---------------------------------------------" << endl;
+	os << endl;
+	os << "Medium data:\t" << name_ << " density =\t" << density_ << endl;
+	os << "atomicSymbol\t atomicNumber\t atomicMass\t partsByNumber" << endl;
+	for(auto element : elements_)
+		os << element.atomicSymbol << "\t" << element.atomicNumber << "\t" << element.atomicMass << "\t" << element.partsByNumber << endl;
+	os << endl;
+
+	os << "dEdxStragglingGaussVarianceConstPart_ = \t" << dEdxStragglingGaussVarianceConstPart_ << endl;
+	os << "radLength = \t" << radLength << endl;
+	os << "atomicWeight = \t" << atomicWeight << endl;
+	os << "iLogKE0_proto = \t" << iLogKE0_proto << endl;
+	os << "iLogKE1_proto = \t" << iLogKE1_proto << endl;
+	os << "ke_min = \t" << ke_min << endl;
+	os << "ke_max = \t" << ke_max << endl;
+	os << "ndedx_bins = \t" << ndedx_bins << endl;
+	os << "transCutoff_proto = \t" << transCutoff_proto << endl;
+	os << endl;
+
+	os << "sigma0_proto";
+	for (int i = 0; i < sigma0_proto.size(); i++)
+		os << "\t" << sigma0_proto[i];
+	os << endl;
+	os << "sigma1_proto";
+	for (int i = 0; i < sigma1_proto.size(); i++)
+		os << "\t" << sigma1_proto[i];
+	os << endl << endl;
+
+	os << "dedx0_proto";
+	for (int i = 0; i < dedx0_proto.size(); i++)
+		os << "\t" << dedx0_proto[i];
+	os << endl;
+	os << "dedx1_proto";
+	for (int i = 0; i < dedx1_proto.size(); i++)
+		os << "\t" << dedx1_proto[i];
+	os << endl << endl;
+
+	os << "Restored dE/Dx & SIGMA" << endl;
+	os << "Energy";
+	for (int i = 1; i <= 200; i++)
+		os << "\t" << i;
+	os << endl;
+	os << "dE/dX";
+	for (int i = 1; i <= 200; i++)
+	{
+		double dedx = 0;
+		double logKE = log((double)i);
+		int iLogKE = int(iLogKE0_proto + logKE * iLogKE1_proto);
+		if (iLogKE >= 0 && iLogKE < dedx0_proto.size())
+			dedx = dedx0_proto[iLogKE] + logKE * dedx1_proto[iLogKE];
+		os << "\t" << dedx;
+	}
+	os << endl;
+	os << "SIGMA";
+	for (int i = 1; i <= 200; i++)
+	{
+		double sigma = 0;
+		double logKE = log((double)i);
+		int iLogKE = int(iLogKE0_proto + logKE * iLogKE1_proto);
+		if (iLogKE >= 0 && iLogKE < sigma0_proto.size())
+			sigma = sigma0_proto[iLogKE] + logKE * sigma1_proto[iLogKE];
+		os << "\t" << sigma;
+	}
+	os << endl << endl;
 }

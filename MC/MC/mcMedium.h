@@ -18,6 +18,7 @@ public:
 	enum STATUS { EMPTY, LOADED, FAILED };
 
 	virtual void read(istream& is) = 0;
+	virtual void dump(std::ostream& os) const = 0;
 
 protected:
 	// Функция извлекает 2 слова из строки.

@@ -22,6 +22,8 @@ public:
 
 	void read(istream& is) override;
 
+	virtual void dump(std::ostream& os) const;
+
 protected:
 	static void FixStepSize(int nBins_elec, double eStep,
 		double iLogKE0, double iLogKE1,
