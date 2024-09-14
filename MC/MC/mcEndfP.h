@@ -208,23 +208,29 @@ public:
 };
 
 // Class that keeps cross sections for one atomic isotope
-class mcEndfP
+class mcEndfNP
 {
 public:
-	mcEndfP();
+	mcEndfNP();
 
-	~mcEndfP();
+	~mcEndfNP();
 
 	// Назавание изотопа, включающее атомное имя и атомный вес.
 	// Используется как уникальный идентификатор.
 	std::string ElementName;
+
+	int Z;
 
 	// Сечения суммы упругих рассеяний и ядерных реакций в зависимости от энергии падающей частицы
 	// TODO: Возможно временная таблица. Разобраться, не нужно ли эти реакции учитывать 
 	// в дополнение к тому, что в угловом смысле ассоциируется с dE/dX.
 	mcEndfCrossSectionTable TotalCrossSections;
 
-	// Сечения ядерных реакций в зависимости от энергии падающей частицы
+	// MF = 3 MT = 2 для протонов.
+	// Содержит суммарные сечения упругих рассеяний 
+	// (вероятно за вычетом мольеровского рассеяния, т.е. читсо кулоновского).
+	mcEndfCrossSectionTable ElasticCrossSections;
+
 	mcEndfCrossSectionTable NuclearCrossSections;
 
 	// Сечения реакций (p,n) MF = 3 MT = 50
@@ -341,4 +347,11 @@ public:
 
 	// Загрузка одного файла сечений
 	void Load(const char* fname, const char* ename);
+};
+
+class mcEndfDB
+{
+public:
+	std::vector<std::shared_ptr<mcEndfNP>> Isotopes;
+	const mcEndfNP& GetDataForElement(int Z) const;
 };

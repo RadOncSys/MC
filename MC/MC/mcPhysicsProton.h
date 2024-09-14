@@ -29,6 +29,6 @@ public:
 
 protected:
 
-	static void createnewparticleswithEA(mcRng& rng, mcParticle* p, const mcMediumProton* pmed, int endfID, vector<int>* quantity);
-	static void getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumProton* pmed, int keIN, int eoutID);
+	//static void createnewparticleswithEA(mcRng& rng, mcParticle* p, const mcMediumProton* pmed, int endfID, vector<int>* quantity);
+	//static void getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumProton* pmed, int keIN, int eoutID);
 };

@@ -17,13 +17,15 @@ public:
 	mcMediumProton(const mcMedium& m);
 	virtual ~mcMediumProton(void);
 
-	// ”становка данных взаимодействи€ с электронами
-	// (которые и определ€ют дозовое распределение в CORE)
-	void SetElectrons(const mcPStar& starDB);
+	// ”становка dE/dX из базы данных PSTAR
+	void SetEnergyLoses(const mcPStar& starDB);
+
+	// —ечени€ упругого рассе€ни€ (без учета колновского / мольеровского рассе€ни€)
+	// и неупругих взаимодействий с €драми из базы данных ENDF.
+	void SetNuclearCrossSections(const mcEndfDB& endfdb);
 
 	double kEmax(void)const { return (double)dedx1_proto.size(); }
 	virtual void read(istream& is);
-	void createDB();
 
 private:
 	//--------------------------------
@@ -58,7 +60,4 @@ public:
 	vector<double> dedx1_proto;
 
 	double transCutoff_proto;		// Energy cutoff for proton transport
-
-	std::shared_ptr<std::vector<std::shared_ptr<mcEndfP>>> ENDFdata;
-	double microsigmaforelement(int A, int Z, double kE) const;
 };

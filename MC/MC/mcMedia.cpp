@@ -140,7 +140,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 	pstardb.LoadFromPath(pstardir, ptable);
 
 	// ENDF
-	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfP>>>();
+	mcEndfDB endfdb;
 	
 	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
@@ -171,9 +171,8 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 			}
 		}
 
-		// База данных изотопа
-		//mcCSNuclear csForElement;
-		auto csForElement = std::make_shared<mcEndfP>();
+		// База данных изотопа для протонов
+		auto csForElement = std::make_shared<mcEndfNP>();
 		if (Table.IsNecessary[Z - 1])
 		{
 			if(Table.IsLoad[Z - 1])
@@ -181,11 +180,10 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 					string("Something wrong with proton ENDF data! Attempt to load data for element Z= ") +
 					to_string(Z) + ", while data alreadt loaded.").c_str());
 			csForElement->Load(fs::path(entry.path()).string().c_str(), elementName.c_str());
-			dbData->push_back(csForElement);
+			csForElement->Z = Z;
+			endfdb.Isotopes.push_back(csForElement);
 			Table.IsLoad[Z - 1] = true;
 		}
-
-		//ifstream isIcru(entry.path().c_str());
 	}
 
 	// Чтобы не мучиться с отладкой в случае проблем сразу проверяем чего не хватает.
@@ -207,17 +205,13 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 		// Конструктор по шаблону EGS устанавливает и копию элементного состава среды
 		auto m = new mcMediumProton(*xes_[i]);
 
-		// Взаимодействие с электронами
-		m->SetElectrons(pstardb);
+		// Тормозные способности по базе данных PSTAR
+		m->SetEnergyLoses(pstardb);
 
-		// Взаимодействие с ядрами
-		m->ENDFdata = dbData;
+		// Упругие и неупругие рассеяния из базы данных ENDF для протонов
+		m->SetNuclearCrossSections(endfdb);
 		
-		// TODO: Разобраться с этим кодом. Он заменяет сигма от Thripati
-		//m->createDB();
-
 		m->status_ = mcMedium::LOADED;
-
 		protons_.push_back(m);
 	}
 }

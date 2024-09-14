@@ -1303,11 +1303,11 @@ double mcEndfEANuclearCrossSectionTable::playE(double kE, int &keIN, int &eoutID
 }
 
 
-mcEndfP::mcEndfP()
+mcEndfNP::mcEndfNP()
 {
 }
 
-mcEndfP::~mcEndfP()
+mcEndfNP::~mcEndfNP()
 {
 	/*for (int i = 0; i < Products.size(); i++)
 	{
@@ -1315,7 +1315,7 @@ mcEndfP::~mcEndfP()
 	}*/
 }
 
-void mcEndfP::Load(const char* fname, const char* ename)
+void mcEndfNP::Load(const char* fname, const char* ename)
 {
 	// Separators
 	static const string beginSeparator("*** C O N T E N T S ***");
@@ -1347,6 +1347,7 @@ void mcEndfP::Load(const char* fname, const char* ename)
 			if (line.find(beginSeparator) != string::npos)
 				isInData = true;
 			TotalCrossSections.isEmpty = true;
+			ElasticCrossSections.isEmpty = true;
 			NuclearCrossSections.isEmpty = true;
 			Neutron0CrossSection.isEmpty = true;
 			Neutron1CrossSection.isEmpty = true;
@@ -1374,8 +1375,8 @@ void mcEndfP::Load(const char* fname, const char* ename)
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' && 
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
 		{
-			TotalCrossSections.Load(isEndf);
-			TotalCrossSections.isEmpty = false;
+			ElasticCrossSections.Load(isEndf);
+			ElasticCrossSections.isEmpty = false;
 		}
 
 		// Сечения ядерных реакций
@@ -2848,18 +2849,27 @@ void mcEndfN::Load(const char* fname, const char* ename)
 	}
 }
 
-void mcEndfP::Clear()
+void mcEndfNP::Clear()
 {
 	//Energies.clear();
 }
 
-void mcEndfP::dumpTotalCrossections(ostream& os) const
+void mcEndfNP::dumpTotalCrossections(ostream& os) const
 {
 	os << endl;
 	os << "Dump total proton crossections for element = \t" << ElementName << endl;
 	os << "---------------------------------------------------------------" << endl;
 	os << endl;
 	TotalCrossSections.dump(os);
+
+	if (!ElasticCrossSections.isEmpty)
+	{
+		os << endl;
+		os << "Dump elastic proton crossections for element = \t" << ElementName << endl;
+		os << "--------------------------------------------------------------" << endl;
+		os << endl;
+		ElasticCrossSections.dump(os);
+	}
 
 	os << endl;
 	os << "Dump nuclear proton crossections for element = \t" << ElementName << endl;
@@ -2885,4 +2895,12 @@ void mcEndfP::dumpTotalCrossections(ostream& os) const
 	double** a = Products[0]->EANuclearCrossSections[0]->playpar(rng1, 70000000, Products[0]->LAW);
 }
 
-
+const mcEndfNP& mcEndfDB::GetDataForElement(int Z) const
+{
+	for (auto isotope : Isotopes)
+	{
+		if (isotope->Z == Z)
+			return *isotope;
+	}
+	return *(mcEndfNP*)nullptr;
+}

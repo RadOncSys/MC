@@ -17,7 +17,7 @@ void testproton() {
 
 	mcRng rng1, rng2;
 	rng1.init(21, 48);
-	mcEndfP elementData;
+	mcEndfNP elementData;
 	elementData.Load(fname.c_str(), element);
 	//elementData.dumpTotalCrossections(std::cout);
 	//Testing incedent energy of proton, eV

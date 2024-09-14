@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 			fname += element;
 			fname += ".tendl";
 
-			mcEndfP elementData;
+			mcEndfNP elementData;
 			elementData.Load(fname.c_str(), element);
 			elementData.dumpTotalCrossections(std::cout);
 		}

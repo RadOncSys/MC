@@ -143,6 +143,13 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	// Возвращаем энергию, выделившуюся в точке.
 	//return 2 * p->ke * p->weight;
 
+
+	p->ke /= 3.0;
+	return 2 * p->ke * p->weight;
+
+
+	/*
+
 	mcRng& rng = p->thread_->rng();
 	const mcMediumProton* m = (const mcMediumProton*)med;
 	double logKE = log(p->ke);
@@ -218,7 +225,11 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	} 
 
 	return edep * p->weight;
+	*/
 }
+
+
+/*
 
 void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, const mcMediumProton* pmed, int endfID, vector<int>* quantity)
 {
@@ -286,3 +297,5 @@ void mcPhysicsProton::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p
 	ChangeDirection(costheta, sintheta, cosphi, sinphi, p->u);
 	return;
 }
+
+*/

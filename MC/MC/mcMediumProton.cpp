@@ -121,7 +121,7 @@ double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE)
 	return sigmaTL;
 }
 
-double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfP>>* ENDF)
+double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF)
 {
 	double SIGMA = 0.0;
 	kE *= 1000000;
@@ -165,6 +165,21 @@ double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfP>>* ENDF)
 	return SIGMA;
 }
 
+// Вычисляет коэффициенты линейной аппроксимации для каждого диапазона s по двум точкам ax+b,
+void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
+{
+	int n = (int)s.size();
+	a.assign(n, 0.0); b.assign(n, 0.0); // очищаем вектора, устанавливаем размер
+	for (int i = 0; i < n - 1; i++) {
+		a[i] = s[i + 1] - s[i]; // делим на (i+1) - (i)
+		b[i] = s[i];
+	}
+	//экстраполяция в область больших значений - с коэффициентами предыдущей ячейки
+	a[n - 1] = a[n - 2];
+	b[n - 1] = b[n - 2];
+	return;
+}
+
 mcMediumProton::mcMediumProton(void) : transCutoff_proto(1.0)
 {
 }
@@ -183,6 +198,9 @@ mcMediumProton::mcMediumProton(const mcMedium& m) : transCutoff_proto(1.0)
 mcMediumProton::~mcMediumProton(void)
 {
 }
+
+
+/*
 
 double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 {
@@ -215,7 +233,11 @@ double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 	return SIGMA / pow(10,24);
 }
 
-void mcMediumProton::SetElectrons(const mcPStar& starDB)
+*/
+
+
+
+void mcMediumProton::SetEnergyLoses(const mcPStar& starDB)
 {
 	ndedx_bins = 100;
 	ke_min = 0.1;
@@ -300,6 +322,25 @@ void mcMediumProton::SetElectrons(const mcPStar& starDB)
 	gRadiationLength(); // ??? зачем то что нигде не используется?
 }
 
+void mcMediumProton::SetNuclearCrossSections(const mcEndfDB& endfdb)
+{
+	double S;
+	vector<double>sigma_endf;
+	vector<double>sigma_;
+
+	for (int i = 0; i < kEmax(); i++) {
+		S = 0.0; // длина свободного пробега
+		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
+			//S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get()) / pow(10, 24) * el->partsByNumber;
+		}
+		//mfp_in_1_[i]=S*density_*NAVOGADRO/atomicWeight;
+		sigma_endf.push_back(S * NAVOGADRO * density_ / atomicWeight); // mfp=1/(sigma_in)
+		sigma_.push_back(S); // mfp=1/(sigma_in)
+	}
+	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
+	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
+}
+
 //--------------------------------
 // Генерация данных (физика!)
 //--------------------------------
@@ -347,44 +388,9 @@ double mcMediumProton::gRadiationLength()
 	return radLength;
 }
 
-
-// Вычисляет коэффициенты линейной аппроксимации для каждого диапазона s по двум точкам ax+b,
-void coeff_calc(const vector<double>& s, vector<double>& a, vector<double>& b)
-{
-	int n = (int)s.size();
-	a.assign(n, 0.0); b.assign(n, 0.0); // очищаем вектора, устанавливаем размер
-	for (int i = 0; i < n - 1; i++) {
-		a[i] = s[i + 1] - s[i]; // делим на (i+1) - (i)
-		b[i] = s[i];
-	}
-	//экстраполяция в область больших значений - с коэффициентами предыдущей ячейки
-	a[n - 1] = a[n - 2];
-	b[n - 1] = b[n - 2];
-	return;
-}
-
 void mcMediumProton::read(istream& is)
 {
 	// Оставлено, так как метод в базовом классе объявлен как абсрактный.
 	// Но данные для протонов формируются налету из элементного состава среды
 	// и баз данных PSTAR и ENDF, а не загружаются из специально подготовленных файлов.
-}
-
-void mcMediumProton::createDB()
-{
-	double S;
-	vector<double>sigma_endf;
-	vector<double>sigma_;
-
-	for (int i = 0; i < kEmax(); i++) {
-		S = 0.0; // длина свободного пробега
-		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-			S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get())/pow(10,24) * el->partsByNumber;
-		}
-		//mfp_in_1_[i]=S*density_*NAVOGADRO/atomicWeight;
-		sigma_endf.push_back(S * NAVOGADRO * density_ / atomicWeight); // mfp=1/(sigma_in)
-		sigma_.push_back(S); // mfp=1/(sigma_in)
-	}
-	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
-	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
 }

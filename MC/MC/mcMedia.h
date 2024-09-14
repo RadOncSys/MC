@@ -14,7 +14,7 @@ class mcMediumXE;
 class mcMediumProton;
 class mcMediumNeutron;
 class mcPhysics;
-class mcEndfP;
+class mcEndfNP;
 class mcEndfN;
 
 class mcMedia
