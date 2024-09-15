@@ -274,107 +274,105 @@ void mcMediumProton::SetEnergyLoses(const mcPStar& starDB)
 		dedx0_proto[idx] = crs[idx] -log_e0 * dedx1_proto[idx];
 	}
 
-	// Таблицы взаимодействия с ядрами включающие упругие рассеяния за вычетом
-	// чисто кулоновского взаимодействия и реакции с образованием вторичных частиц.
-	// Здесь старый расчет по модели Tripathi.
-	// Новая версия берет сечения из базы данных ENDF.
-	/*
-	double aweight = NAVOGADRO * density_ / atomicWeight;
-	vector<double> sigma_in(ndedx_bins + 1, 0);
-	
-	for (int idx = 0; idx <= ndedx_bins; idx++)
-	{
-		double e = exp((idx - iLogKE0_proto) / iLogKE1_proto);
-		double S = 0.0; // длина свободного пробега
-		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++)
-			S += sigmaTripathiLight(1, 1, ROUND(el->atomicMass), ROUND(el->atomicNumber), e) * 
-			     el->partsByNumber;
-		sigma_in[idx] = S * aweight;
-	}
-
-	for (int idx = 0; idx < ndedx_bins; idx++)
-	{
-		double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
-		double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
-		sigma1_proto[idx] = (sigma_in[idx + 1] - sigma_in[idx]) / (log_e1 - log_e0);
-		sigma0_proto[idx] = sigma_in[idx] -log_e0 * sigma1_proto[idx];
-	}
-	*/
-
 	// Данные загрузили, но надо ещё и расчитать недостающие
 	gdEdxStragglingGaussVarianceConstPart();
+	gRadiationLength(); // Не логично, но критично. Устанавливает параметр среды mradlength.
 }
 
 void mcMediumProton::SetNuclearCrossSections(const mcEndfDB& endfdb)
 {
-	// В формате mcMedia интегральные сечения взаимодействий (за исключением непрерывного торможения и рассеяния)
-	// представляются в виде суммарных сечений (sigmaN+proto) и порогов конкретных событий (brXXX_proto).
-	// Сечения представляютс в единицах ... , т.е. для конкретной среды с конкретной плотностью.
+	bool doTripathi = false;
 
-	// Сигма считаем в той же сетке, что и dE/dX
-
-	vector<const mcEndfNP*> endfElements(elements_.size(), nullptr);
-	for (int i = 0; i < elements_.size(); i++)
+	if (doTripathi)
 	{
-		auto& data = endfdb.GetDataForElement(elements_[i].atomicNumber);
-		if(&data == nullptr)
-			throw exception("mcMediumProton::SetNuclearCrossSections: endf not available for element");
-		endfElements[i] = &data;
+		// Таблицы взаимодействия с ядрами включающие упругие рассеяния за вычетом
+		// чисто кулоновского взаимодействия и реакции с образованием вторичных частиц.
+		// Здесь старый расчет по модели Tripathi.
+		// Новая версия берет сечения из базы данных ENDF.
+		double aweight = NAVOGADRO * density_ / atomicWeight;
+		vector<double> sigma_in(ndedx_bins + 1, 0);
+
+		for (int idx = 0; idx <= ndedx_bins; idx++)
+		{
+			double e = exp((idx - iLogKE0_proto) / iLogKE1_proto);
+			double S = 0.0; // длина свободного пробега
+			for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++)
+				S += sigmaTripathiLight(1, 1, ROUND(el->atomicMass), ROUND(el->atomicNumber), e) *
+				el->partsByNumber;
+			sigma_in[idx] = S * aweight;
+		}
+
+		for (int idx = 0; idx < ndedx_bins; idx++)
+		{
+			double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
+			double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
+			sigma1_proto[idx] = (sigma_in[idx + 1] - sigma_in[idx]) / (log_e1 - log_e0);
+			sigma0_proto[idx] = sigma_in[idx] - log_e0 * sigma1_proto[idx];
+		}
 	}
 
-	//double aweight = NAVOGADRO * density_ / atomicWeight;
-	double aweight = 1E-24 * NAVOGADRO * density_ / atomicWeight;
-	vector<double> sigma_in(ndedx_bins + 1, 0);
-	for (int idx = 0; idx <= ndedx_bins; idx++)
+	else // ENDF
 	{
-		double ke = 1e6 * exp((idx - iLogKE0_proto) / iLogKE1_proto);
+		// В формате mcMedia интегральные сечения взаимодействий (за исключением непрерывного торможения и рассеяния)
+		// представляются в виде суммарных сечений (sigmaN+proto) и порогов конкретных событий (brXXX_proto).
+		// Сечения представляютс в единицах ... , т.е. для конкретной среды с конкретной плотностью.
+
+		// Сигма считаем в той же сетке, что и dE/dX
+
+		vector<const mcEndfNP*> endfElements(elements_.size(), nullptr);
 		for (int i = 0; i < elements_.size(); i++)
 		{
-			double ew = elements_[i].partsByNumber;
+			auto& data = endfdb.GetDataForElement(elements_[i].atomicNumber);
+			if (&data == nullptr)
+				throw exception("mcMediumProton::SetNuclearCrossSections: endf not available for element");
+			endfElements[i] = &data;
+		}
 
-			// Для некоторых несущественных элементов таблицы может не быть.
-			// Чтобы не ломать всю программу считаем, что взаимодействия на них нет.
-			if (!endfElements[i]->ElasticCrossSections.isEmpty)
+		//double aweight = NAVOGADRO * density_ / atomicWeight;
+		double aweight = 1E-24 * NAVOGADRO * density_ / atomicWeight;
+		vector<double> sigma_in(ndedx_bins + 1, 0);
+		for (int idx = 0; idx <= ndedx_bins; idx++)
+		{
+			double ke = 1e6 * exp((idx - iLogKE0_proto) / iLogKE1_proto);
+			for (int i = 0; i < elements_.size(); i++)
 			{
-				double s = endfElements[i]->ElasticCrossSections.get_value(ke);
-				// С упругим рассеянием бывает проблема из-за различия используемых моделей.
-				// В ENDF из суммарного рассеяния вычитается кулоновское, 
-				// в результате чего при н=малых энергиях сечения получаются отрицательными.
-				// Решаем проблему обнуляя отрицательные сечения сечения.
-				if(s > 0)
-					sigma_in[idx] += s * ew;
+				// TEST! В ENDF для водорода указывается суммарное сечение 1 барн для всех энергий.
+				// Явно это из-за того, что протон - протонное взаимодействие должно 
+				// симулироваться как-то по другому или вообще не симулироваться в предположении, 
+				// что это чистый кулон и укладывется в Мольеровское рассеяние.
+				// Если это не учитывать, то ломается расчет в воде, где суммарное сечение оказывается 
+				// в 7.7 раза больше, чем предсказывается моделью Tripathi.
+				if (elements_[i].atomicNumber == 1)
+					continue;
+
+				double ew = elements_[i].partsByNumber;
+
+				// Для некоторых несущественных элементов таблицы может не быть.
+				// Чтобы не ломать всю программу считаем, что взаимодействия на них нет.
+				if (!endfElements[i]->ElasticCrossSections.isEmpty)
+				{
+					double s = endfElements[i]->ElasticCrossSections.get_value(ke);
+					// С упругим рассеянием бывает проблема из-за различия используемых моделей.
+					// В ENDF из суммарного рассеяния вычитается кулоновское, 
+					// в результате чего при н=малых энергиях сечения получаются отрицательными.
+					// Решаем проблему обнуляя отрицательные сечения сечения.
+					if (s > 0)
+						sigma_in[idx] += s * ew;
+				}
+				if (!endfElements[i]->NuclearCrossSections.isEmpty)
+					sigma_in[idx] += endfElements[i]->NuclearCrossSections.get_value(ke) * ew;
 			}
-			if (!endfElements[i]->NuclearCrossSections.isEmpty)
-				sigma_in[idx] += endfElements[i]->NuclearCrossSections.get_value(ke) * ew;
+			sigma_in[idx] *= aweight;
 		}
-		sigma_in[idx] *= aweight;
-	}
 
-	for (int idx = 0; idx < ndedx_bins; idx++)
-	{
-		double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
-		double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
-		sigma1_proto[idx] = (sigma_in[idx + 1] - sigma_in[idx]) / (log_e1 - log_e0);
-		sigma0_proto[idx] = sigma_in[idx] - log_e0 * sigma1_proto[idx];
-	}
-
-	/*
-	double S;
-	vector<double>sigma_endf;
-	vector<double>sigma_;
-
-	for (int i = 0; i < kEmax(); i++) {
-		S = 0.0; // длина свободного пробега
-		for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
-			//S += sigmaENDF(ROUND(el->atomicMass), ROUND(el->atomicNumber), i, ENDFdata.get()) / pow(10, 24) * el->partsByNumber;
+		for (int idx = 0; idx < ndedx_bins; idx++)
+		{
+			double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
+			double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
+			sigma1_proto[idx] = (sigma_in[idx + 1] - sigma_in[idx]) / (log_e1 - log_e0);
+			sigma0_proto[idx] = sigma_in[idx] - log_e0 * sigma1_proto[idx];
 		}
-		//mfp_in_1_[i]=S*density_*NAVOGADRO/atomicWeight;
-		sigma_endf.push_back(S * NAVOGADRO * density_ / atomicWeight); // mfp=1/(sigma_in)
-		sigma_.push_back(S); // mfp=1/(sigma_in)
 	}
-	// Не оптимизмруем, чтобы не запутаться, вычисляем коэффициенты во втором проходе
-	coeff_calc(sigma_endf, sigma1_proto, sigma0_proto);
-	*/
 }
 
 //--------------------------------

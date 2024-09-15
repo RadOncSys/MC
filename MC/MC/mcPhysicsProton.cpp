@@ -114,8 +114,6 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	double phi = p->thread_->rng().rnd() * TWOPI;
 	ChangeDirection(cos(theta), sin(theta), cos(phi), sin(phi), p->u);
 
-	// p->mfps = 0; // VK Это зачем? Если мы не разыгрываем каждый раз mfp, а редуцируем его, то эта строка кажестя не верна 
-
 	p->ke -= e_dep;
 	p->dnear -= step;
 	return e_dep;
@@ -143,6 +141,7 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	// Возвращаем энергию, выделившуюся в точке.
 	//return 2 * p->ke * p->weight;
 
+	return 0; // Версия с игнорированием ядерных реакций
 
 	p->ke /= 3.0;
 	return 2 * p->ke * p->weight;
