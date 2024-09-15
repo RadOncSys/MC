@@ -11,6 +11,9 @@
 #include <memory>
 #include "mcRng.h"
 
+// Типы налетающих частиц
+#define NSUB_PROTON 10010
+
 // Структура стрроки ENDF файла
 struct mcEndfRecord
 {
@@ -23,16 +26,19 @@ struct mcEndfRecord
 	char LineNumber[5];
 
 	// Парсинг значени с плавающей точкой в формате ENDF
-	// (где степнь указана нестандартно после знака +/-).
+	// (где степень указана нестандартно после знака +/-).
 	static double ParseValue(const char* s, int n);
 
+
 	// Парсинг целого числа
-	static int iStrCrop(const char* s, int n) {
-		std::string s1 = s;
-		s1.erase(n);
-		int f = std::stoi(s1);
-		return f;
-	}
+	double GetFloatValue(int idx);
+
+	// Парсинг целого числа
+	int GetIntValue(int idx);
+
+	int GetLineNumber();
+	int GetMF();
+	int GetMT();
 };
 
 // Crossections per istope per incident particle energy
@@ -221,6 +227,12 @@ public:
 
 	int Z;
 
+	// Служебная информация
+	int NSUB;		// Тип налетающей частицы (секция 0.3, табл. 3) 
+	double M_ZA;	// Z * 1000 + A
+	double M_AWR;	// A (стандартное точное значение)
+	int LRP;		// Flag indicating whether resolved and/or unresolved resonance parameters are given
+
 	// Сечения суммы упругих рассеяний и ядерных реакций в зависимости от энергии падающей частицы
 	// TODO: Возможно временная таблица. Разобраться, не нужно ли эти реакции учитывать 
 	// в дополнение к тому, что в угловом смысле ассоциируется с dE/dX.
@@ -318,6 +330,12 @@ public:
 	mcEndfN();
 
 	~mcEndfN();
+
+	// Служебная информация
+	int NSUB;		// Тип налетающей частицы (секция 0.3, табл. 3) 
+	double M_ZA;	// Z * 1000 + A
+	double M_AWR;	// A (стандартное точное значение)
+	int LRP;		// Flag indicating whether resolved and/or unresolved resonance parameters are given
 
 	// Назавание изотопа, включающее атомное имя и атомный вес.
 	// Используется как уникальный идентификатор.

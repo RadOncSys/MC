@@ -27,6 +27,35 @@ double mcEndfRecord::ParseValue(const char* s, int n)
 	return f;
 }
 
+double mcEndfRecord::GetFloatValue(int idx)
+{
+	return ParseValue(c[idx], 11);
+}
+
+int mcEndfRecord::GetIntValue(int idx)
+{
+	std::string s(c[idx], 11);
+	return std::stoi(s);
+}
+
+int mcEndfRecord::GetLineNumber()
+{
+	std::string s(LineNumber, 5);
+	return std::stoi(s);
+}
+
+int mcEndfRecord::GetMF()
+{
+	std::string s(MF, 2);
+	return std::stoi(s);
+}
+
+int mcEndfRecord::GetMT()
+{
+	std::string s(MT, 3);
+	return std::stoi(s);
+}
+
 void mcEndfCrossSectionTable::Load(istream& is)
 {
 	string line, s1, s2, s3, s4;
@@ -145,7 +174,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 	if (LAW == 1)
 	{
 		LANG.push_back(atoi(record.c[2]));
-		if (mcEndfRecord::iStrCrop(record.c[4], 11) > 1)
+		if (record.GetIntValue(4) > 1)
 			throw exception((string("Unexpected multiple interpolation types, Z = ") + record.Z[0] + record.Z[1] + "\n" + string("line:") + "\n" + line).c_str());
 	}
 	//чтение энерго-угловых параметров
@@ -185,7 +214,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 						{
 							throw exception((string("NA = 2 for Kalbach-Mann doesn't supported ") + line).c_str());
 						}
-						npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
+						npoints_out = record.GetIntValue(5);
 						EA_par[i].resize(npoints_out);
 
 						for (int k = 0; k < EA_par[i].size(); k++)
@@ -238,7 +267,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 						int c = 0, c1 = 0; //counters: c - number of element of current line
 						NA = atoi(record.c[3]);
 						EA_Epoints[i] = mcEndfRecord::ParseValue(record.c[1], 11);
-						npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
+						npoints_out = record.GetIntValue(5);
 						EA_par[i].resize(npoints_out);
 
 						for (int k = 0; k < EA_par[i].size(); k++)
@@ -300,7 +329,7 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 			if (LANG[c] == 14)
 				throw exception(("This LANG = " + std::to_string(LANG[c]) + " type is abcent for LAW = " + std::to_string(LAW) + ".").c_str());
 			
-			npoints_out = mcEndfRecord::iStrCrop(record.c[5], 11);
+			npoints_out = record.GetIntValue(5);
 			if (LANG[c] == 12)
 				EA_par[c].resize(npoints_out);
 			else if (LANG[c] == 0)
@@ -348,6 +377,15 @@ void mcEndfEANuclearCrossSectionTable::Load(std::istream& is, int LAW)
 		::memcpy(&record, line.c_str(), 80);
 		isEmpty = true;
 	}
+	else if (LAW == 5)
+	{
+		// LAW=5 charged-particle elastic scattering
+
+		// TODO: Расписать ...
+
+
+
+	}
 	else if (LAW == 0)
 	{
 		isEmpty = true;
@@ -367,7 +405,7 @@ mcEndfProduct::~mcEndfProduct()
 	}*/
 }
 
-std::string typeof(int i)
+std::string TypeOfProduct(int i)
 {
 	{
 		switch (i) {
@@ -417,7 +455,7 @@ void mcEndfProduct::Load(std::istream& is)
 		{
 			ZAP = (int)round(mcEndfRecord::ParseValue(record.c[0], 11));
 			AWP = mcEndfRecord::ParseValue(record.c[1], 11);
-			LAW = mcEndfRecord::iStrCrop(record.c[3], 11);
+			LAW = record.GetIntValue(3);
 
 			switch (ZAP) {
 			
@@ -1302,7 +1340,6 @@ double mcEndfEANuclearCrossSectionTable::playE(double kE, int &keIN, int &eoutID
 	return EA_par[keIN][eoutID][0] / 1000000.0;
 }
 
-
 mcEndfNP::mcEndfNP()
 {
 }
@@ -1334,6 +1371,40 @@ void mcEndfNP::Load(const char* fname, const char* ename)
 	int pointCount = 0;
 
 	mcEndfRecord record;
+	// Для сохранения объективной информации о данных в файле нужно прочитать заголовок в описательной части
+	for (int i = 0; i < 10; i++)
+	{
+		getline(isEndf, line, '\n');
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+
+		int mt = record.GetMT();
+		int ln = record.GetLineNumber();
+
+		if (mt == 451 && ln == 1)
+		{
+			M_ZA = record.GetFloatValue(0);
+			M_AWR = record.GetFloatValue(1);
+			LRP = record.GetIntValue(2);
+		}
+		else if (mt == 451 && ln == 3)
+		{
+			NSUB = record.GetIntValue(4);
+		}
+	}
+
+	TotalCrossSections.isEmpty = true;
+	ElasticCrossSections.isEmpty = true;
+	NuclearCrossSections.isEmpty = true;
+	Neutron0CrossSection.isEmpty = true;
+	Neutron1CrossSection.isEmpty = true;
+	Neutron2CrossSection.isEmpty = true;
+	Neutron3CrossSection.isEmpty = true;
+	Neutron4CrossSection.isEmpty = true;
+	Neutron5CrossSection.isEmpty = true;
+
+	getline(isEndf, line, '\n');
 
 	while (!isEndf.fail())
 	{
@@ -1341,21 +1412,15 @@ void mcEndfNP::Load(const char* fname, const char* ename)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
 		::memcpy(&record, line.c_str(), 80);
 
+		int mf = record.GetMF();
+		int mt = record.GetMT();
+		int ln = record.GetLineNumber();
+
 		// Начало новой энергии
 		if (!isInData)
 		{
 			if (line.find(beginSeparator) != string::npos)
 				isInData = true;
-			TotalCrossSections.isEmpty = true;
-			ElasticCrossSections.isEmpty = true;
-			NuclearCrossSections.isEmpty = true;
-			Neutron0CrossSection.isEmpty = true;
-			Neutron1CrossSection.isEmpty = true;
-			Neutron2CrossSection.isEmpty = true;
-			Neutron3CrossSection.isEmpty = true;
-			Neutron4CrossSection.isEmpty = true;
-			Neutron5CrossSection.isEmpty = true;
-		
 		}
 
 		// Последняя строка файла. Прерываем не дожидаясь ошибки.
@@ -1368,82 +1433,61 @@ void mcEndfNP::Load(const char* fname, const char* ename)
 			pointCount = 0;
 		}
 
-		// Используем только MF=3 (сечения реакций) / MT=5 (сумма всех реакций за исключением отдельно оговоренных)
-		// и     MF=6 (энерго-угловые распределени) / MT=5
-
 		// Сечения суммы эластичных рассеяний и ядерных реакций		
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' && 
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
+		else if (mf == 3 && mt == 2 && NSUB == NSUB_PROTON)
 		{
 			ElasticCrossSections.Load(isEndf);
 			ElasticCrossSections.isEmpty = false;
 		}
 
-		// Сечения ядерных реакций
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
+		// Сечения ядерных реакций 
+		// (используется в качестве суиммарных сечений ядерных взаимодействий для протонов
+		// и используется в компнаии с MT=2 как полный набор сечений для протонов,
+		// т.е. в MC для протонов используются только MT=2 и MT = 5)
+		else if (mf == 3 && mt == 5 && NSUB == NSUB_PROTON)
 		{
 			NuclearCrossSections.Load(isEndf);
 			NuclearCrossSections.isEmpty = false;
 		}
 
-		// Сечения (p,n) MT = 50 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')
-		{
-			Neutron0CrossSection.Load(isEndf);
-			Neutron0CrossSection.isEmpty = false;
-		}
-
-		// Сечения (p,n) MT = 51 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
-		{
-			Neutron1CrossSection.Load(isEndf);
-			Neutron1CrossSection.isEmpty = false;
-		}
-
-		// Сечения (p,n) MT = 52 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
-		{
-			Neutron2CrossSection.Load(isEndf);
-			Neutron2CrossSection.isEmpty = false;
-		}
-
-		// Сечения (p,n) MT = 53 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
-		{
-			Neutron3CrossSection.Load(isEndf);
-			Neutron3CrossSection.isEmpty = false;
-		}
-
-		// Сечения (p,n) MT = 54 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
-		{
-			Neutron4CrossSection.Load(isEndf);
-			Neutron4CrossSection.isEmpty = false;
-		}
-
-		// Сечения (p,n) MT = 55 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
-		{
-			Neutron5CrossSection.Load(isEndf);
-			Neutron5CrossSection.isEmpty = false;
-		}
-
 		// Энерго-угловые распределения
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' && 
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
+		
+		// MT = 2 - для протонов это упругое рассеяние на ядрах за исключением чисто кулоновского рассеяние,
+		// которое в MC моделируется отдельно в виде Мольеровского рассеяния
+		// 
+		// 
+		// 
+		
+		// TODO: 
+		// Упругое рассеяние заряженнных частиц использует LAW = 5, 
+		// для которого нет читалки - расписать и убрать комментарии
+
+		//else if (mf == 6 && mt == 2 && NSUB == NSUB_PROTON)
+		//{
+		//	if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+		//	{
+		//		int NK = atoi(record.c[4]);
+		//		int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+		//		double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+		//		for (int i = 0; i < NK; i++)
+		//		{
+		//			auto product = new mcEndfProduct();
+		//			product->Load(isEndf);
+		//			Products.push_back(product);
+		//			Products[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+		//			Products[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+		//		}
+		//	}
+		//}
+
+		// MT = 5 - для протонов это все ядерные реакции
+		else if (mf == 6 && mt == 5 && NSUB == NSUB_PROTON)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
-				 int NK = atoi(record.c[4]);
-				 int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
-				 double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				int NK = atoi(record.c[4]);
+				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
 				for (int i = 0; i < NK; i++)
 				{
 					auto product = new mcEndfProduct();
@@ -1454,138 +1498,6 @@ void mcEndfNP::Load(const char* fname, const char* ename)
 				}
 			}
 		}
-
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '0')  // (p,n) реакции MT = 50 MF = 6
-		{
-			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
-			{
-				int NK = atoi(record.c[4]);
-				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
-				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
-				for (int i = 0; i < NK; i++)
-				{
-					auto neutron = new mcEndfProduct();
-					neutron->Load(isEndf);
-					if (neutron->product_type == 0)
-					{
-						EmittedNeutrons.push_back(neutron);
-						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
-					}
-				}
-			}
-		}
-
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')  // (p,n) реакции MT = 51 MF = 6
-		{
-			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
-			{
-				int NK = atoi(record.c[4]);
-				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
-				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
-				for (int i = 0; i < NK; i++)
-				{
-					auto neutron = new mcEndfProduct();
-					neutron->Load(isEndf);
-					if (neutron->product_type == 0)
-					{
-						EmittedNeutrons.push_back(neutron);
-						EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-						EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
-					}
-				}
-			 }
-		}
-
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')  // (p,n) реакции MT = 52 MF = 6
-			{
-				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
-				{
-					int NK = atoi(record.c[4]);
-					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
-					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
-					for (int i = 0; i < NK; i++)
-					{
-						auto neutron = new mcEndfProduct();
-						neutron->Load(isEndf);
-						if (neutron->product_type == 0)
-						{
-							EmittedNeutrons.push_back(neutron);
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
-						}
-					}
-				}
-			 }
-
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')  // (p,n) реакции MT = 53 MF = 6
-			{
-				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
-				{
-					int NK = atoi(record.c[4]);
-					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
-					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
-					for (int i = 0; i < NK; i++)
-					{
-						auto neutron = new mcEndfProduct();
-						neutron->Load(isEndf);
-						if (neutron->product_type == 0)
-						{
-							EmittedNeutrons.push_back(neutron);
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
-						}
-					}
-				}
-			 }
-
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')  // (p,n) реакции MT = 54 MF = 6
-			{
-				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
-				{
-					int NK = atoi(record.c[4]);
-					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
-					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
-					for (int i = 0; i < NK; i++)
-					{
-						auto neutron = new mcEndfProduct();
-						neutron->Load(isEndf);
-						if (neutron->product_type == 0)
-						{
-							EmittedNeutrons.push_back(neutron);
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
-						}
-					}
-				}
-			 }
-
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')  // (p,n) реакции MT = 55 MF = 6
-			{
-				if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
-				{
-					int NK = atoi(record.c[4]);
-					int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
-					double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
-					for (int i = 0; i < NK; i++)
-					{
-						auto neutron = new mcEndfProduct();
-						neutron->Load(isEndf);
-						if (neutron->product_type == 0)
-						{
-							EmittedNeutrons.push_back(neutron);
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
-							EmittedNeutrons[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
-						}
-					}
-				}
-			 }
 
 		getline(isEndf, line, '\n');
 	}
@@ -1610,15 +1522,15 @@ void mcEndfAngular::Load(std::istream& is)
 		{
 			if (isFirstTime)
 			{
-				LI = mcEndfRecord::iStrCrop(record.c[2], 11);
-				LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
+				LI = record.GetIntValue(2);
+				LCT = record.GetIntValue(3);
 				isFirstTime = false;
 			}
 			else
 			{
 				getline(is, line, '\n');
 				::memcpy(&record, line.c_str(), 80);
-				NE1 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				NE1 = record.GetIntValue(5);
 				LValues.resize(NE1);
 				getline(is, line, '\n');
 				for (int i = 0; i < NE1; i++)
@@ -1626,7 +1538,7 @@ void mcEndfAngular::Load(std::istream& is)
 					getline(is, line, '\n');
 					::memcpy(&record, line.c_str(), 80);
 					LEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
-					int NL = mcEndfRecord::iStrCrop(record.c[4], 11);
+					int NL = record.GetIntValue(4);
 					int _lines = NL / 6;
 					int iStop = 0;
 					(NL % 6 > 0) ? (_lines++) : (0);
@@ -1645,7 +1557,7 @@ void mcEndfAngular::Load(std::istream& is)
 				}
 				getline(is, line, '\n');
 				::memcpy(&record, line.c_str(), 80);
-				NE2 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				NE2 = record.GetIntValue(5);
 				TValues.resize(NE2);
 				Cosines.resize(NE2);
 				getline(is, line, '\n');
@@ -1654,7 +1566,7 @@ void mcEndfAngular::Load(std::istream& is)
 					getline(is, line, '\n');
 					::memcpy(&record, line.c_str(), 80);
 					TEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
-					int npoints = mcEndfRecord::iStrCrop(record.c[5], 11);
+					int npoints = record.GetIntValue(5);
 					getline(is, line, '\n');
 					int _lines = npoints * 2 / 6;
 					(npoints % 6 > 0) ? (_lines++) : (0);
@@ -1680,15 +1592,15 @@ void mcEndfAngular::Load(std::istream& is)
 		{
 			if (isFirstTime)
 			{
-				LI = mcEndfRecord::iStrCrop(record.c[2], 11);
-				LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
+				LI = record.GetIntValue(2);
+				LCT = record.GetIntValue(3);
 				isFirstTime = false;
 			}
 			else
 			{
 				getline(is, line, '\n');
 				::memcpy(&record, line.c_str(), 80);
-				NE1 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				NE1 = record.GetIntValue(5);
 				LValues.resize(NE1);
 				getline(is, line, '\n');
 				for (int i = 0; i < NE1; i++)
@@ -1696,7 +1608,7 @@ void mcEndfAngular::Load(std::istream& is)
 					getline(is, line, '\n');
 					::memcpy(&record, line.c_str(), 80);
 					LEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
-					int NL = mcEndfRecord::iStrCrop(record.c[4], 11);
+					int NL = record.GetIntValue(4);
 					int _lines = NL / 6;
 					int iStop = 0;
 					(NL % 6 > 0) ? (_lines++) : (0);
@@ -1720,15 +1632,15 @@ void mcEndfAngular::Load(std::istream& is)
 		{
 			if (isFirstTime)
 			{
-				LI = mcEndfRecord::iStrCrop(record.c[2], 11);
-				LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
+				LI = record.GetIntValue(2);
+				LCT = record.GetIntValue(3);
 				isFirstTime = false;
 			}
 			else
 			{
 				getline(is, line, '\n');
 				::memcpy(&record, line.c_str(), 80);
-				NE2 = mcEndfRecord::iStrCrop(record.c[5], 11);
+				NE2 = record.GetIntValue(5);
 				TValues.resize(NE2);
 				Cosines.resize(NE2);
 				getline(is, line, '\n');
@@ -1737,7 +1649,7 @@ void mcEndfAngular::Load(std::istream& is)
 					getline(is, line, '\n');
 					::memcpy(&record, line.c_str(), 80);
 					TEnergies.push_back(mcEndfRecord::ParseValue(record.c[1], 11));
-					int npoints = mcEndfRecord::iStrCrop(record.c[5], 11);
+					int npoints = record.GetIntValue(5);
 					getline(is, line, '\n');
 					int _lines = npoints * 2 / 6;
 					(npoints % 6 > 0) ? (_lines++) : (0);
@@ -1761,8 +1673,8 @@ void mcEndfAngular::Load(std::istream& is)
 		}
 		else if (LTT == 0)
 		{
-			LI = mcEndfRecord::iStrCrop(record.c[2], 11);
-			LCT = mcEndfRecord::iStrCrop(record.c[3], 11);
+			LI = record.GetIntValue(2);
+			LCT = record.GetIntValue(3);
 			break;
 		}
 		else throw exception((string("Current LCT is undefined. LTT = ") + std::to_string(LTT)).c_str());
@@ -1790,7 +1702,6 @@ void mcEndfN::Load(const char* fname, const char* ename)
 
 	// Читаем строки текста одну за другой и выбираем нужную информацию
 	string line, s1, s2, s3, s4;
-	getline(isEndf, line, '\n');
 
 	// Состояния указыват в каком месте парсинга мы находимся и потому как интерпитируем строки
 	bool isInData = false;
@@ -1798,11 +1709,40 @@ void mcEndfN::Load(const char* fname, const char* ename)
 
 	mcEndfRecord record;
 
+	// Для сохранения объективной информации о данных в файле нужно прочитать заголовок в описательной части
+	for (int i = 0; i < 10; i++)
+	{
+		getline(isEndf, line, '\n');
+		if (line.size() < 80)
+			throw exception((string("Wrong ENDF line length ") + line).c_str());
+		::memcpy(&record, line.c_str(), 80);
+
+		int mt = record.GetMT();
+		int ln = record.GetLineNumber();
+
+		if (mt == 451 && ln == 1)
+		{
+			M_ZA = record.GetFloatValue(0);
+			M_AWR = record.GetFloatValue(1);
+			LRP = record.GetIntValue(2);
+		}
+		else if (mt == 451 && ln == 3)
+		{
+			NSUB = record.GetIntValue(4);
+		}
+	}
+
+	getline(isEndf, line, '\n');
+
 	while (!isEndf.fail())
 	{
 		if (line.size() < 80)
 			throw exception((string("Wrong ENDF line length ") + line).c_str());
 		::memcpy(&record, line.c_str(), 80);
+
+		int mf = record.GetMF();
+		int mt = record.GetMT();
+		int ln = record.GetLineNumber();
 
 		// Начало новой энергии
 		if (!isInData)
@@ -1822,32 +1762,30 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Полное сечение
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '1')
+		else if (mf == 3 && mt == 1 && NSUB != NSUB_PROTON)
 		{
 			TotalCrossSections.Load(isEndf);
 			TotalCrossSections.isEmpty = false;
 		}
 
 		// Сечения упругого рассеяния	
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
+		else if (mf == 3 && mt == 2 && NSUB == NSUB_PROTON)
 		{
 			ElasticCrossSections.Load(isEndf);
 			ElasticCrossSections.isEmpty = false;
 		}
 
 		// Сечения ядерных реакций
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')
+		else if (mf == 3 && mt == 5 && NSUB == NSUB_PROTON)
 		{
 			NuclearCrossSections.Load(isEndf);
 			NuclearCrossSections.isEmpty = false;
 		}
 
+		/*
+
 		// Сечения (n,n') MT = 51 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '1')
+		else if (mf == 3 && mt == 51)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1856,8 +1794,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 52
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '2')
+		else if (mf == 3 && mt == 52)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1866,8 +1803,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 53 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '3')
+		else if (mf == 3 && mt == 53)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1876,8 +1812,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 54 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '4')
+		else if (mf == 3 && mt == 54)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1886,8 +1821,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 55 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '5')
+		else if (mf == 3 && mt == 55)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1896,8 +1830,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 56 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '6')
+		else if (mf == 3 && mt == 56)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1906,8 +1839,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 57 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '7')
+		else if (mf == 3 && mt == 57)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1916,8 +1848,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 58 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '8')
+		else if (mf == 3 && mt == 58)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1926,8 +1857,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 59 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '5' && record.MT[2] == '9')
+		else if (mf == 3 && mt == 59)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1936,8 +1866,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 60 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '0')
+		else if (mf == 3 && mt == 60)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1946,8 +1875,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 61 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '1')
+		else if (mf == 3 && mt == 61)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1956,8 +1884,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 62		
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '2')
+		else if (mf == 3 && mt == 62)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1966,8 +1893,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 63 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '3')
+		else if (mf == 3 && mt == 63)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1976,8 +1902,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 64 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '4')
+		else if (mf == 3 && mt == 64)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1986,8 +1911,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 65
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '5')
+		else if (mf == 3 && mt == 65)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -1996,8 +1920,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 66
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '6')
+		else if (mf == 3 && mt == 66)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2006,8 +1929,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 67
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '7')
+		else if (mf == 3 && mt == 67)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2016,8 +1938,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 68
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '8')
+		else if (mf == 3 && mt == 68)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2026,8 +1947,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 69 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '6' && record.MT[2] == '9')
+		else if (mf == 3 && mt == 69)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2036,8 +1956,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 70 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '0')
+		else if (mf == 3 && mt == 70)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2046,8 +1965,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 71 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '1')
+		else if (mf == 3 && mt == 71)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2056,8 +1974,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 72 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '2')
+		else if (mf == 3 && mt == 72)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2066,8 +1983,7 @@ void mcEndfN::Load(const char* fname, const char* ename)
 		}
 
 		// Сечения (n,n') MT = 73 
-		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
-			record.MT[0] == ' ' && record.MT[1] == '7' && record.MT[2] == '3')
+		else if (mf == 3 && mt == 73)
 		{
 			auto inelastic = new mcEndfCrossSectionTable();
 			inelastic->MT = (record.MT[1] - '0') * 10 + record.MT[2] - '0';
@@ -2257,9 +2173,14 @@ void mcEndfN::Load(const char* fname, const char* ename)
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '3' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '4')
-			{
-				InelasticCrossSections.Load(isEndf);
-			}
+		{
+			InelasticCrossSections.Load(isEndf);
+		}
+			
+		*/
+
+
+		/*
 
 		else if (record.MF[0] == ' ' && record.MF[1] == '4' &&
 			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '2')
@@ -2802,11 +2723,12 @@ void mcEndfN::Load(const char* fname, const char* ename)
 				inelasticLevels->Load(isEndf);
 				inelasticLevelsAng.push_back(inelasticLevels);
 				}
+						
+		*/
 
 
 		// Энерго-угловые распределения
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == ' ' && record.MT[2] == '5')  //ядерные реакции (остаточные)
+		else if (mf == 6 && mt == 2 && NSUB == NSUB_PROTON)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -2824,8 +2746,25 @@ void mcEndfN::Load(const char* fname, const char* ename)
 			}
 		}
 
-		else if (record.MF[0] == ' ' && record.MF[1] == '6' &&
-			record.MT[0] == ' ' && record.MT[1] == '9' && record.MT[2] == '1')  // (n,n) реакции MT = 91 MF = 6
+		else if (mf == 6 && mt == 5 && NSUB == NSUB_PROTON)
+		{
+			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
+			{
+				int NK = atoi(record.c[4]);
+				int ZA = (int)mcEndfRecord::ParseValue(record.c[0], 11);
+				double AWR = mcEndfRecord::ParseValue(record.c[1], 11);
+				for (int i = 0; i < NK; i++)
+				{
+					auto product = new mcEndfProduct();
+					product->Load(isEndf);
+					Products.push_back(product);
+					Products[i]->EANuclearCrossSections[0]->AWR_nucl = AWR;
+					Products[i]->EANuclearCrossSections[0]->ZA_nucl = ZA;
+				}
+			}
+		}
+
+		else if (mf == 6 && mt == 91 && NSUB != NSUB_PROTON)
 		{
 			if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '1')
 			{
@@ -2842,8 +2781,6 @@ void mcEndfN::Load(const char* fname, const char* ename)
 				}
 			}
 		}
-
-
 
 		getline(isEndf, line, '\n');
 	}
@@ -2887,7 +2824,7 @@ void mcEndfNP::dumpTotalCrossections(ostream& os) const
 
 	for (int i = 0; i < Products.size(); i++)
 	{
-		os << "Product - \t" << typeof(Products[i]->product_type) << "\t #" << i + 1 << endl;
+		os << "Product - \t" << TypeOfProduct(Products[i]->product_type) << "\t #" << i + 1 << endl;
 		if (Products[i]->product_type == 5)
 			os << "Nucleous with:" << endl << "A = \t" << Products[i]->ZAP % 1000 << endl << "Z = \t" << Products[i]->ZAP / 1000 << endl << endl;
 		Products[i]->EANuclearCrossSections[0]->dump(os);	
