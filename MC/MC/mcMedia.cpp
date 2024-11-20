@@ -21,7 +21,7 @@
 // Имя файла зависит от типа вывода и назначается непосредственно в коде.
 // 0 - ничего не выводить
 // 1 - вывод сечений реакций протонов
-#define MEDIA_TRACE 2
+#define MEDIA_TRACE 0
 
 #if MEDIA_TRACE > 0
 #include "sstream"
@@ -219,20 +219,20 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 			fos << endl << endl;
 #endif
 #if MEDIA_TRACE == 2
-			//fos << "Element:\t" << csForElement->ElementName << endl;
-			//fos << "----------------------------------------------" << endl << endl;
-			//fos << "Elastic crosssections (MF=3 MT=2)" << endl;
-			//if (!csForElement->ElasticCrossSections.isEmpty)
-			//	csForElement->ElasticCrossSections.dump(fos);
-			//else
-			//	fos << endl << "NO Elastic crosssections !!!" << endl << endl;
-			//fos << endl << endl;
-			//fos << "Nuclear crosssections (MF=3 MT=5)" << endl;
-			//if (!csForElement->NuclearCrossSections.isEmpty)
-			//	csForElement->NuclearCrossSections.dump(fos);
-			//else
-			//	fos << endl << "NO Nuclear crosssections !!!" << endl << endl;
-			//fos << endl << endl;
+			fos << "Element:\t" << csForElement->ElementName << endl;
+			fos << "----------------------------------------------" << endl << endl;
+			fos << "Elastic crosssections (MF=3 MT=2)" << endl;
+			if (!csForElement->ElasticCrossSections.isEmpty)
+				csForElement->ElasticCrossSections.dump(fos);
+			else
+				fos << endl << "NO Elastic crosssections !!!" << endl << endl;
+			fos << endl << endl;
+			fos << "Nuclear crosssections (MF=3 MT=5)" << endl;
+			if (!csForElement->NuclearCrossSections.isEmpty)
+				csForElement->NuclearCrossSections.dump(fos);
+			else
+				fos << endl << "NO Nuclear crosssections !!!" << endl << endl;
+			fos << endl << endl;
 #endif
 		}
 	}

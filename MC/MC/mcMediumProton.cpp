@@ -243,7 +243,7 @@ void mcMediumProton::SetEnergyLoses(const mcPStar& starDB)
 		w[i] = f;
 		wtotal += f;
 	}
-	wtotal *= density_;
+	wtotal /= density_;
 	for (int i = 0; i < elements_.size(); i++) w[i] /= wtotal;
 
 	std::vector<std::shared_ptr<mcPStarTable>> tables(elements_.size());

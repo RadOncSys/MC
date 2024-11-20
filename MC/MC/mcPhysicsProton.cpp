@@ -141,7 +141,7 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	// Возвращаем энергию, выделившуюся в точке.
 	//return 2 * p->ke * p->weight;
 
-	return 0; // Версия с игнорированием ядерных реакций
+	//return 0; // Версия с игнорированием ядерных реакций
 
 	p->ke /= 3.0;
 	return 2 * p->ke * p->weight;
