@@ -56,9 +56,6 @@
     <ClCompile Include="mcSamplers.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="mcPTGrid3D.cpp">
-      <Filter>PhantomTransport</Filter>
-    </ClCompile>
     <ClCompile Include="mcPTLasVegas.cpp">
       <Filter>PhantomTransport</Filter>
     </ClCompile>
@@ -299,6 +296,12 @@
     <ClCompile Include="mcPStar.cpp">
       <Filter>Media</Filter>
     </ClCompile>
+    <ClCompile Include="mcTransportGridFilter.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="mcTransportTube3D.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcDefs.h" />
@@ -363,9 +366,6 @@
     </ClInclude>
     <ClInclude Include="mcSamplers.h">
       <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="mcPTGrid3D.h">
-      <Filter>PhantomTransport</Filter>
     </ClInclude>
     <ClInclude Include="mcPTLasVegas.h">
       <Filter>PhantomTransport</Filter>
@@ -609,6 +609,12 @@
     </ClInclude>
     <ClInclude Include="mcPStar.h">
       <Filter>Media</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportGridFilter.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportTube3D.h">
+      <Filter>Transport</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

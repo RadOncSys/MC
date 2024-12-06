@@ -191,7 +191,6 @@
     <ClInclude Include="mcPhysicsPositron.h" />
     <ClInclude Include="mcPhysicsProton.h" />
     <ClInclude Include="mcPStar.h" />
-    <ClInclude Include="mcPTGrid3D.h" />
     <ClInclude Include="mcPTLasVegas.h" />
     <ClInclude Include="mcPTQc3.h" />
     <ClInclude Include="mcRegionReference.h" />
@@ -245,6 +244,7 @@
     <ClInclude Include="mcTransportCylinder.h" />
     <ClInclude Include="mcTransportCylinderStack.h" />
     <ClInclude Include="mcTransportEmbeddedGroup.h" />
+    <ClInclude Include="mcTransportGridFilter.h" />
     <ClInclude Include="mcTransportJawPairFocused.h" />
     <ClInclude Include="mcTransportJawPairRounded.h" />
     <ClInclude Include="mcTransportLinearChain.h" />
@@ -261,6 +261,7 @@
     <ClInclude Include="mcTransportSlab.h" />
     <ClInclude Include="mcTransportSphereTrap.h" />
     <ClInclude Include="mcTransportTrap.h" />
+    <ClInclude Include="mcTransportTube3D.h" />
     <ClInclude Include="mcTransportWedge.h" />
     <ClInclude Include="mcVRMLDumper.h" />
     <ClInclude Include="ProfileProcessor.h" />
@@ -299,7 +300,6 @@
     <ClCompile Include="mcPhysicsPositron.cpp" />
     <ClCompile Include="mcPhysicsProton.cpp" />
     <ClCompile Include="mcPStar.cpp" />
-    <ClCompile Include="mcPTGrid3D.cpp" />
     <ClCompile Include="mcPTLasVegas.cpp" />
     <ClCompile Include="mcPTQc3.cpp" />
     <ClCompile Include="mcRegionReference.cpp" />
@@ -352,6 +352,7 @@
     <ClCompile Include="mcTransportCylinder.cpp" />
     <ClCompile Include="mcTransportCylinderStack.cpp" />
     <ClCompile Include="mcTransportEmbeddedGroup.cpp" />
+    <ClCompile Include="mcTransportGridFilter.cpp" />
     <ClCompile Include="mcTransportJawPairFocused.cpp" />
     <ClCompile Include="mcTransportJawPairRounded.cpp" />
     <ClCompile Include="mcTransportLinearChain.cpp" />
@@ -367,6 +368,7 @@
     <ClCompile Include="mcTransportSimpleSplitter.cpp" />
     <ClCompile Include="mcTransportSlab.cpp" />
     <ClCompile Include="mcTransportSphereTrap.cpp" />
+    <ClCompile Include="mcTransportTube3D.cpp" />
     <ClCompile Include="mcTransportWedge.cpp" />
     <ClCompile Include="mcVRMLDumper.cpp" />
     <ClCompile Include="ProfileProcessor.cpp" />
