@@ -1,204 +1,382 @@
 #include "mcTransportGridFilter.h"
 #include "mcGeometry.h"
-#include "mcDefs.h"
+#include "mcMedia.h"
+#include "mcPhysics.h"
+#include "mcThread.h"
 #include <float.h>
 
-mcTransportGridFilter::mcTransportGridFilter(const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x) : mcTransport(orgn, z, x)
-, a_(14.0)
-, z_(2.175)
-, ds_(6)
-, hs_(5)
-, xs_(6)
-, ys_(5)
-, x1_(0), x2_(0), y1_(0), y2_(0), z2_(0)
+#define GEOM_EPSILON	1E-6
+
+mcTransportGridFilter::mcTransportGridFilter(const geomVector3D& orgn, const geomVector3D& vz, const geomVector3D& vx,
+	int nx, int ny, int nz, double psx, double psy, double psz)
+	: mcTransportPrism(orgn, vz, vx, psx * nx, psy * ny, psz * nz)
+	, nx_(nx), ny_(ny), nz_(nz), psx_(psx), psy_(psy), psz_(psz)
 {
-	ds_[0] = 0.1; ds_[1] = 0.2; ds_[2] = 0.4; ds_[3] = 0.7; ds_[4] = 1.0; ds_[5] = 1.5;
-	hs_[0] = 0.05; hs_[1] = 0.1; hs_[2] = 0.2; hs_[3] = 0.325; hs_[4] = 0.45;
-	xs_[0] = -4.5; xs_[1] = -3.0; xs_[2] = -1.5; xs_[3] = 0; xs_[4] = 2.0; xs_[5] = 4.0;
-	ys_[0] = -4.0; ys_[1] = -2.0; ys_[2] = 0; ys_[3] = 2.0; ys_[4] = 4.0;
+	x0_ = -0.5 * psx_ * nx_;
+	y0_ = -0.5 * psy_ * ny_;
+	z0_ = 0;
 
-	unsigned i, j;
-	for (j = 0; j < ys_.size(); j++)
-	{
-		if (hs_[j] > z2_) z2_ = hs_[j];
-		for (i = 0; i < xs_.size(); i++)
-		{
-			if (x1_ > xs_[i] - ds_[i]) x1_ = xs_[i] - ds_[i];
-			if (x2_ < xs_[i] + ds_[i]) x2_ = xs_[i] + ds_[i];
-			if (y1_ > ys_[j] - ds_[i]) y1_ = ys_[j] - ds_[i];
-			if (y2_ < ys_[j] + ds_[i]) y2_ = ys_[j] + ds_[i];
-		}
-	}
-	ax_ = 2.0 * MAX(-x1_, x2_);
-	ay_ = 2.0 * MAX(-y1_, y2_);
-
-	//// Тест со значительно большими толщинами
-	//for (i = 0; i < hs_.size(); i++) hs_[i] *= 2.2;
+	bx_.resize(nz_, 0);
+	by_.resize(nz_, 0);
 }
 
 mcTransportGridFilter::~mcTransportGridFilter(void)
 {
 }
 
-double mcTransportGridFilter::getDistanceInside(mcParticle& p) const
+int mcTransportGridFilter::getIdxAtPoint(const geomVector3D& p, short* pgidx, bool& isInBrick) const
 {
-	// Расстояние до параллелепипеда нужно в любом случае
-	double dprism = mcGeometry::getDistanceToPrismInside(p.p, p.u, a_, a_, z_);
-
-	// Для ускорения определяем пересечение или нахождение в области отверстий.
-	double x = p.p.x(), y = p.p.y(), z = p.p.z();
-	if ((fabs(x) <= ax_ / 2 && fabs(y) <= ay_ / 2 && fabs(z) <= z2_) ||
-		mcGeometry::getDistanceToPrismOutside(p.p, p.u, ax_, ay_, z2_) != DBL_MAX)
+	double dx = p.x() - x0_, dy = p.y() - y0_, dz = p.z() - z0_;
+	if (dx < 0 || dy < 0 || dz < 0 || dx >= ax_ || dy >= ay_ || dz >= az_)
+		return -1;
+	else
 	{
-		geomVector3D pp = p.p;
+		int i = int(dx / psx_), j = int(dy / psy_), k = int(dz / psz_);
+		pgidx[0] = i; pgidx[1] = j; pgidx[2] = k;
 
-		// Проверяем пересечение с цилиндрами
-		double dcyl = dprism;
-		unsigned i, j;
-		for (j = 0; j < ys_.size(); j++)
+		double ddx = dx - (i + 0.5) * psx_;
+		double ddy = dy - (j + 0.5) * psy_;
+
+		if (abs(ddx) < bx_[k] && abs(ddy) < by_[k])
+			isInBrick = true;
+		else
+			isInBrick = false;
+
+		return (k * ny_ + j) * nx_ + i;
+	}
+}
+
+double mcTransportGridFilter::getDistanceInsideVoxel(const mcParticle& particle, 
+	short* gidxNext, int& idx, bool& isHitCell)
+{
+	int k = particle.region.gidx_[2];
+	double bx = 0.5 * bx_[k], by = 0.5 * by_[k];
+	idx = particle.region.idx_;
+	gidxNext[0] = particle.region.gidx_[0];
+	gidxNext[1] = particle.region.gidx_[1];
+	gidxNext[2] = k;
+
+	double dx = DBL_MAX, dy = DBL_MAX, dz = DBL_MAX;
+	double vx = particle.u.x(), vy = particle.u.y(), vz = particle.u.z();
+
+	// Частица внутри брикета
+	if (particle.region.subidx_ > 0)
+	{
+		// Координаты частицы относительно границы брикета
+		double x = particle.p.x() - ((x0_ + psx_ * (particle.region.gidx_[0] + 0.5)) - bx);
+		double y = particle.p.y() - ((y0_ + psy_ * (particle.region.gidx_[1] + 0.5)) - by);
+		double z = particle.p.z() - (z0_ + psz_ * k);
+
+		if (vx < 0) dx = -x / vx;
+		else if (vx > 0) dx = (psx_ - bx - x) / vx;
+
+		if (vy < 0) dy = -y / vy;
+		else if (vy > 0) dy = (psy_ - by - y) / vy;
+
+		if (vz < 0) dz = -z / vz;
+		else if (vz > 0) dz = (psz_ - z) / vz;
+
+		if (dx < dy && dx < dz)
 		{
-			pp(1) = p.p.y() - ys_[j];
-			for (i = 0; i < xs_.size(); i++)
+			gidxNext[0] = particle.region.gidx_[0] + (vx < 0 ? -1 : 1);
+			if (gidxNext[0] < 0 || gidxNext[0] >= (short)nx_) idx = -1;
+			else idx = (gidxNext[2] * ny_ + gidxNext[1]) * nx_ + gidxNext[0];
+			isHitCell = false;
+			return dx;
+		}
+		else if (dy < dx && dy < dz)
+		{
+			gidxNext[1] = particle.region.gidx_[1] + (vy < 0 ? -1 : 1);
+			if (gidxNext[1] < 0 || gidxNext[1] >= (short)ny_) idx = -1;
+			else idx = (gidxNext[2] * ny_ + gidxNext[1]) * nx_ + gidxNext[0];
+			isHitCell = false;
+			return dy;
+		}
+		else
+		{
+			gidxNext[2] = k + (vz < 0 ? -1 : 1);
+			if (gidxNext[2] < 0 || gidxNext[2] >= (short)nz_) idx = -1;
+			else idx = (gidxNext[2] * ny_ + gidxNext[1]) * nx_ + gidxNext[0];
+			isHitCell = true;
+			return dz;
+		}
+	}
+
+	// Частица за пределами брикета
+	else
+	{
+		// Пересечение с ячейкой
+		// Координаты частицы относительно границы ячейки
+		double x = particle.p.x() - (x0_ + psx_ * particle.region.gidx_[0]);
+		double y = particle.p.y() - (y0_ + psy_ * particle.region.gidx_[1]);
+		double z = particle.p.z() - (z0_ + psz_ * k);
+
+		if (vx < 0) dx = -x / vx;
+		else if (vx > 0) dx = (psx_ - x) / vx;
+
+		if (vy < 0) dy = -y / vy;
+		else if (vy > 0) dy = (psy_ - y) / vy;
+
+		if (vz < 0) dz = -z / vz;
+		else if (vz > 0) dz = (psz_ - z) / vz;
+
+		// Пересечения с брикетом.
+		double db = mcGeometry::getDistanceToRectanglePipeOutside(
+			geomVector3D(x, y, z), particle.u, bx, psx_ - bx, by, psy_ - by);
+
+		if (db < dx && db < dy && db < dz)
+		{
+			isHitCell = false;
+			return db;
+		}
+
+		else if (dx < dy && dx < dz)
+		{
+			gidxNext[0] = particle.region.gidx_[0] + (vx < 0 ? -1 : 1);
+			if (gidxNext[0] < 0 || gidxNext[0] >= (short)nx_) idx = -1;
+			else idx = (gidxNext[2] * ny_ + gidxNext[1]) * nx_ + gidxNext[0];
+			isHitCell = true;
+			return dx;
+		}
+		else if (dy < dx && dy < dz)
+		{
+			gidxNext[1] = particle.region.gidx_[1] + (vy < 0 ? -1 : 1);
+			if (gidxNext[1] < 0 || gidxNext[1] >= (short)ny_) idx = -1;
+			else idx = (gidxNext[2] * ny_ + gidxNext[1]) * nx_ + gidxNext[0];
+			isHitCell = true;
+			return dy;
+		}
+		else
+		{
+			gidxNext[2] = k + (vz < 0 ? -1 : 1);
+			if (gidxNext[2] < 0 || gidxNext[2] >= (short)nz_) idx = -1;
+			else idx = (gidxNext[2] * ny_ + gidxNext[1]) * nx_ + gidxNext[0];
+			isHitCell = true;
+			return dz;
+		}
+	}
+}
+
+void mcTransportGridFilter::beginTransport(mcParticle& p)
+{
+	// Указатель на транспортный объект, в котором частица находится в данный момент
+	p.transport_ = this;
+
+	mcParticle* particle = p.thread_->NextParticle();
+	*particle = p;
+	particle->p = p.p * mwtot_;
+	particle->plast = p.plast * mwtot_;
+	particle->u = particle->u.transformDirection(mwtot_);
+	particle->dnear = 0;
+	particle->mfps = HowManyMFPs(p.thread_->rng());
+
+	// Переместить частицу на поверхность, если она еще не внутри
+	bool isInBrick;
+	int idx = getIdxAtPoint(particle->p, particle->region.gidx_, isInBrick);
+	if (idx < 0)
+	{
+		double f = getDistanceOutside(*particle);
+		if (f == DBL_MAX)
+			return endTransport(particle);
+		particle->p += particle->u * (f + FLT_EPSILON);
+		idx = getIdxAtPoint(particle->p, particle->region.gidx_, isInBrick);
+	}
+	particle->region.idx_ = idx;
+	particle->region.medidx_ = isInBrick ? inBrickIdx_ : outBrickIdx_;
+	particle->region.subidx_ = isInBrick ? 1 : 0;
+	particle->regDensityRatio = 1.0;
+
+	// Транспорт в локальной системе координат
+	simulate(p.thread_);
+}
+
+void mcTransportGridFilter::beginTransportInside(mcParticle& p)
+{
+	beginTransport(p);
+}
+
+mc_move_result_t mcTransportGridFilter::moveParticle(mcParticle* particle, double& step, double& edep)
+{
+	edep = 0;
+	step = 0;
+
+	// Важный момент! 
+	// Если частица находится за пределами (на что указывает индекс региона), то возвращаемся с метокй о выходе.
+	if (particle->region.idx_ < 0)
+	{
+		particle->exitSurface_ = mcParticle::temb_shit_t::External;
+		return MCMR_EXIT;
+	}
+
+	// HACK!!
+	// По непонятным причинам координаты частицы могут быть абсурдными.
+	// Удалаяем такие частицы
+	if (_isnan(particle->p.x()) != 0)
+	{
+		//cout << "Non number position or direction in object: " << this->getName() << endl;
+		cout << "Non number position in object: " << this->getName() << endl;
+		cout << "Position: " << particle->p;
+		cout << "Direction: " << particle->u;
+		particle->thread_->RemoveParticle();
+		return MCMR_DISCARGE;
+	}
+
+	const mcPhysics* phys = media_->getPhysics(particle->t);
+
+	//Параметры сред транспорта фотонов и электронов
+	const mcMedium* med = media_->getMedium(particle->t, particle->region.medidx_);
+
+	// Частицы с энергией ниже критической должны быть уничтожены раньше любых расчетов транспорта.
+	if (phys->Discarge(particle, *med, edep))
+		return MCMR_DISCARGE;
+
+	// Hack!!! GG 20171030
+	if (_isnan(particle->ke) != 0)
+	{
+		cout << "Non number energy: " << this->getName() << endl;
+		cout << "Position: " << particle->p;
+		cout << "Direction: " << particle->u;
+		particle->thread_->RemoveParticle();
+		return MCMR_DISCARGE;
+	}
+
+	double freepath = phys->MeanFreePath(particle->ke, *med, particle->regDensityRatio);
+	step = freepath * particle->mfps;
+
+	// Расстояние до границы ячейки в направлении частицы.
+	// Если потом мы сделаем шаг до границы, то должны переместить частиу в следующую ячейку.
+	// Именно в это момент мы пометим частицу как находящуюся на грани
+	short gidxNext[3];
+	int idx;
+	bool isHitCell;	// true - будет пересечена граница ячейки, false - граница брикета.
+	double dist = getDistanceInsideVoxel(*particle, gidxNext, idx, isHitCell) + GEOM_EPSILON;
+
+	// Игнорируем ускорение за счет оценки расстояния до границы
+	particle->dnear = 0;
+
+	if (step < dist)
+	{
+		double stepRequested = step;
+		edep = phys->TakeOneStep(particle, *med, step);
+
+		if (step < stepRequested)
+			return MCMR_CONTINUE;
+		else
+			return MCMR_INTERUCT;
+	}
+	else
+	{
+		// HACK! На поверхности возможно залипание, если расстояние в пределах погрешности вычислений.
+		if (dist < GEOM_EPSILON)
+			dist = GEOM_EPSILON;
+		step = dist;
+		edep = phys->TakeOneStep(particle, *med, step);
+
+		particle->mfps -= step / freepath;
+		if (step == dist)
+		{
+			// Добрались до границы воксела. Нужно перенастороить частицу на новый.
+			particle->region.idx_ = idx;
+			if (idx >= 0)
 			{
-				pp(0) = p.p.x() - xs_[i];
-				double d = mcGeometry::getDistanceToCylinderOutside(pp, p.u, ds_[i] / 2, hs_[j]);
-				if (d < 0)
-					d = mcGeometry::getDistanceToCylinderOutside(pp, p.u, ds_[i] / 2, hs_[j]);
-				if (dcyl > d) dcyl = d;
+				// Если пересекаем границу ячейки, то уходим в другую и 
+				// нужно определять где именно частица окажется.
+				// проще всего это сделать с помощью уже имеющейся 
+				// функции определения где находится частица по ее координатам.
+				if (isHitCell)
+				{
+					bool isInBrick;
+					idx = getIdxAtPoint(particle->p, particle->region.gidx_, isInBrick);
+					particle->region.idx_ = idx;
+					particle->region.medidx_ = isInBrick ? inBrickIdx_ : outBrickIdx_;
+					particle->region.subidx_ = isInBrick ? 1 : 0;
+				}
+				else
+				{
+					if (particle->region.subidx_ == 1)
+					{
+						particle->region.medidx_ = outBrickIdx_;
+						particle->region.subidx_ = 0;
+					}
+					else
+					{
+						particle->region.medidx_ = inBrickIdx_;
+						particle->region.subidx_ = 1;
+					}
+				}
 			}
 		}
-		return dcyl;
+		return MCMR_CONTINUE;
 	}
-	else
-		return dprism;
-}
-
-double mcTransportGridFilter::getDistanceOutside(mcParticle& p) const
-{
-	// Сначала определеяем пересечение с параллелепипедом фантом и перемещаем частицу на его поверхность.
-	// Затем определяемся, не неаходится ли она в рамке, где могут быть высверленные отверстия.
-
-	// На случай, если частица внутри паралелепида в каком-то отверстии
-	double x = p.p.x(), y = p.p.y(), z = p.p.z();
-	bool ispinside = fabs(2 * x) < a_ - FLT_EPSILON && fabs(2 * y) < a_ - FLT_EPSILON && z > FLT_EPSILON && z < z_ / 2;
-
-	if (ispinside)
-	{
-		unsigned i, j;
-		// Ищем цилиндр
-		for (i = 0; i < xs_.size(); i++)
-			if (fabs(x - xs_[i]) <= ds_[i] / 2) break;
-		if (i >= xs_.size())
-			throw std::exception("mcTransportGridFilter::getDistanceOutside: Particle expected to be inside cylinder, but cylinder not found");
-
-		for (j = 0; j < ys_.size(); j++)
-			if (((x - xs_[i]) * (x - xs_[i]) + (y - ys_[j]) * (y - ys_[j]) - FLT_EPSILON) * 4 <= ds_[i] * ds_[i]) break;
-		if (j >= ys_.size())
-			throw std::exception("mcTransportGridFilter::getDistanceOutside: Particle expected to be inside cylinder, but cylinder not found");
-
-		geomVector3D pp = p.p;
-		pp(0) -= xs_[i]; pp(1) -= ys_[j];
-		double dcyl = mcGeometry::getDistanceToCylinderInside(pp, p.u, ds_[i] / 2, hs_[j]);
-		pp = p.p + (p.u * dcyl);
-		if (pp.z() < MINDELTA)	// столкновение с наружным торцом означает вылет
-			return DBL_MAX;
-		else
-			return dcyl;
-	}
-	else
-	{
-		double dprism = mcGeometry::getDistanceToPrismOutside(p.p, p.u, a_, a_, z_) + MINDELTA;
-		if (dprism == DBL_MAX)
-			return DBL_MAX;
-
-		geomVector3D pp = p.p + (p.u * dprism);
-
-		double xx = pp.x(), yy = pp.y(), zz = pp.z();
-		if (zz > z_ / 2 || xx < x1_ || xx > x2_ || yy < y1_ || yy > y2_)
-			return dprism;
-
-		// Перебираем круги на предмет нахождения в каком либо.
-		// Если так, то тогда точка пересечения будет точкой пересечения изнутри цилиндра.
-		// В противном случае опять возвращаем dprism.
-		// Для ускорения сначала определеяем индексы прямоугольника охватывающего точку и образованного центрами отверстий.
-
-		unsigned i, j;
-		for (i = 0; i < xs_.size(); i++) if (xs_[i] >= xx) break;
-		for (j = 0; j < ys_.size(); j++) if (ys_[j] >= yy) break;
-
-		unsigned ii = 1000, jj = 1000;
-		if (i > 0 && j > 0)
-		{
-			double fx = xx - xs_[i - 1], fy = yy - ys_[j - 1];
-			if (fx * fx + fy * fy <= ds_[i - 1] * ds_[i - 1] / 4) { ii = i - 1; jj = j - 1; }
-		}
-		if (ii == 1000 && j > 0 && i < xs_.size())
-		{
-			double fx = xx - xs_[i], fy = yy - ys_[j - 1];
-			if (fx * fx + fy * fy <= ds_[i] * ds_[i] / 4) { ii = i; jj = j - 1; }
-		}
-		if (ii == 1000 && i > 0 && j < ys_.size())
-		{
-			double fx = xx - xs_[i - 1], fy = yy - ys_[j];
-			if (fx * fx + fy * fy <= ds_[i - 1] * ds_[i - 1] / 4) { ii = i - 1; jj = j; }
-		}
-		if (ii == 1000 && i < xs_.size() && j < ys_.size())
-		{
-			double fx = xx - xs_[i], fy = yy - ys_[j];
-			if (fx * fx + fy * fy <= ds_[i] * ds_[i] / 4) { ii = i; jj = j; }
-		}
-
-		if (ii != 1000)
-		{
-			pp(0) -= xs_[ii]; pp(1) -= ys_[jj];
-			double dcyl = mcGeometry::getDistanceToCylinderInside(pp, p.u, ds_[ii] / 2, hs_[jj]);
-			return dcyl + dprism;
-		}
-
-		return dprism;
-	}
-}
-
-double mcTransportGridFilter::getDNearInside(const geomVector3D& p) const
-{
-	// Пропускаем ускорение за счет dnear
-	return 0;
-
-	//// Сначала определяем минимальное расстояние до параллелепипеда.
-	//// Затем перебираем 4 соседних цилиндра.
-	//// В идоге выбираем меньшее.
-	//double x = p.x(), y = p.y(), z = p.z();
-	//double dx = a_ / 2 - fabs(x), dy = a_ / 2 - fabs(y), dz = MIN(z_ - z, z);
-	//double dppd = MIN(MIN(dx, dy), dz);
-
-	//unsigned i, j;
-	//for (i = 0; i < xs_.size(); i++) if (xs_[i] >= x) break;
-	//for (j = 0; j < ys_.size(); j++) if (ys_[j] >= y) break;
-
-	//double d00 = DBL_MAX, d01 = DBL_MAX, d10 = DBL_MAX, d11 = DBL_MAX;
 }
 
 void mcTransportGridFilter::dump(ostream& os) const
 {
-	mcTransport::dump(os);
+	__super::dump(os);
 }
 
 void mcTransportGridFilter::dumpVRML(ostream& os) const
 {
-	os << "# Cylindrical grid: " << this->getName() << endl;
-	os << "Group {" << endl;
-	os << "  children [" << endl;
-
-	for (unsigned j = 0; j < ys_.size(); j++)
+	double az = psz_;
+	for (int k = 0; k < nz_; k++)
 	{
-		for (unsigned i = 0; i < xs_.size(); i++)
+		double z0 = z0_ + psz_ * k;
+		double ax = bx_[k];
+		double ay = by_[k];
+		for (int j = 0; j < ny_;j++)
 		{
-			dumpVRMLCylinder(os, ds_[i] / 2, 0, hs_[j], xs_[i], ys_[j]);
+			double y0 = y0_ + psy_ * (j + 0.5) - 0.5 * ay;
+			for (int ii = 0; ii < nx_; ii++)
+			{
+				double x0 = x0_ + psx_ * (ii + 0.5) - 0.5 * ax;
+
+				// Каждый брикет изображаем как отдельный объект
+				geomVector3D p[8];
+
+				int i = 0;
+				p[i++] = geomVector3D(x0, y0, z0) * mttow_;
+				p[i++] = geomVector3D(x0, y0 + ay, z0) * mttow_;
+				p[i++] = geomVector3D(x0 + ax, y0 + ay, z0) * mttow_;
+				p[i++] = geomVector3D(x0 + ax, y0, z0) * mttow_;
+				p[i++] = geomVector3D(x0, y0, z0 + az) * mttow_;
+				p[i++] = geomVector3D(x0, y0 + ay, z0 + az) * mttow_;
+				p[i++] = geomVector3D(x0 + ax, y0 + ay, z0 + az) * mttow_;
+				p[i++] = geomVector3D(x0 + ax, y0, z0 + az) * mttow_;
+
+				os << "    Transform {" << endl;
+				os << "      children Shape {" << endl;
+				os << "        appearance Appearance {" << endl;
+				os << "          material Material {" << endl;
+				os << "            diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+				os << "            transparency " << transparancy_ << endl;
+				os << "          }" << endl;
+				os << "        }" << endl;
+				os << "        geometry IndexedFaceSet {" << endl;
+				os << "            coord Coordinate {" << endl;
+				os << "                point [" << endl;
+
+				for (i = 0; i < 8; i++) {
+					os << "                    " << p[i].x() << ' ' << p[i].y() << ' ' << p[i].z();
+					if (i < 7) os << ", ";
+					os << endl;
+				}
+
+				os << "                ]" << endl;
+				os << "            }" << endl;
+				os << "            coordIndex [" << endl;
+
+				os << "                0, 1, 2, 3, -1," << endl;
+				os << "                0, 4, 5, 1, -1," << endl;
+				os << "                1, 5, 6, 2, -1," << endl;
+				os << "                2, 6, 7, 3, -1," << endl;
+				os << "                3, 7, 4, 0, -1," << endl;
+				os << "                4, 7, 6, 5, -1" << endl;
+
+				os << "            ]" << endl;
+				os << "        }" << endl;
+				os << "      }" << endl;
+				os << "    }" << endl;
+			}
 		}
 	}
-
-	dumpVRMLPrism(os, a_, a_, z_);
-
-	os << "  ]" << endl;
-	os << "}" << endl;
 }

@@ -3,55 +3,54 @@
 // Author: [2024] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 #pragma once
-#include "mctransport.h"
-
-
-// TODO: Класс стартовал с существующего транспорта mcPTLasVegas
-// похожего своей матрицей отверстией. 
-// Теперь его функционал нужно переписать под гребенчатый фильтр.
-
-
+#include "mcTransportPrism.h"
 
 // Класс транспорта в гребенчатом фильтре, представляущем 2D матрицу пирамид, 
-// состоящих из корпичиков квадратного сечения одинаковой высоты, но разного размера.
+// состоящих из корпичиков прямоугольного сечения одинаковой высоты, но разного размера.
 // Изначально класс разрабатывался для транспорта протонов в проекте ОКО.
-class mcTransportGridFilter : public mcTransport
+// Наследуем Prism с целью использования ее методов для обработки столкновений с данным обектом и выхода из него.
+class mcTransportGridFilter : public mcTransportPrism
 {
 public:
-	mcTransportGridFilter(const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x);
+	mcTransportGridFilter(const geomVector3D& orgn, const geomVector3D& vz, const geomVector3D& vx,
+		int nx, int ny, int nz, double psx, double psy, double psz);
 	virtual ~mcTransportGridFilter(void);
+
+	// В отличие от стандартного начала переносит частицу на поверхность фантома 
+	// и вычисляет индекс стартовой ячейки
+	void beginTransport(mcParticle& p) override;
+
+	// Старт транспорта может вызываться как в объекте, вложенном во внутреннюю структуру - воздушеый слой.
+	void beginTransportInside(mcParticle& p) override;
+
+	// Виртуальная функция перемещения частицы полностью покрывает специфику транспорта в сетке.
+	mc_move_result_t moveParticle(mcParticle* particle, double& step, double& edep) override;
+
+	// Специфичные параметры
+	void setMedia(short inb, short outb) { inBrickIdx_ = inb; outBrickIdx_ = outb; }
+	void setBrickSize(int iz, double x, double y) { bx_[iz] = x; by_[iz] = y; }
 
 	void dump(ostream& os) const override;
 	void dumpVRML(ostream& os)const override;
 
-	double getDistanceInside(mcParticle& p) const override;
-	double getDistanceOutside(mcParticle& p) const override;
-	double getDNearInside(const geomVector3D& p) const override;
-
-	// Нужно для тестирования
-	double A() const { return a_; }
-	double Z() const { return z_; }
-	const std::vector<double>& Ds() const { return ds_; }
-	const std::vector<double>& Hs() const { return hs_; }
-	const std::vector<double>& Xs() const { return xs_; }
-	const std::vector<double>& Ys() const { return ys_; }
-
 protected:
-	// Объект описывается как двумерная сетка цилиндрических отверстий (5х5)
-	double a_;	// сторона квадратного фантома
-	double z_;	// толщина фантома
+	int getIdxAtPoint(const geomVector3D& p, short* pgidxx, bool& isInBrick) const;
+	double getDistanceInsideVoxel(const mcParticle& particle, short* gidxNext, int& idx, bool& isHitCell);
 
-	// Диаметры отверстий
-	std::vector<double> ds_;
+	// Размер матрицы пирамид
+	int nx_, ny_, nz_;
 
-	// Глубины отверстий
-	std::vector<double> hs_;
+	// Шаг между пирамидами
+	double psx_, psy_, psz_;
 
-	// Позиции узлов сетки отверстий
-	std::vector<double> xs_;
-	std::vector<double> ys_;
+	// Стартовый угол стартовой пирамиды
+	double x0_, y0_, z0_;
 
-	// Служебные переменные, определяющие где могут находиться высверленные отверстия
-	double x1_, x2_, y1_, y2_, z2_;
-	double ax_, ay_;	// симметричный прямоугольник, охватывающий область отверстий
+	// Размеры брикетиков пирамид по слоям 
+	std::vector<double> bx_;
+	std::vector<double> by_;
+
+	// Индексы сред внутри и снаружи брикетиков
+	short inBrickIdx_;
+	short outBrickIdx_;
 };

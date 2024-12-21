@@ -26,6 +26,7 @@
 #include "../../mc/mc/mcETransportConvexPolygonCircle.h"
 #include "../../mc/mc/mcTransportEmbeddedGroup.h"
 #include "../../mc/mc/mcTransportLinearChain.h"
+#include "../../mc/mc/mcTransportGridFilter.h"
 
 #include "../../mc/mc/mcScorePHSP.h"
 #include "../../mc/mc/mcScoreBeamFluence.h"
@@ -58,6 +59,8 @@
 #include "../../mc/mc/mcSourceSphereC60.h"
 #include "../../mc/mc/mcSourceAcceleratedBeam.h"
 #include "../../mc/mc/mcClinicalElectronBeam.h"
+
+#include "../../mc/mc/mcMedia.h"
 
 #include <io.h>
 #include <fcntl.h>
@@ -144,11 +147,16 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	double scd = 0;
 	int nc = 0;
 	int nsplit = 0;
+	int nx, ny, nz;
+	double psx, psy, psz;
 	mc_particle_t ptype = mc_particle_t::MCP_PHOTON;
 	
 	std::vector<double> poly_z;
 	std::vector<double> poly_x;
 	std::vector<double> poly_y;
+
+	std::vector<double> bricks_x;
+	std::vector<double> bricks_y;
 
 	for (auto node : geometry.Nodes)
 	{
@@ -278,6 +286,18 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 					dr = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"ds") == 0)
 					ds = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"nx") == 0)
+					nx = _wtoi(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"ny") == 0)
+					ny = _wtoi(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"nz") == 0)
+					nz = _wtoi(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"psx") == 0)
+					psx = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"psy") == 0)
+					psy = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"psz") == 0)
+					psz = _wtof(n1.Text.c_str());
 			}
 		}
 
@@ -298,6 +318,28 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 					poly_z.push_back(z);
 					poly_x.push_back(x);
 					poly_y.push_back(x);
+				}
+			}
+			}
+
+		else if (_wcsicmp(node.Name.c_str(), L"bricks") == 0)
+		{
+			for (auto n1 : node.Nodes)
+			{
+				if (_wcsicmp(n1.Name.c_str(), L"brick") == 0)
+				{
+					double bx = 0, by = 0;
+					for (auto n2 : n1.Nodes)
+					{
+						if (_wcsicmp(n2.Name.c_str(), L"bx") == 0)
+							bx = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"by") == 0)
+							by = _wtof(n2.Text.c_str());
+					}
+					if(bx == 0 || by == 0)
+						throw exception("Brick size can not be 0");
+					bricks_x.push_back(bx);
+					bricks_y.push_back(by);
 				}
 			}
 		}
@@ -509,6 +551,17 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	else if (_wcsicmp(geomType.c_str(), L"e_convex_polygon_circle") == 0)
 	{
 		t = new mcETransportConvexPolygonCircle(origin, normal, xaxis, poly_z, poly_x);
+	}
+	else if (_wcsicmp(geomType.c_str(), L"grid_filter") == 0)
+	{
+		t = new mcTransportGridFilter(origin, normal, xaxis, nx, ny, nz, psx, psy, height / nz);
+		((mcTransportGridFilter*)t)->setMedia(
+			media->getMediumIdx(XmlParseReaderBase::copyWStringToStlString(geomMedium.c_str()).c_str()),
+			media->getMediumIdx("AIR700ICRU"));
+		if(nz != bricks_x.size())
+			throw exception("Number of brick do not mutch grid size");
+		for (int i = 0; i < nz; i++)
+			((mcTransportGridFilter*)t)->setBrickSize(i, bricks_x[i], bricks_y[i]);
 	}
 
 	if (t == nullptr)
