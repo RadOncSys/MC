@@ -37,7 +37,7 @@ int mcTransportGridFilter::getIdxAtPoint(const geomVector3D& p, short* pgidx, bo
 		double ddx = dx - (i + 0.5) * psx_;
 		double ddy = dy - (j + 0.5) * psy_;
 
-		if (abs(ddx) < bx_[k] && abs(ddy) < by_[k])
+		if (abs(ddx) < bx_[k] * 0.5 && abs(ddy) < by_[k] * 0.5)
 			isInBrick = true;
 		else
 			isInBrick = false;
