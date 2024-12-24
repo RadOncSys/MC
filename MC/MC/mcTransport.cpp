@@ -753,7 +753,7 @@ void mcTransport::dumpVRMLConicalCylinderSide(ostream& os, double r, double z1, 
 		f1 = z1; f2 = z2;
 		if (f != 0) s2 = (f - z2 + z1) / f;
 	}
-	else
+	else 
 	{
 		f1 = z2; f2 = z1;
 		if (f != 0) s1 = (f - z2 + z1) / f;
@@ -860,11 +860,18 @@ void mcTransport::dumpVRMLCylinderRing(ostream& os, double r1, double r2, double
 
 void mcTransport::dumpVRMLConicalRing(ostream& os, double r1, double r2, double z1, double z2, double f) const
 {
-	double s = (f - z2 + z1) / f;
 	dumpVRMLConicalCylinderSide(os, r1, z1, z2, f, true);
-	dumpVRMLConicalCylinderSide(os, r2, z1, z2, f, false);
 	dumpVRMLRing(os, r1, r2, z1, false);
-	dumpVRMLRing(os, r1 * s, r2 *s, z2, true);
+
+	// В новой врсии коническое кольцо имеет параллельные внутренние и внешние грани, т.е. постоянную толщину стенки.
+	// Симулируем это обстаятельство расчетом фокуса внешней грани, поскольку объект описывается фокусом внутреннего конуса.
+
+	double s1 = (f - z2 + z1) / f;
+	double f_ext = r2 * (z2 - z1) / (r1 - s1 * r1);
+	double s2 = (f_ext - z2 + z1) / f_ext;
+
+	dumpVRMLConicalCylinderSide(os, r2, z1, z2, f_ext, false);
+	dumpVRMLRing(os, r1 * s1, r2 *s2, z2, true);
 }
 
 void mcTransport::dumpVRMLCylinderWithConicalHole(ostream& os, double r1, double r2, double z1, double z2, double f) const
