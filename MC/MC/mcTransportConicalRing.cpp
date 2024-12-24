@@ -64,7 +64,7 @@ double mcTransportConicalRing::getDistanceOutside(mcParticle& p) const
 			// Поскольку частица пересекает плоскость торца за пределами внешнего конуса, 
 			// то мы знаем, что она либо столкнется с ним, 
 			// либо пролетит без столкновения с объектом вообще.
-			double cd2 = mcGeometry::getDistanceToConeOutside(c, p.u, r0_, f_);
+			double cd2 = mcGeometry::getDistanceToConeOutside(c, p.u, r1_, f_ext_);
 			if (cd2 == DBL_MAX) 
 				return DBL_MAX;
 			else
@@ -79,7 +79,7 @@ double mcTransportConicalRing::getDistanceOutside(mcParticle& p) const
 		else
 		{
 			// Аналогично возможно столкновение только с внутренним конусом
-			double cd1 = mcGeometry::getDistanceToConeInside(c, p.u, r1_, f_ext_);
+			double cd1 = mcGeometry::getDistanceToConeInside(c, p.u, r0_, f_);
 			if (cd1 == DBL_MAX)
 				return DBL_MAX;
 			else
@@ -103,7 +103,7 @@ double mcTransportConicalRing::getDistanceOutside(mcParticle& p) const
 		if (rr < r1_ && rr > r0_) return cd;
 		else if (rr >= r1_)
 		{
-			double cd2 = mcGeometry::getDistanceToConeOutside(c, p.u, r0_, f_);
+			double cd2 = mcGeometry::getDistanceToConeOutside(c, p.u, r1_, f_ext_);
 			if (cd2 == DBL_MAX)
 				return DBL_MAX;
 			else
@@ -118,7 +118,7 @@ double mcTransportConicalRing::getDistanceOutside(mcParticle& p) const
 		else
 		{
 			// Аналогично возможно столкновение только с внутренним конусом
-			double cd1 = mcGeometry::getDistanceToConeInside(c, p.u, r1_, f_ext_);
+			double cd1 = mcGeometry::getDistanceToConeInside(c, p.u, r0_, f_);
 			if (cd1 == DBL_MAX)
 				return DBL_MAX;
 			else
@@ -139,7 +139,7 @@ double mcTransportConicalRing::getDistanceOutside(mcParticle& p) const
 
 		// Частица на уровне объекта и она либо в дырке, либо за пределами кольца
 		double dd = rr <= r0_ ? mcGeometry::getDistanceToConeInside(p.p, p.u, r0_, f_) :
-			rr >= r1_ ? mcGeometry::getDistanceToConeOutside(p.p, p.u, r1_, f_) : DBL_MAX;
+			rr >= r1_ ? mcGeometry::getDistanceToConeOutside(p.p, p.u, r1_, f_ext_) : DBL_MAX;
 
 		if (dd == DBL_MAX) return DBL_MAX;
 		else

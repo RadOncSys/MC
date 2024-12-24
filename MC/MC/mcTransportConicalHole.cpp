@@ -59,6 +59,38 @@ double mcTransportConicalHole::getDistanceOutside(mcParticle& p) const
 		c = p.p + (p.u * cd);
 		rr = c.lengthXY();
 		if (rr < r1_ && rr > r0_) return cd;
+		else if (rr >= r1_)
+		{
+			// Поскольку частица пересекает плоскость торца за пределами внешнего конуса, 
+			// то мы знаем, что она либо столкнется с ним, 
+			// либо пролетит без столкновения с объектом вообще.
+			double cd2 = mcGeometry::getDistanceToInfiniteCylinderOutside(c, p.u, r1_);
+			if (cd2 == DBL_MAX)
+				return DBL_MAX;
+			else
+			{
+				c += p.u * cd2;
+				if (c.z() > 0 && c.z() <= h_)
+					return cd + cd2;
+				else
+					return DBL_MAX;
+			}
+		}
+		else
+		{
+			// Аналогично возможно столкновение только с внутренним конусом
+			double cd1 = mcGeometry::getDistanceToConeInside(c, p.u, r0_, f_);
+			if (cd1 == DBL_MAX)
+				return DBL_MAX;
+			else
+			{
+				c += p.u * cd1;
+				if (c.z() > 0 && c.z() <= h_)
+					return cd + cd1;
+				else
+					return DBL_MAX;
+			}
+		}
 	}
 
 	// Частица перед объектом
@@ -70,21 +102,53 @@ double mcTransportConicalHole::getDistanceOutside(mcParticle& p) const
 		double tt = c.lengthXY(); // абсолютный радиус
 		rr = tt * f_ / (f_ - h_);
 		if (tt < r1_ && rr > r0_) return cd;
+		else if (rr >= r1_)
+		{
+			double cd2 = mcGeometry::getDistanceToInfiniteCylinderOutside(c, p.u, r1_);
+			if (cd2 == DBL_MAX)
+				return DBL_MAX;
+			else
+			{
+				c += p.u * cd2;
+				if (c.z() > 0 && c.z() <= h_)
+					return cd + cd2;
+				else
+					return DBL_MAX;
+			}
+		}
+		else
+		{
+			// Аналогично возможно столкновение только с внутренним конусом
+			double cd1 = mcGeometry::getDistanceToConeInside(c, p.u, r0_, f_);
+			if (cd1 == DBL_MAX)
+				return DBL_MAX;
+			else
+			{
+				c += p.u * cd1;
+				if (c.z() > 0 && c.z() <= h_)
+					return cd + cd1;
+				else
+					return DBL_MAX;
+			}
+		}
 	}
 
 	else
+	{
 		rr = c.lengthXY() * f_ / (f_ - z);
 
-	// Частица на уровне объекта и она либо в дырке, либо за пределами кольца
-	double dd = rr <= r0_ ? mcGeometry::getDistanceToConeInside(p.p, p.u, r0_, f_) :
-		c.lengthXY() >= r1_ ? mcGeometry::getDistanceToInfiniteCylinderOutside(p.p, p.u, r1_) : DBL_MAX;
+		// Частица на уровне объекта и она либо в дырке, либо за пределами кольца
+		double dd = rr <= r0_ ? mcGeometry::getDistanceToConeInside(p.p, p.u, r0_, f_) :
+			rr >= r1_ ? mcGeometry::getDistanceToInfiniteCylinderOutside(p.p, p.u, r1_) : DBL_MAX;
 
-	if (dd == DBL_MAX) return DBL_MAX;
-	cd += dd;
-	c = p.p + (p.u * cd);
-	z = c.z();
-	if (z >= 0 && z <= h_) return cd;
-	else return DBL_MAX;
+		if (dd == DBL_MAX) return DBL_MAX;
+		else
+		{
+			c += p.u * dd;
+			if (c.z() > 0 && c.z() < h_) return dd;
+			else return DBL_MAX;
+		}
+	}
 }
 
 double mcTransportConicalHole::getDNearInside(const geomVector3D& p) const
