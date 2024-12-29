@@ -23,7 +23,7 @@ struct TubeSection
 	// в стартовую пллоскость сечения сегмента
 	geomMatrix3D ME2SPlane;
 
-	// Преобразование координат из системы эндостата в цилиндр сегмента
+	// Преобразование координат из системы эндостата в цилиндр сегмента.
 	geomMatrix3D ME2STube;
 };
 
@@ -48,11 +48,13 @@ protected:
 	// если точка до стартового или после последнего сегмента.
 	int findSegment(const geomVector3D& p) const;
 
-	// Расстояние до бесконечной боковой стенки сегмента трубки.
+	// Расстояние до боковой стенки сегмента трубки.
+	// Предполагается, что до вызова уже проведена проверка столкновения с торцевыми плоскостями 
+	// и установлено, что пересечение с боковой стенкой сегмента возможно.
 	// Боковая стенка не цилиндр и не конус из-за различий радиусов торцов
 	// и наклона плоскости вторго торца.
-	int segmentTubeDistanceInside(int idx, const geomVector3D& p, const geomVector3D& u) const;
-	int segmentTubeDistanceOutside(int idx, const geomVector3D& p, const geomVector3D& u) const;
+	double segmentTubeDistanceInside(int idx, const geomVector3D& p, const geomVector3D& u) const;
+	double segmentTubeDistanceOutside(int idx, const geomVector3D& p, const geomVector3D& u) const;
 
 	std::unique_ptr<std::vector<TubeSection>> segments_;
 };
