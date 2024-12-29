@@ -171,6 +171,7 @@
     <ClCompile Include="mcTransportLinearChainTest.cpp" />
     <ClCompile Include="mcTransportMLCTest.cpp" />
     <ClCompile Include="mcTransportRectanglePolygonSideHoleTest.cpp" />
+    <ClCompile Include="mcTransportTube3DTest.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

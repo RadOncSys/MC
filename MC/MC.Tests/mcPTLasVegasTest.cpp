@@ -30,47 +30,47 @@ namespace MCTests
 			p.p = geomVector3D(-2, 5, 10 + transport.Z());
 			p.u = geomVector3D(0, 0, -1);
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(10, d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(10, d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 2
 			p.p = geomVector3D(transport.A()/2 + 1, 0, 0);
 			p.u = geomVector3D(-sqrt(0.5), 0, sqrt(0.5));
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(sqrt(2.0), d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(sqrt(2.0), d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 3
 			p.p = geomVector3D(-transport.A()/2 - 1, 0, 0);
 			p.u = geomVector3D(sqrt(0.5), 0, sqrt(0.5));
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(sqrt(2.0), d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(sqrt(2.0), d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 4
 			p.p = geomVector3D((x0 + x1)*0.5, (y0 + y1)*0.5, -1);
 			p.u = geomVector3D(0, 0, 1);
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(1, d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(1, d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 5
 			p.p = geomVector3D(x0 - d0 - h0, y0, -d0/2);
 			p.u = geomVector3D(sqrt(0.5), 0, sqrt(0.5));
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(d0*sqrt(0.5), d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(d0*sqrt(0.5), d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 6
 			p.p = geomVector3D(x0, y0, 0);
 			p.u = geomVector3D(0, 0, 1);
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(h0, d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(h0, d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 7
 			p.p = geomVector3D(x0 + d0 / 2 - 1.5*h0, y0, -h0);
 			p.u = geomVector3D(sqrt(0.5), 0, sqrt(0.5));
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(1.5*h0*sqrt(2.0), d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(1.5*h0*sqrt(2.0), d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 8
 			p.p = geomVector3D(x0, y0, h0);
 			p.u = geomVector3D(0, 0, 1);
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(0, d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(0, d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 9
 			p.p = geomVector3D(x0, y0, h0);
 			p.u = geomVector3D(0, 0, -1);
 			d = transport.getDistanceOutside(p);
-			Assert::AreEqual(DBL_MAX, d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(DBL_MAX, d, TEST_EPSILON, errmsg, LINE_INFO());
 		}
 
 		TEST_METHOD(getDistanceInside)
@@ -88,27 +88,27 @@ namespace MCTests
 			p.p = geomVector3D(0, 0, 1);
 			p.u = geomVector3D(0, sqrt(0.5), sqrt(0.5));
 			d = transport.getDistanceInside(p);
-			Assert::AreEqual((transport.Z()-1)*sqrt(2.0), d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual((transport.Z()-1)*sqrt(2.0), d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 2
 			p.p = geomVector3D(-transport.A()/2-1, 0, 1);
 			p.u = geomVector3D(-sqrt(0.5), 0, -sqrt(0.5));
 			d = transport.getDistanceInside(p);
-			Assert::AreEqual(sqrt(2.0), d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(sqrt(2.0), d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 3
 			p.p = geomVector3D(-transport.A() / 2 - 1, 0, 2);
 			p.u = geomVector3D(-sqrt(0.5), 0, -sqrt(0.5));
 			d = transport.getDistanceInside(p);
-			Assert::AreEqual(sqrt(2.0), d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(sqrt(2.0), d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 4
 			p.p = geomVector3D(x0 + d0/4 + h0, y0, 2*h0);
 			p.u = geomVector3D(-sqrt(0.5), 0, -sqrt(0.5));
 			d = transport.getDistanceInside(p);
-			Assert::AreEqual(sqrt(2.0)*h0, d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(sqrt(2.0)*h0, d, TEST_EPSILON, errmsg, LINE_INFO());
 			// 5
 			p.p = geomVector3D(x0 + 0.5*d0 + 0.5*h0, y0, h0);
 			p.u = geomVector3D(-sqrt(0.5), 0, -sqrt(0.5));
 			d = transport.getDistanceInside(p);
-			Assert::AreEqual(sqrt(0.5)*h0, d, DBL_EPSILON * 10, errmsg, LINE_INFO());
+			Assert::AreEqual(sqrt(0.5)*h0, d, TEST_EPSILON, errmsg, LINE_INFO());
 		}
 	};
 }

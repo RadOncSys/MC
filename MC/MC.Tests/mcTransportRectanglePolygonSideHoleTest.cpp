@@ -166,7 +166,7 @@ namespace MCTests
 			d = transport->getDistanceInside(p);
 			Assert::AreEqual(dexpected, d, TEST_EPSILON, L"getDistanceInside failed", LINE_INFO());
 			// 2.2
-			p.u = geomVector3D(0, 2, 5);
+			p.u = geomVector3D(0, 3, 6);
 			dexpected = p.u.length();
 			p.u.normalize();
 			d = transport->getDistanceInside(p);

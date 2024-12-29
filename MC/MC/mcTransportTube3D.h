@@ -56,5 +56,9 @@ protected:
 	double segmentTubeDistanceInside(int idx, const geomVector3D& p, const geomVector3D& u) const;
 	double segmentTubeDistanceOutside(int idx, const geomVector3D& p, const geomVector3D& u) const;
 
+	// Расстояние до точки пересечения поверхности, соответствующей точке пересечения траекторией (pc)
+	double getSurfaceR(int idx, const geomVector3D& pc) const;
+
+
 	std::unique_ptr<std::vector<TubeSection>> segments_;
 };

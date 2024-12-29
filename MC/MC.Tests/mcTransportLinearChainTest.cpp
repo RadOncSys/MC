@@ -26,7 +26,7 @@ namespace MCTests
 			mcMedia media;
 			media.addName("AIR700ICRU");
 			//media.initXEFromFile("../data/AcceleratorSimulator.pegs4dat");
-			media.initXEFromFile("C:/Users/GennadyGorlachev/Documents/GitHub/RoissVS/MC/data/AcceleratorSimulator.pegs4dat");
+			media.initXEFromFile("C:/MCSimulations/data/AcceleratorSimulator.pegs4dat");
 
 			mcThread thread;
 			thread.setId(0);

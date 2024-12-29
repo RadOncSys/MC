@@ -313,8 +313,8 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 	if (!isRight) { sint = -sint; cost = -cost; }
 
 	double dist = 0, dist_prev = 0;
-	double rp_prev =0;
-	double rs_prev =0;
+	double rp_prev = 0;
+	double rs_prev = 0;
 	double sinda = 0.1; // стартовый шаг по углу в радианах (порядка 5 градусов)
 
 	// Итеративный поиск ограниченный 20-ю шагами
@@ -328,20 +328,9 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 		dist = -(pt * NP) / (ut * NP);
 		auto pc = pt + (ut * dist);
 
-		// Две точки пересечения торцевых кругов с найденной плоскостью. 
-		geomVector3D c0 = (pc ^ s.N0) ^ s.N0;
-		c0.normalize();
-		c0 = c0 * s1.R;
-		geomVector3D c1 = ((pc - geomVector3D(0, 0, s.D)) ^ s1.N0) ^ s1.N0;
-		c1.normalize();
-		c1 = geomVector3D(0, 0, s.D) + (c1 * s1.R);
-
-		// Вычисляем точку поверхности при координате pc.Z в секущей плоскости.
-		auto ps = c0 + ((c1 - c0) * ((pc.z() - c0.z()) / (c1.z() - c0.z())));
-
 		// Расстояния до оси
-		double rp = pc.lengthXY();	// particle
-		double rs = ps.lengthXY();	// surface
+		double rp = pc.lengthXY();			// particle
+		double rs = getSurfaceR(idx, pc);	// surface
 
 		// Первый шаг отличается от остальных тем, что только определяется начальное положение
 		// секущей плоскости и угол отклонения может достигать 90 градусов.
@@ -407,9 +396,9 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 		dist_prev = dist;
 	}
 
-	// Если не нашли хорошее решение возвращаем 0 чтобы частица просто покинула объекта
+	// Если не нашли хорошее решение возвращаем DBL_MAX что означает отсутствие столкновения
 	if (count == 20)
-		return 0;
+		return DBL_MAX;
 	else
 		return dist;
 }
@@ -437,7 +426,9 @@ double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D
 	double dist = 0, dist_prev = 0;
 	double rp_prev = 0;
 	double rs_prev = 0;
-	double sinda = 0.1; // стартовый шаг по углу в радианах (порядка 5 градусов)
+	double rp_prev2 = 0;	// Храним два передыдущих результата, 
+	double rs_prev2 = 0;	// чтобы убедиться что пересечения нет
+	double sinda = 0.1;		// стартовый шаг по углу в радианах (порядка 5 градусов)
 
 	// Итеративный поиск ограниченный 20-ю шагами
 	int count = 0;
@@ -449,21 +440,12 @@ double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D
 		// Точка пересечения траектории с секущей плоскостью
 		dist = -(pt * NP) / (ut * NP);
 		auto pc = pt + (ut * dist);
-
-		// Две точки пересечения торцевых кругов с найденной плоскостью. 
-		geomVector3D c0 = (pc ^ s.N0) ^ s.N0;
-		c0.normalize();
-		c0 = c0 * s1.R;
-		geomVector3D c1 = ((pc - geomVector3D(0, 0, s.D)) ^ s1.N0) ^ s1.N0;
-		c1.normalize();
-		c1 = geomVector3D(0, 0, s.D) + (c1 * s1.R);
-
-		// Вычисляем точку поверхности при координате pc.Z в секущей плоскости.
-		auto ps = c0 + ((c1 - c0) * ((pc.z() - c0.z()) / (c1.z() - c0.z())));
-
-		// Расстояния до оси
 		double rp = pc.lengthXY();	// particle
-		double rs = ps.lengthXY();	// surface
+
+		// Грубое отсечение ситуаций без столкновений
+		if (rp > s.R && rp > s1.R) return DBL_MAX;
+
+		double rs = getSurfaceR(idx, pc);
 
 		// Первый шаг отличается от остальных тем, что только определяется начальное положение
 		// секущей плоскости и угол отклонения может достигать 90 градусов.
@@ -486,15 +468,11 @@ double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D
 			// Пересечение за пределами объекта
 			else
 			{
-				// Персечение где-то между положением частицы и точкой пересечения траектории с плоскостью.
-				// Строим биссектрису и снова определяем в какой половине пересечение.
-				// Оцениваем эквивалентный радиус как rs = rp + (rp - rs) и далае аналогично предыдущему.
-				double cos_da = rs / rp;
-				double sin_da = sqrt(1 - cos_da * cos_da);
-				if (!isRight) sin_da = -sin_da;
-				double a = sint;
-				sint = a * cos_da + cost * sin_da;
-				cost = cost * cos_da - a * sin_da;
+				// Это еще не приговор. Реальным критерием отсутствия пересечения 
+				// является увеличение расхождения между двумя радиусами независимо 
+				// от направления вращения секущей плоскости.
+				// Поскольку пересечения нет, то в лучшем случае мы около правильного направления.
+				// Поэтому сохраняем секущую плаоскость.
 			}
 		}
 		// На втором шаге мы только начинаем прощупывать окрестности
@@ -511,6 +489,15 @@ double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D
 			// Линейно интерполируем новый поворот чтобы получить нулевую разницу между радиусами
 			double dr = rs - rp;
 			double dr_prev = rs_prev - rp_prev;
+
+			// При двух неудачах и определенных неудачах в трех попытках 
+			// приходим к выводу, что пересечения вообще нет.
+			if (dr > 0 && dr_prev > 0)
+			{
+				if (((dr - dr_prev) * (rs_prev2 - rp_prev2 - dr_prev)) > 0)
+					return DBL_MAX;
+			}
+
 			if (dr_prev != dr)
 				sinda *= -(1 + dr_prev / (dr - dr_prev));
 			double cos_da = sqrt(1 - sinda * sinda);
@@ -524,22 +511,34 @@ double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D
 		if (count > 2 && abs(dist_prev - dist) < MINDELTA)
 			break;
 
+		rp_prev2 = rp_prev;
+		rs_prev2 = rs_prev;
 		rp_prev = rp;
 		rs_prev = rs;
 		dist_prev = dist;
 	}
 
-	// Если не нашли хорошее решение возвращаем 0 чтобы частица просто покинула объекта
+	// Если не нашли хорошее решение возвращаем DBL_MAX что означает отсутствие столкновения
 	if (count == 20)
-		return 0;
+		return DBL_MAX;
 	else
 		return dist;
+}
 
-
-
-
-
-	return 0;
+double mcTransportTube3D::getSurfaceR(int idx, const geomVector3D& pc) const
+{
+	auto& s = segments_->at(idx);
+	auto& s1 = segments_->at(idx + 1);
+	// Две точки пересечения торцевых кругов с найденной плоскостью. 
+	geomVector3D c0 = (pc ^ s.N0) ^ s.N0;
+	c0.normalize();
+	c0 = c0 * s.R;
+	geomVector3D c1 = ((pc - geomVector3D(0, 0, s.D)) ^ s1.N0) ^ s1.N0;
+	c1.normalize();
+	c1 = geomVector3D(0, 0, s.D) + (c1 * s1.R);
+	// Вычисляем точку поверхности при координате pc.Z в секущей плоскости.
+	auto ps = c0 + ((c1 - c0) * ((pc.z() - c0.z()) / (c1.z() - c0.z())));
+	return ps.lengthXY();
 }
 
 void mcTransportTube3D::dump(ostream& os) const

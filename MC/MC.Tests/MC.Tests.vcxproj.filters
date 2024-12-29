@@ -71,5 +71,8 @@
     <ClCompile Include="mcTransportMLCTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mcTransportTube3DTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
