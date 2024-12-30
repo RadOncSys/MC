@@ -50,7 +50,7 @@ namespace MCTests
 			p.u = geomVector3D(0, 0, -1) - p.p;
 			p.u.normalize();
 			d = transport->getDistanceInside(p);
-			Assert::AreEqual(1.0, d, TEST_EPSILON, errmsg, LINE_INFO());
+			Assert::AreEqual(3.0, d, TEST_EPSILON, errmsg, LINE_INFO());
 
 
 		}
