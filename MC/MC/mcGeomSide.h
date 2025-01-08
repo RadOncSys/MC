@@ -12,7 +12,7 @@ class mcGeomSide
 public:
 	virtual ~mcGeomSide() {}
 
-	virtual double getDistance(const geomVector3D& p, const geomVector3D& v, bool inside) const = 0;
+	virtual double getDistance(const geomVector3D& p, const geomVector3D& v) const = 0;
 	virtual double getDNear(const geomVector3D& p) const = 0;
 	virtual void dump(ostream& os) const = 0;
 };

@@ -19,7 +19,7 @@ inline double mcGeomShape::getDistance(const geomVector3D& p, const geomVector3D
 	double d = DBL_MAX;
 	for (unsigned int i = 0; i < nSides_; i++)
 	{
-		double di = Sides_[i]->getDistance(p, v, inside);
+		double di = Sides_[i]->getDistance(p, v);
 		if (di < 0) di = 0;
 		if (d > di) d = di;
 	}

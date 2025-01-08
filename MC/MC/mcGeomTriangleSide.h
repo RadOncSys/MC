@@ -17,7 +17,7 @@ public:
 		, const geomVector3D& Vy
 		, double ax, double ay);
 
-	double getDistance(const geomVector3D& p, const geomVector3D& v, bool inside) const override;
+	double getDistance(const geomVector3D& p, const geomVector3D& v) const override;
 	double getDNear(const geomVector3D& p) const override;
 
 	void dump(ostream& os) const override {}

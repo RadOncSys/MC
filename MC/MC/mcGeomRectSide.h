@@ -11,23 +11,24 @@
 class mcGeomRectSide : public mcGeomSide
 {
 public:
-	mcGeomRectSide(const geomVector3D& p
-		, const geomVector3D& Vx
-		, const geomVector3D& Vy
-		, double ax, double ay);
+	mcGeomRectSide();
+	mcGeomRectSide(const geomVector3D& p,
+		const geomVector3D& Vx, const geomVector3D& Vy,
+		double ax, double ay);
 
-	double getDistance(const geomVector3D& p, const geomVector3D& v, bool inside) const override;
+	void SetGeometry(const geomVector3D& p,
+		const geomVector3D& Vx, const geomVector3D& Vy,
+		double ax, double ay);
+
+	double getDistance(const geomVector3D& p, const geomVector3D& v) const override;
 	double getDNear(const geomVector3D& p) const override;
 	void dump(ostream& os) const override {}
 
 protected:
-	// ѕараметры сообщаемые извне
-	geomVector3D P_;      // координаты основной вершины
-	geomVector3D Vx_;     // векторы сторон из вершины (в мировой системе)
-	geomVector3D Vy_;
-	double ax_;         // размеры сторон пр€моугольника
+	// ѕолуразмеры сторон пр€моугольника
+	double ax_;         
 	double ay_;
 
-	// ѕроизводные параметры
-	geomVector3D N_;      // нормаль к плоскости пр€моугольника
+	// ѕреобразование координат из внешней системы во внутреннюю
+	geomMatrix3D m_; 
 };

@@ -248,6 +248,7 @@
     <ClInclude Include="mcTransportJawPairFocused.h" />
     <ClInclude Include="mcTransportJawPairRounded.h" />
     <ClInclude Include="mcTransportLinearChain.h" />
+    <ClInclude Include="mcTransportMantleBlock.h" />
     <ClInclude Include="mcTransportMLC.h" />
     <ClInclude Include="mcTransportPlaneFilter.h" />
     <ClInclude Include="mcTransportPolygon.h" />
@@ -356,6 +357,7 @@
     <ClCompile Include="mcTransportJawPairFocused.cpp" />
     <ClCompile Include="mcTransportJawPairRounded.cpp" />
     <ClCompile Include="mcTransportLinearChain.cpp" />
+    <ClCompile Include="mcTransportMantleBlock.cpp" />
     <ClCompile Include="mcTransportMLC.cpp" />
     <ClCompile Include="mcTransportPlaneFilter.cpp" />
     <ClCompile Include="mcTransportPolygon.cpp" />

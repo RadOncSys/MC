@@ -302,6 +302,9 @@
     <ClCompile Include="mcTransportTube3D.cpp">
       <Filter>Transport</Filter>
     </ClCompile>
+    <ClCompile Include="mcTransportMantleBlock.cpp">
+      <Filter>Transport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcDefs.h" />
@@ -614,6 +617,9 @@
       <Filter>Transport</Filter>
     </ClInclude>
     <ClInclude Include="mcTransportTube3D.h">
+      <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcTransportMantleBlock.h">
       <Filter>Transport</Filter>
     </ClInclude>
   </ItemGroup>

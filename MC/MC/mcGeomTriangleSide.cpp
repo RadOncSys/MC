@@ -39,17 +39,17 @@ mcGeomTriangleSide(const geomVector3D& p
 	a_[2] = ay_;
 }
 
-double mcGeomTriangleSide::getDistance(const geomVector3D& p, const geomVector3D& v, bool inside) const
+double mcGeomTriangleSide::getDistance(const geomVector3D& p, const geomVector3D& v) const
 {
 	// Высота точки над плоскостью, в которой определен прямоугольник
-	double h = (P_ - p)*N_;
+	double h = (P_ - p) * N_;
 
 	// Наклон вектора направления к плоскости
-	double cosn = v*N_;
+	double cosn = v * N_;
 	if (fabs(cosn) < MINDELTA)
 		return DBL_MAX; // параллельно плоскости
 
-	if (fabs(h) < MINDELTA && ((inside && cosn < 0) || (!inside && cosn > 0)))
+	if (cosn * h >= 0)
 		return DBL_MAX; // движение от поверхности
 
 	// Точка пересечения вектора направления с плоскостью
