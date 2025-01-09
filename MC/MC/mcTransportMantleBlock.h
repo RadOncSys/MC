@@ -13,16 +13,14 @@ class mcTransportMantleBlock : public mcTransport
 {
 public:
 	mcTransportMantleBlock(const geomVector3D& orgn, const geomVector3D& z, const geomVector3D& x, 
-		double r1, double h, std::vector<double> plgnX, std::vector<double> plgnY);
-	virtual ~mcTransportMantleBlock(void);
+		double r1, double h, std::vector<double>& plgnX, std::vector<double>& plgnY);
 
-	void dump(ostream& os) const override;
-	void dumpVRML(ostream& os)const override;
-
-protected:
 	double getDistanceInside(mcParticle& p) const override;
 	double getDistanceOutside(mcParticle& p) const override;
 	double getDNearInside(const geomVector3D& p) const override;
+
+	void dump(ostream& os) const override;
+	void dumpVRML(ostream& os)const override;
 
 protected:
 	bool isPointInPlgn(double x, double y) const;

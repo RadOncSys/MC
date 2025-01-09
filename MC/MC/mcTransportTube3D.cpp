@@ -577,7 +577,141 @@ void mcTransportTube3D::dumpVRML(ostream& os) const
 	os << "Group {" << endl;
 	os << "  children [" << endl;
 
-	//dumpVRMLPolygonCircle(os, pz_, pr_);
+	for (int k = 0; k < segments_->size() - 1; k++)
+	{
+		int i, na = 72;
+		double da = 2 * PI / na;
+		const auto& s0 = segments_->at(k + 1);
+		const auto& s1 = segments_->at(k);
+
+		// Требуется две матрицы первода в систему сегмента по одной на каждый торец.
+		geomMatrix3D m0 = s0.ME2SPlane;
+		m0.makeInverse();
+		m0 = m0 * mttow_;
+
+		geomMatrix3D m1 = s1.ME2SPlane;
+		m1.makeInverse();
+		m1 = m1 * mttow_;
+
+		// Каждый шаг цикла - это отдельный объект, похожий на боковую стенку цилиндра
+
+		os << "    Transform {" << endl;
+		os << "      children Shape {" << endl;
+		os << "        appearance Appearance {" << endl;
+		os << "          material Material {" << endl;
+		os << "            diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+		os << "            transparency " << transparancy_ << endl;
+		os << "          }" << endl;
+		os << "        }" << endl;
+		os << "        geometry IndexedFaceSet {" << endl;
+		os << "            coord Coordinate {" << endl;
+		os << "                point [" << endl;
+
+		for (i = 0; i < na; i++) {
+			geomVector3D p = geomVector3D(s0.R * cos(i * da), s0.R * sin(i * da), 0) * m0;
+			os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z() << ", " << endl;
+			p = geomVector3D(s1.R * cos(i * da), s1.R * sin(i * da), 0) * m1;
+			os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z();
+			if (i < na - 1) os << ", ";
+			os << endl;
+		}
+
+		os << "                ]" << endl;
+		os << "            }" << endl;
+		os << "            coordIndex [" << endl;
+
+		for (i = 0; i < na; i++) {
+			os << "                " << 2 * i << ", " << 2 * i + 1 << ", " << 2 * ((i + 1) % na) + 1 << ", " << 2 * ((i + 1) % na);
+			if (i < na - 1) os << ", -1,";
+			os << endl;
+		}
+
+		os << "            ]" << endl;
+		os << "        }" << endl;
+		os << "      }" << endl;
+		os << "    }" << endl;
+
+		// Круг входного торца
+
+		if (k == segments_->size() - 2)
+		{
+			os << "    Transform {" << endl;
+			os << "      children Shape {" << endl;
+			os << "        appearance Appearance {" << endl;
+			os << "          material Material {" << endl;
+			os << "            diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+			os << "            transparency " << transparancy_ << endl;
+			os << "          }" << endl;
+			os << "        }" << endl;
+			os << "        geometry IndexedFaceSet {" << endl;
+			os << "            coord Coordinate {" << endl;
+			os << "                point [" << endl;
+
+			for (i = 0; i < na; i++) {
+				geomVector3D p = geomVector3D(s0.R * cos(i * da), s0.R * sin(i * da), 0) * m0;
+				os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z() << ", " << endl;
+			}
+			geomVector3D p = geomVector3D(0, 0, 0) * m0;
+			os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z();
+			os << endl;
+
+			os << "                ]" << endl;
+			os << "            }" << endl;
+			os << "            coordIndex [" << endl;
+
+			for (i = 0; i < na; i++) {
+				os << "                " << na << ", " << i << ", " << (i + 1) % na;
+				if (i < na - 1) os << ", -1,";
+				os << endl;
+			}
+
+			os << "            ]" << endl;
+			os << "        }" << endl;
+			os << "      }" << endl;
+			os << "    }" << endl;
+		}
+
+		// Круг конечного торца
+		else if (k == 0 && s1.R > 0)
+		{
+			os << "    Transform {" << endl;
+			os << "      children Shape {" << endl;
+			os << "        appearance Appearance {" << endl;
+			os << "          material Material {" << endl;
+			os << "            diffuseColor " << red_ << ' ' << green_ << ' ' << blue_ << endl;
+			os << "            transparency " << transparancy_ << endl;
+			os << "          }" << endl;
+			os << "        }" << endl;
+			os << "        geometry IndexedFaceSet {" << endl;
+			os << "            coord Coordinate {" << endl;
+			os << "                point [" << endl;
+
+			for (i = 0; i < na; i++) {
+				geomVector3D p = geomVector3D(s1.R * cos(i * da), s1.R * sin(i * da), 0) * m1;
+				os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z();
+				if (i < na - 1) os << ", ";
+				os << endl;
+			}
+			geomVector3D p = geomVector3D(0, 0, 0) * m1;
+			os << "                    " << p.x() << ' ' << p.y() << ' ' << p.z();
+			os << endl;
+
+			os << "                ]" << endl;
+			os << "            }" << endl;
+			os << "            coordIndex [" << endl;
+
+			for (i = 0; i < na; i++) {
+				os << "                " << na << ", " << (i + 1) % na << ", " << i;
+				if (i < na - 1) os << ", -1,";
+				os << endl;
+			}
+
+			os << "            ]" << endl;
+			os << "        }" << endl;
+			os << "      }" << endl;
+			os << "    }" << endl;
+		}
+	}
 
 	os << "  ]" << endl;
 	os << "}" << endl;

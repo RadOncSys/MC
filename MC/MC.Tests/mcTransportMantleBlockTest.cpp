@@ -1,11 +1,11 @@
 // Radiation Oncology Monte Carlo open source project
 //
-// Author: [2024] Gennady Gorlachev (ggorlachev@roiss.ru) 
+// Author: [2025] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "../MC/mcVRMLDumper.h"
-#include "../MC/mcTransportTube3D.h"
+#include "../MC/mcTransportMantleBlock.h"
 #include <memory>
 #include <fstream>
 
@@ -13,13 +13,13 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MCTests
 {
-	TEST_CLASS(mcTransportTube3DTest)
+	TEST_CLASS(mcTransportMantleBlockTest)
 	{
 	public:
 
 		TEST_METHOD(getDistanceOutside)
 		{
-			auto errmsg = L"getDistanceOutside failed";
+			auto errmsg = L"mcTransportTube3DTest::getDistanceOutside failed";
 			double d = 0, dexp = 0;
 			auto transport = createTestTransport();
 			mcParticle p;
@@ -42,7 +42,7 @@ namespace MCTests
 
 		TEST_METHOD(getDistanceInside)
 		{
-			auto errmsg = L"getDistanceInside failed";
+			auto errmsg = L"mcTransportTube3DTest::getDistanceInside failed";
 			double d;
 			auto transport = createTestTransport();
 			mcParticle p;
@@ -58,35 +58,34 @@ namespace MCTests
 		}
 
 	private:
-		static std::unique_ptr<mcTransportTube3D> createTestTransport()
+		static std::unique_ptr<mcTransportMantleBlock> createTestTransport()
 		{
-			std::vector<geomVector3D> pts;
-			std::vector<double> rs;
+			std::vector<double> px;
+			std::vector<double> py;
 
-			pts.push_back(geomVector3D(0, 1.5, 2.5));
-			rs.push_back(0.0);
+			px.push_back(-1);
+			py.push_back(-0.8);
 
-			pts.push_back(geomVector3D(0, 1, 2));
-			rs.push_back(0.5);
+			px.push_back(-1);
+			py.push_back(0.3);
 
-			pts.push_back(geomVector3D(0, 0, 1));
-			rs.push_back(0.5);
+			px.push_back(0.5);
+			py.push_back(0.3);
 
-			pts.push_back(geomVector3D(0, 0, -2));
-			rs.push_back(1.0);
+			px.push_back(0.5);
+			py.push_back(-0.8);
 
-			auto t = std::make_unique<mcTransportTube3D>(
-				geomVector3D(0, 0, 0), geomVector3D(0, 0, 1), geomVector3D(1, 0, 0), pts, rs);
-			t->setColor(0.8, 0.8, 0.8, 0.0);
+			auto t = std::make_unique<mcTransportMantleBlock>(
+				geomVector3D(0, 0, 0), geomVector3D(0, 0, 1), geomVector3D(1, 0, 0), 1.5, 1.0, px, py);
+			t->setColor(1.0, 0.5, 0, 0.1);
 
-			std::ofstream os("c:/tmp/Tube3D.wrl");
+			std::ofstream os("c:/tmp/MantleBlock.wrl");
 			if (!os.fail())
 			{
 				mcVRMLDumper::dumpHead(os);
 				mcVRMLDumper::dumpWorldAxis(os);
 				t->dumpVRML(os);
 			}
-
 			return std::move(t);
 		}
 	};
