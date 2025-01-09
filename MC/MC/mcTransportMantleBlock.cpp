@@ -1,5 +1,6 @@
 #include "mcTransportMantleBlock.h"
 #include "mcGeometry.h"
+#include "mcDefs.h"
 #include "../Geometry/vec2d.h"
 #include <float.h>
 
@@ -99,39 +100,36 @@ double mcTransportMantleBlock::getDistanceOutside(mcParticle& p) const
 
 	// Проверяем попдание в торцы цилиндра и в случае успеха 
 	// перемещаем частицу на его поверхность
-	if (pz <= 0)
+	if (c.z() <= 0)
 	{
 		dist = -pz / uz;
-		c += p.u * dist;
+		c += p.u * (dist + MINDELTA);
 		if (c.lengthXY() > r1_)
 			return DBL_MAX;
 	}
-	else if (pz >= h_)
+	else if (c.z() >= h_)
 	{
 		dist = -(pz - h_) / uz;
-		c += p.u * dist;
+		c += p.u * (dist + MINDELTA);
 		if (c.lengthXY() > r1_)
 			return DBL_MAX;
 	}
 
 	// Если мы переместились на поверхность, то отсекаем ситуацию что мы уже в теле объекта
-	if (dist > 0)
+	if (dist > 0 && !isPointInPlgn(c.x(), c.y()))
+		return dist;
+	else
 	{
-		if (!isPointInPlgn(c.x(), c.y()))
-			return dist;
-		else
+		double cd2 = DBL_MAX;
+		if (c.z() >= 0 && c.z() <= h_)
 		{
-			double cd2 = DBL_MAX;
-			if (pz >= 0 && pz <= h_)
+			for (int i = 0; i < nsides_; i++)
 			{
-				for (int i = 0; i < nsides_; i++)
-				{
-					double d = sides_->at(i).getDistance(p.p, p.u);
-					if (d < cd2) cd2 = d;
-				}
+				double d = sides_->at(i).getDistance(c, p.u);
+				if (d < cd2) cd2 = d;
 			}
-			return cd2;
 		}
+		return cd2 == DBL_MAX ? DBL_MAX : cd2 + dist;
 	}
 
 	// Этого выхода быть не должно.

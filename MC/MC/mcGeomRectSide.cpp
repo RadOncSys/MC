@@ -42,10 +42,10 @@ double mcGeomRectSide::getDistance(const geomVector3D& p, const geomVector3D& v)
 		auto s = pp + (vv * dist);
 
 		// Попадание в рамку
-		if (ABS(pp.x()) <= ax_ && ABS(pp.y()) <= ay_)
+		if (ABS(s.x()) <= ax_ && ABS(s.y()) <= ay_)
 			return dist;
 		else
-		return DBL_MAX;
+			return DBL_MAX;
 	}
 }
 
