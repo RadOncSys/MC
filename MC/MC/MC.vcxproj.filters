@@ -305,6 +305,9 @@
     <ClCompile Include="mcTransportMantleBlock.cpp">
       <Filter>Transport</Filter>
     </ClCompile>
+    <ClCompile Include="mcSourceProtonRF.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcDefs.h" />
@@ -621,6 +624,9 @@
     </ClInclude>
     <ClInclude Include="mcTransportMantleBlock.h">
       <Filter>Transport</Filter>
+    </ClInclude>
+    <ClInclude Include="mcSourceProtonRF.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

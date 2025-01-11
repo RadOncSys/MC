@@ -41,7 +41,7 @@ void mcScoreMatrixXY::ScorePoint(double edep
 	if (ix >= nx_ || iy >= ny_)
 		return;
 
-	if (edep > 20.0)
+	if (edep > 200.0)
 	{
 		cout << "Unexpected energy deposition at point x = " << p.x()
 			<< ",  y = " << p.y() << ",  z = " << p.z() << ",  edep = " << edep << endl;

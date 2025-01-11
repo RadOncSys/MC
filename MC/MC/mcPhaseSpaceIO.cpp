@@ -247,7 +247,8 @@ void mcPhaseSpaceIO::write(const mcParticle& p)
 		break;
 	case MCP_PROTON:
 		rec.latch_ = PROTON_LATCH;
-		rec.energy_ = float(p.ke + PMASS);
+		//rec.energy_ = float(p.ke + PMASS);
+		rec.energy_ = float(p.ke);
 		//if(preamble_.e_min_electrons > p.ke) preamble_.e_min_electrons = p.ke;
 		break;
 	case MCP_NEUTRON:

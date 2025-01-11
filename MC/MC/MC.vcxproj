@@ -228,6 +228,7 @@
     <ClInclude Include="mcSourceLEBA.h" />
     <ClInclude Include="mcSourceModelRadialDirect.h" />
     <ClInclude Include="mcSourceModelRadialPhsp.h" />
+    <ClInclude Include="mcSourceProtonRF.h" />
     <ClInclude Include="mcSourceSimpleMono.h" />
     <ClInclude Include="mcSourceSimpleParallel.h" />
     <ClInclude Include="mcSourceSphereC60.h" />
@@ -338,6 +339,7 @@
     <ClCompile Include="mcSourceLEBA.cpp" />
     <ClCompile Include="mcSourceModelRadialDirect.cpp" />
     <ClCompile Include="mcSourceModelRadialPhsp.cpp" />
+    <ClCompile Include="mcSourceProtonRF.cpp" />
     <ClCompile Include="mcSourceSimpleMono.cpp" />
     <ClCompile Include="mcSourceSimpleParallel.cpp" />
     <ClCompile Include="mcSourceSphereC60.cpp" />

@@ -57,18 +57,18 @@ double mcGeomRectSide::getDNear(const geomVector3D& p) const
 		return ABS(pp.z());
 	else if (ABS(pp.x()) <= ax_)
 	{
-		float dy = ABS(pp.y()) - ay_;
+		float dy = (float)(ABS(pp.y()) - ay_);
 		return sqrt(pp.z() * pp.z() + dy * dy);
 	}
 	else if (ABS(pp.y()) <= ay_)
 	{
-		float dx = ABS(pp.x()) - ax_;
+		float dx = (float)(ABS(pp.x()) - ax_);
 		return sqrt(pp.z() * pp.z() + dx * dx);
 	}
 	else
 	{
-		float dx = ABS(pp.x()) - ax_;
-		float dy = ABS(pp.y()) - ay_;
+		float dx = (float)(ABS(pp.x()) - ax_);
+		float dy = (float)(ABS(pp.y()) - ay_);
 		return sqrt(pp.z() * pp.z() + dx * dx + dy * dy);
 	}
 }

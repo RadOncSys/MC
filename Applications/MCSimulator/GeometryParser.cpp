@@ -27,6 +27,7 @@
 #include "../../mc/mc/mcTransportEmbeddedGroup.h"
 #include "../../mc/mc/mcTransportLinearChain.h"
 #include "../../mc/mc/mcTransportGridFilter.h"
+#include "../../mc/mc/mcTransportMantleBlock.h"
 
 #include "../../mc/mc/mcScorePHSP.h"
 #include "../../mc/mc/mcScoreBeamFluence.h"
@@ -59,6 +60,7 @@
 #include "../../mc/mc/mcSourceSphereC60.h"
 #include "../../mc/mc/mcSourceAcceleratedBeam.h"
 #include "../../mc/mc/mcClinicalElectronBeam.h"
+#include "../../mc/mc/mcSourceProtonRF.h"
 
 #include "../../mc/mc/mcMedia.h"
 
@@ -307,20 +309,22 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 			{
 				if (_wcsicmp(n1.Name.c_str(), L"point") == 0)
 				{
-					double x = 0, z = 0;
+					double x = 0, y = DBL_MAX, z = 0;
 					for (auto n2 : n1.Nodes)
 					{
 						if (_wcsicmp(n2.Name.c_str(), L"x") == 0)
 							x = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"y") == 0)
+							y = _wtof(n2.Text.c_str());
 						else if (_wcsicmp(n2.Name.c_str(), L"z") == 0)
 							z = _wtof(n2.Text.c_str());
 					}
-					poly_z.push_back(z);
 					poly_x.push_back(x);
-					poly_y.push_back(x);
+					poly_y.push_back(y == DBL_MAX ? x : y);
+					poly_z.push_back(z);
 				}
 			}
-			}
+		}
 
 		else if (_wcsicmp(node.Name.c_str(), L"bricks") == 0)
 		{
@@ -558,10 +562,14 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 		((mcTransportGridFilter*)t)->setMedia(
 			media->getMediumIdx(XmlParseReaderBase::copyWStringToStlString(geomMedium.c_str()).c_str()),
 			media->getMediumIdx("AIR700ICRU"));
-		if(nz != bricks_x.size())
+		if (nz != bricks_x.size())
 			throw exception("Number of brick do not mutch grid size");
 		for (int i = 0; i < nz; i++)
 			((mcTransportGridFilter*)t)->setBrickSize(i, bricks_x[i], bricks_y[i]);
+    }
+	else if (_wcsicmp(geomType.c_str(), L"mantle_block") == 0)
+	{
+		t = new mcTransportMantleBlock(origin, normal, xaxis, r1, height, poly_x, poly_y);
 	}
 
 	if (t == nullptr)
@@ -775,7 +783,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	}
 
 	if (!isSizeSetFound && _wcsicmp(scoreType.c_str(), L"fluence_sphere") != 0 &&
-		_wcsicmp(scoreType.c_str(), L"fluence_plane") != 0)
+		_wcsicmp(scoreType.c_str(), L"fluence_plane") != 0 && _wcsicmp(scoreType.c_str(), L"phsp") != 0)
 		throw exception(("Please, indicate score size for module: " + scoreModule).c_str());
 
 	if (_wcsicmp(scoreType.c_str(), L"phsp") == 0)
@@ -1133,6 +1141,19 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 			throw exception("Can not open particles file");
 		
 		auto src = new mcSourceAcceleratedBeam(srcName.c_str(), nThreads, z0);
+		src->loadData(ibms);
+		source = src;
+	}
+	else if (_wcsicmp(radTypeName.c_str(), L"phs_rf") == 0)
+	{
+		if (fileName.empty())
+			throw exception("Please, specify beam particles file name");
+
+		ifstream ibms(XmlParseReaderBase::copyWStringToStlString(fileName.c_str()).c_str());
+		if(ibms.fail())
+			throw exception("Can not open particles file");
+		
+		auto src = new mcSourceProtonRF(srcName.c_str(), nThreads, z0);
 		src->loadData(ibms);
 		source = src;
 	}
