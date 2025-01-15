@@ -43,17 +43,30 @@ namespace MCTests
 		TEST_METHOD(getDistanceInside)
 		{
 			auto errmsg = L"getDistanceInside failed";
-			double d;
+			double d, dexp = 0;
 			auto transport = createTestTransport();
 			mcParticle p;
 
-			// 1.1
-			p.p = geomVector3D(0, 0, 1);
-			p.u = geomVector3D(0, 0, -1) - p.p;
+			// 1.1 (входной торец под углом)
+			p.p = geomVector3D(-0.3, 0.5, -1);
+			p.u = geomVector3D(0.3, -0.5, -2) - p.p;
+			dexp = p.u.length();
 			p.u.normalize();
 			d = transport->getDistanceInside(p);
-			Assert::AreEqual(3.0, d, TEST_EPSILON, errmsg, LINE_INFO());
-
+			Assert::AreEqual(dexp, d, TEST_EPSILON, errmsg, LINE_INFO());
+			// 1.2 (боковая стенка)
+			p.u = geomVector3D(0, 0.75, -0.75) - p.p;
+			dexp = p.u.length();
+			p.u.normalize();
+			d = transport->getDistanceInside(p);
+			//Assert::AreEqual(dexp, d, TEST_EPSILON, errmsg, LINE_INFO());
+			Assert::AreEqual(dexp, d, 0.1, errmsg, LINE_INFO());
+			// 1.3 (боковой сегмент с переходом в сегмент вперед)
+			p.u = geomVector3D(0, 0, 1.8) - p.p;
+			dexp = p.u.length();
+			p.u.normalize();
+			d = transport->getDistanceInside(p);
+			Assert::AreEqual(dexp, d, 0.2, errmsg, LINE_INFO());
 
 		}
 

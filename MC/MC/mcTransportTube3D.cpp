@@ -19,28 +19,36 @@ mcTransportTube3D::mcTransportTube3D(const geomVector3D& orgn, const geomVector3
 		segment.R = r[i];
 	}
 	// Второй - направления осей сегментов
-	for (int i = 0; i < ns - 1; i++)
+	for (int i = ns - 1; i >= 0; i--)
 	{
 		auto& s0 = segments_->at(i);
-		auto& s1 = segments_->at(i + 1);
-		s0.V0 = s1.P0 - s0.P0;
-		s0.D = s0.V0.length();
-		s0.V0 /= s0.D;
+		if (i > 0)
+		{
+			auto& s1 = segments_->at(i - 1);
+			s0.V0 = s1.P0 - s0.P0;
+			s0.D = s0.V0.length();
+			s0.V0 /= s0.D;
+		}
+		else
+		{
+			s0.D = 0;
+			s0.V0 = segments_->at(i + 1).V0;
+		}
 	}
-	segments_->at(ns - 1).V0 = segments_->at(ns - 2).V0;
 	// Третий - нормали и матрицы преобразования координат
 	for (int i = 0; i < ns; i++)
 	{
 		auto& segment = segments_->at(i);
-		if (i == 0 || i == ns - 1) segment.N0 = segment.V0;
+		if (i == 0 || i == ns - 1) 
+			segment.N0 = segment.V0;
 		else
-			segment.N0 = (segments_->at(i - 1).V0 + segment.V0) * 0.5;
+			segment.N0 = (segments_->at(i + 1).V0 + segment.V0) * 0.5;
 		segment.N0.normalize();
 
 		// Система плоскости - ось Z уже определена нормалью.
 		// Выбираем ось мировой системы максимально удаленную от Z 
 		// и используем ее для построения ортогональной системы через векторное произведение.
-		const auto& p = segment.P0;
+		const auto& p0 = segment.P0;
 		const auto& n = segment.N0;
 		const auto& v = segment.V0;
 
@@ -50,22 +58,22 @@ mcTransportTube3D::mcTransportTube3D(const geomVector3D& orgn, const geomVector3
 		// В таком случае при наклоне оси < 60 градусов в качестве оси X 
 		// выбирается мировая ось X
 
-		geomVector3D X = (v.z() > 0.5 || v.y() >= 0.5) ? geomVector3D(1, 0, 0) :
+		geomVector3D XX = (v.z() > 0.5 || v.y() >= 0.5) ? geomVector3D(1, 0, 0) :
 			(v.x() < 0.5) ? geomVector3D(0, 1, 0) : geomVector3D(0, 0, 1);
 
-		geomVector3D Y = n ^ x;
+		geomVector3D Y = n ^ XX;
 		Y.normalize();
-		X = Y ^ n;
-		segment.ME2SPlane = geomMatrix3D::ParallelShift(-p.x(), -p.y(), -p.z()) *
+		geomVector3D X = Y ^ n;
+		segment.ME2SPlane = geomMatrix3D::ParallelShift(-p0.x(), -p0.y(), -p0.z()) *
 			geomMatrix3D::BuildFromAxis(X, Y, n);
 		// Q: не нужно лии взять обратную матрицу и правильная ли ориентация ???
 		//segment.ME2SPlane.makeInverse();
 		
 		// Аналогично система цилиндра.
-		Y = v ^ X;
+		Y = v ^ XX;
 		Y.normalize();
 		X = Y ^ v;
-		segment.ME2STube = geomMatrix3D::ParallelShift(-p.x(), -p.y(), -p.z()) *
+		segment.ME2STube = geomMatrix3D::ParallelShift(-p0.x(), -p0.y(), -p0.z()) *
 			geomMatrix3D::BuildFromAxis(X, Y, v);
 		//segment.ME2STube.makeInverse();
 	}
@@ -88,7 +96,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 	{
 		// На всякий случай если координаты частицы вне объекта
 		// возвращаем 0 как бы обозначая что она сразу выходит из объекта.
-		if (si < 0 || si >= ns - 1) break;
+		if (si <=0 || si >= ns) break;
 
 		// Мы потенциально перемещаем частицу по сегментам.
 		// При этом используем счетчик пути.
@@ -97,11 +105,11 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 		// Расстояние до пресечения с секущей плоскостью и с боковой поверхностью (трубкой)
 		double d_plane = DBL_MAX, d_side = DBL_MAX;
 
-		while (si >= 0 && si < ns - 1)
+		while (si > 0 && si <= ns - 1)
 		{
-			auto& s = segments_->at(si);
-			auto ps = pp * s.ME2SPlane;
-			auto us = p.u.transformDirection(s.ME2SPlane);
+			auto& segment = segments_->at(si);
+			auto ps = pp * segment.ME2SPlane;
+			auto us = p.u.transformDirection(segment.ME2SPlane);
 			double d_plane = DBL_MAX;
 
 			// Летим назад
@@ -111,17 +119,17 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 
 				auto p_tmp = pp + (p.u * d_plane);
 				double r = p_tmp.lengthXY();
-				if (r < s.R)
+				if (r < segment.R)
 				{
-					if(si == 0) { dist += d_plane; break; }
+					if(si == ns - 1) { dist += d_plane; break; }
 					// Переходим в предыдущий сегмент 
 					dist += d_plane;
 					pp += p.u * (d_plane + MINDELTA);
-					si--;
+					si++;
 				}
 				else
 				{
-					dist += segmentTubeDistanceInside(si, ps, us);
+					dist += segmentTubeDistanceInside(si, pp, p.u);
 					break;
 				}
 			}
@@ -129,9 +137,9 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 			// Летим вперед
 			else
 			{
-				s = segments_->at(si + 1);
-				ps = pp * s.ME2SPlane;
-				auto us = p.u.transformDirection(s.ME2SPlane);
+				auto& sprev = segments_->at(si - 1);
+				ps = pp * sprev.ME2SPlane;
+				auto us = p.u.transformDirection(sprev.ME2SPlane);
 				if (us.z() > 0)
 					d_plane = -ps.z() / us.z();
 
@@ -139,16 +147,16 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 				// Тогда гарантировано должно быть пересечение с боковой стенкой.
 				if(d_plane == DBL_MAX)
 				{
-					dist += segmentTubeDistanceInside(si, ps, us);
+					dist += segmentTubeDistanceInside(si, pp, p.u);
 					break;
 				}
 				else
 				{
-					auto p_tmp = pp + (p.u * d_plane);
+					auto p_tmp = ps + (us * d_plane);
 					double r = p_tmp.lengthXY();
-					if (r < s.R)
+					if (r < sprev.R)
 					{
-						if (si >= ns - 2) { dist += d_plane; break; }
+						if (si <= 1) { dist += d_plane; break; }
 						// Переходим в предыдущий сегмент 
 						dist += d_plane;
 						pp += p.u * (d_plane + MINDELTA);
@@ -156,7 +164,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 					}
 					else
 					{
-						dist += segmentTubeDistanceInside(si, ps, us);
+						dist += segmentTubeDistanceInside(si, pp, p.u);
 						break;
 					}
 				}
@@ -208,9 +216,9 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 	while (true)
 	{
 		int si = findSegment(pp);
-		auto& s = segments_->at(si < 0 ? 0 : si >= ns ? ns - 1 : si);
-		auto ps = pp * s.ME2SPlane;
-		auto us = p.u.transformDirection(s.ME2SPlane);
+		auto& segment = segments_->at(si < 0 ? 0 : si >= ns ? ns - 1 : si);
+		auto ps = pp * segment.ME2SPlane;
+		auto us = p.u.transformDirection(segment.ME2SPlane);
 		double d_plane = DBL_MAX;
 
 		// Заведомо летим от при том что столкновений так и не обнаружено.
@@ -222,7 +230,7 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 		{
 			d_plane = -ps.z() / us.z();
 			ps += us * d_plane;
-			if (ps.lengthXY() <= s.R)
+			if (ps.lengthXY() <= segment.R)
 				return d_plane;
 			else
 			{
@@ -251,9 +259,9 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 		// Летим вперед
 		else
 		{
-			s = segments_->at(si + 1);
-			ps = pp * s.ME2SPlane;
-			us = p.u.transformDirection(s.ME2SPlane);
+			auto& snext = segments_->at(si - 1);
+			ps = pp * snext.ME2SPlane;
+			us = p.u.transformDirection(snext.ME2SPlane);
 
 			if (us.z() > 0)
 				d_plane = -ps.z() / us.z();
@@ -294,10 +302,10 @@ int mcTransportTube3D::findSegment(const geomVector3D& p) const
 	for (; i < segments_->size(); i++)
 	{
 		geomVector3D pplane = p * segments_->at(i).ME2SPlane;
-		if (pplane.z() < 0) 
+		if (pplane.z() > 0) 
 			break;
 	}
-	return i - 1;
+	return i;
 }
 
 double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D& p, const geomVector3D& u) const
@@ -314,21 +322,22 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 	// Угол t отсчитывается от оси X в сторону оси Y.
 
 	auto& s = segments_->at(idx);
-	auto& s1 = segments_->at(idx + 1);
+	auto& s1 = segments_->at(idx - 1);
 
 	// Траектория частицы в системе трубки
 	auto pt = p * s.ME2STube;
 	auto ut = u.transformDirection(s.ME2STube);
+	double utlxy = ut.lengthXY();
 
 	// Направо или налево летит частица если смотреть на нее из центра координат?
-	bool isRight = (pt ^ ut).z() > 0;
+	bool isRight = (pt ^ ut).z() < 0;
 
 	double x = ut.x(), y = ut.y();
 	if (abs(ut.z()) >= 1.0 - MINDELTA) { x = pt.x(), y = pt.y(); }
 
 	double f = sqrt(x * x + y * y);
-	double sint = -y / f;
-	double cost = x / f;
+	double sint = x / f;
+	double cost = -y / f;
 	if (!isRight) { sint = -sint; cost = -cost; }
 
 	double dist = 0, dist_prev = 0;
@@ -341,10 +350,13 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 	for (; count < 20; count++)
 	{
 		// Нормаль к секущей плоскости
-		auto NP = geomVector3D(sint, -cost, 0) ^ geomVector3D(0, 0, 1);
+		auto NP = geomVector3D(sint, -cost, 0);
 
 		// Точка пересечения траектории с секущей плоскостью
+		//dist = -(NP * pt) / utlxy;
+		// TODO: Разобраться с ситуацией, когда ut * NP = 0;
 		dist = -(pt * NP) / (ut * NP);
+		//if (!isRight) dist = -dist;
 		auto pc = pt + (ut * dist);
 
 		// Расстояния до оси
@@ -363,7 +375,7 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 				// отклоняющуюся от текущей на угол da
 				double cos_da = rp / rs;
 				double sin_da = sqrt(1 - cos_da * cos_da);
-				if (!isRight) sin_da = -sin_da;
+				if (isRight) sin_da = -sin_da;
 				// Поворот новой секущей плоскости
 				double a = sint;
 				sint = a * cos_da + cost * sin_da;
@@ -547,7 +559,7 @@ double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D
 double mcTransportTube3D::getSurfaceR(int idx, const geomVector3D& pc) const
 {
 	auto& s = segments_->at(idx);
-	auto& s1 = segments_->at(idx + 1);
+	auto& s1 = segments_->at(idx - 1);
 	// Две точки пересечения торцевых кругов с найденной плоскостью. 
 	geomVector3D c0 = (pc ^ s.N0) ^ s.N0;
 	c0.normalize();
