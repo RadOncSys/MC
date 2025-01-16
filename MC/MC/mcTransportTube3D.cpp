@@ -132,7 +132,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 				}
 				else
 				{
-					dist += segmentTubeDistanceInside(si, pp, p.u);
+					dist += segmentTubeDistance(si, pp, p.u, true);
 					break;
 				}
 			}
@@ -150,7 +150,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 				// Тогда гарантировано должно быть пересечение с боковой стенкой.
 				if(d_plane == DBL_MAX)
 				{
-					dist += segmentTubeDistanceInside(si, pp, p.u);
+					dist += segmentTubeDistance(si, pp, p.u, true);
 					break;
 				}
 				else
@@ -167,7 +167,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 					}
 					else
 					{
-						dist += segmentTubeDistanceInside(si, pp, p.u);
+						dist += segmentTubeDistance(si, pp, p.u, true);
 						break;
 					}
 				}
@@ -225,11 +225,11 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 		double d_plane = DBL_MAX;
 
 		// Заведомо летим от при том что столкновений так и не обнаружено.
-		if ((si < 0 && us.z() >= 0) || (si >= ns - 1 && us.z() <= 0))
+		if ((si <= 0 && us.z() >= 0) || (si >= ns && us.z() <= 0))
 			return DBL_MAX;
 
 		// Если частица за пределами сегментов, то ее нужно туда перевести
-		else if (si <= 0 || si > ns - 1)
+		else if (si <= 0 || si >= ns)
 		{
 			d_plane = -ps.z() / us.z();
 			ps += us * d_plane;
@@ -243,7 +243,7 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 			continue;
 		}
 
-		double d_side = segmentTubeDistanceOutside(si, pp, p.u);
+		double d_side = segmentTubeDistance(si, pp, p.u, false);
 
 		// Летим назад
 		if (us.z() < 0)
@@ -255,7 +255,6 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 			{
 				dist += d_plane;
 				pp += p.u * (d_plane + MINDELTA);
-				si--;
 			}
 		}
 
@@ -287,11 +286,10 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 			{
 				dist += d_plane;
 				pp += p.u * (d_plane + MINDELTA);
-				si++;
 			}
 
 			// Если сегмент последний то столкновений уже не будет
-			if (si >= ns - 1)
+			if (si <= 0)
 				return DBL_MAX;
 		}
 	}
@@ -311,7 +309,7 @@ int mcTransportTube3D::findSegment(const geomVector3D& p) const
 	return i;
 }
 
-double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D& p, const geomVector3D& u) const
+double mcTransportTube3D::segmentTubeDistance(int idx, const geomVector3D& p, const geomVector3D& u, bool isInside) const
 {
 	// Попытки решить аналитически ни к чему не привели.
 	// Поэтому итерационное решение.
@@ -383,6 +381,7 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 				double cos_da = rp / rs;
 				double sin_da = sqrt(1 - cos_da * cos_da);
 				if (isRight) sin_da = -sin_da;
+				if (!isInside) sin_da = -sin_da;
 				// Поворот новой секущей плоскости
 				double a = sint;
 				sint = a * cos_da + cost * sin_da;
@@ -397,6 +396,7 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 				double cos_da = rs / rp;
 				double sin_da = sqrt(1 - cos_da * cos_da);
 				if (!isRight) sin_da = -sin_da;
+				if (!isInside) sin_da = -sin_da;
 				double a = sint;
 				sint = a * cos_da + cost * sin_da;
 				cost = cost * cos_da - a * sin_da;
@@ -435,132 +435,7 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 	}
 
 	// Если не нашли хорошее решение возвращаем DBL_MAX что означает отсутствие столкновения
-	if (count == 20)
-		return DBL_MAX;
-	else
-		return dist;
-}
-
-double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D& p, const geomVector3D& u) const
-{
-	auto& s = segments_->at(idx);
-	auto& s1 = segments_->at(idx - 1);
-
-	// Траектория частицы в системе трубки
-	auto pt = p * s.ME2STube;
-	auto ut = u.transformDirection(s.ME2STube);
-
-	// Направо или налево летит частица если смотреть на нее из центра координат?
-	bool isRight = (pt ^ ut).z() < 0;
-
-	double x = ut.x(), y = ut.y();
-	if (abs(ut.z()) >= 1.0 - MINDELTA) { x = pt.x(), y = pt.y(); }
-
-	double f = sqrt(x * x + y * y);
-	double sint = x / f;
-	double cost = -y / f;
-	if (!isRight) { sint = -sint; cost = -cost; }
-
-	double dist = 0, dist_prev = 0;
-	double rp_prev = 0;
-	double rs_prev = 0;
-	double rp_prev2 = 0;	// Храним два передыдущих результата, 
-	double rs_prev2 = 0;	// чтобы убедиться что пересечения нет
-	double sinda = 0.1;		// стартовый шаг по углу в радианах (порядка 5 градусов)
-
-	// Итеративный поиск ограниченный 20-ю шагами
-	int count = 0;
-	for (; count < 20; count++)
-	{
-		// Нормаль к секущей плоскости
-		auto NP = geomVector3D(sint, -cost, 0);
-
-		double utnp = ut * NP;
-		if (fabs(utnp) < MINDELTA)
-			dist *= 2;
-		else
-			dist = -(pt * NP) / utnp;
-		auto pc = pt + (ut * dist);
-
-		// Грубое отсечение ситуаций без столкновений
-		double rp = pc.lengthXY();	// particle
-		if (rp > s.R && rp > s1.R) return DBL_MAX;
-
-		double rs = getSurfaceR(idx, pc);
-
-		// Первый шаг отличается от остальных тем, что только определяется начальное положение
-		// секущей плоскости и угол отклонения может достигать 90 градусов.
-		if (count == 0)
-		{
-			// Пересечение траектории с секущей плоскостью внутри объекта
-			if (rp < rs)
-			{
-				// В приближении круга прогнозируем пересечение траектории с поверхностью.
-				// Новая секущая плоскость проходит через спрогнозированную точку,
-				// отклоняющуюся от текущей на угол da
-				double cos_da = rp / rs;
-				double sin_da = sqrt(1 - cos_da * cos_da);
-				if (!isRight) sin_da = -sin_da;
-				// Поворот новой секущей плоскости
-				double a = sint;
-				sint = a * cos_da + cost * sin_da;
-				cost = cost * cos_da - a * sin_da;
-			}
-			// Пересечение за пределами объекта
-			else
-			{
-				// Это еще не приговор. Реальным критерием отсутствия пересечения 
-				// является увеличение расхождения между двумя радиусами независимо 
-				// от направления вращения секущей плоскости.
-				// Поскольку пересечения нет, то в лучшем случае мы около правильного направления.
-				// Поэтому сохраняем секущую плаоскость.
-			}
-		}
-		// На втором шаге мы только начинаем прощупывать окрестности
-		else if (count == 1)
-		{
-			// Поворачиваем на da и на следующем шаге увидим как изменились радиусы
-			double cos_da = sqrt(1 - sinda * sinda);
-			double a = sint;
-			sint = a * cos_da + cost * sinda;
-			cost = cost * cos_da - a * sinda;
-		}
-		else
-		{
-			// Линейно интерполируем новый поворот чтобы получить нулевую разницу между радиусами
-			double dr = rs - rp;
-			double dr_prev = rs_prev - rp_prev;
-
-			// При двух неудачах и определенных неудачах в трех попытках 
-			// приходим к выводу, что пересечения вообще нет.
-			if (dr > 0 && dr_prev > 0)
-			{
-				if (((dr - dr_prev) * (rs_prev2 - rp_prev2 - dr_prev)) > 0)
-					return DBL_MAX;
-			}
-
-			if (dr_prev != dr)
-				sinda *= -(1 + dr_prev / (dr - dr_prev));
-			double cos_da = sqrt(1 - sinda * sinda);
-			double a = sint;
-			sint = a * cos_da + cost * sinda;
-			cost = cost * cos_da - a * sinda;
-		}
-
-		// Интерполяция поворота плоскости начинается со второго круга, 
-		// но только на следующем будет получен результат.
-		if (count > 2 && abs(dist_prev - dist) < MINDELTA)
-			break;
-
-		rp_prev2 = rp_prev;
-		rs_prev2 = rs_prev;
-		rp_prev = rp;
-		rs_prev = rs;
-		dist_prev = dist;
-	}
-
-	// Если не нашли хорошее решение возвращаем DBL_MAX что означает отсутствие столкновения
-	if (count == 20)
+	if (count == 20 || dist < 0)
 		return DBL_MAX;
 	else
 		return dist;

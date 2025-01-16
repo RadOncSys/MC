@@ -55,8 +55,7 @@ protected:
 	// и установлено, что пересечение с боковой стенкой сегмента возможно.
 	// Ѕокова€ стенка не цилиндр и не конус из-за различий радиусов торцов
 	// и наклона плоскости вторго торца.
-	double segmentTubeDistanceInside(int idx, const geomVector3D& p, const geomVector3D& u) const;
-	double segmentTubeDistanceOutside(int idx, const geomVector3D& p, const geomVector3D& u) const;
+	double segmentTubeDistance(int idx, const geomVector3D& p, const geomVector3D& u, bool isInside) const;
 
 	// –ассто€ние до точки пересечени€ поверхности, соответствующей точке пересечени€ траекторией (pc)
 	double getSurfaceR(int idx, const geomVector3D& pc) const;
