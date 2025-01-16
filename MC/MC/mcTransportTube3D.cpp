@@ -76,6 +76,10 @@ mcTransportTube3D::mcTransportTube3D(const geomVector3D& orgn, const geomVector3
 		segment.ME2STube = geomMatrix3D::ParallelShift(-p0.x(), -p0.y(), -p0.z()) *
 			geomMatrix3D::BuildFromAxis(X, Y, v);
 		//segment.ME2STube.makeInverse();
+
+		segment.NT = segment.N0.transformDirection(segment.ME2STube);
+		if(i > 0)
+			segment.NT1 = segments_->at(i-1).N0.transformDirection(segment.ME2STube);
 	}
 }
 
@@ -116,8 +120,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 			if (us.z() < 0)
 			{
 				d_plane = -ps.z() / us.z();
-
-				auto p_tmp = pp + (p.u * d_plane);
+				auto p_tmp = ps + (us * d_plane);
 				double r = p_tmp.lengthXY();
 				if (r < segment.R)
 				{
@@ -222,11 +225,11 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 		double d_plane = DBL_MAX;
 
 		// Заведомо летим от при том что столкновений так и не обнаружено.
-		if ((si < 0 && us.z() <= 0) || (si >= ns - 1 && us.z() >= 0)) 
+		if ((si < 0 && us.z() >= 0) || (si >= ns - 1 && us.z() <= 0))
 			return DBL_MAX;
 
 		// Если частица за пределами сегментов, то ее нужно туда перевести
-		else if (si < 0 || si >= ns - 1)
+		else if (si <= 0 || si > ns - 1)
 		{
 			d_plane = -ps.z() / us.z();
 			ps += us * d_plane;
@@ -327,7 +330,6 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 	// Траектория частицы в системе трубки
 	auto pt = p * s.ME2STube;
 	auto ut = u.transformDirection(s.ME2STube);
-	double utlxy = ut.lengthXY();
 
 	// Направо или налево летит частица если смотреть на нее из центра координат?
 	bool isRight = (pt ^ ut).z() < 0;
@@ -353,10 +355,15 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 		auto NP = geomVector3D(sint, -cost, 0);
 
 		// Точка пересечения траектории с секущей плоскостью
-		//dist = -(NP * pt) / utlxy;
-		// TODO: Разобраться с ситуацией, когда ut * NP = 0;
-		dist = -(pt * NP) / (ut * NP);
-		//if (!isRight) dist = -dist;
+		double utnp = ut * NP;
+
+		// HACK!! Удваиваем расстояниев надежде что алгоритм выпутается сам.
+		// При параллельном движении пересечение уходит в бесконечность.
+		if (fabs(utnp) < MINDELTA)
+			dist *= 2;
+		else
+			dist = -(pt * NP) / utnp;
+		
 		auto pc = pt + (ut * dist);
 
 		// Расстояния до оси
@@ -437,7 +444,7 @@ double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D&
 double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D& p, const geomVector3D& u) const
 {
 	auto& s = segments_->at(idx);
-	auto& s1 = segments_->at(idx + 1);
+	auto& s1 = segments_->at(idx - 1);
 
 	// Траектория частицы в системе трубки
 	auto pt = p * s.ME2STube;
@@ -466,14 +473,17 @@ double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D
 	for (; count < 20; count++)
 	{
 		// Нормаль к секущей плоскости
-		auto NP = geomVector3D(cost, sint, 0) ^ geomVector3D(0, 0, 1);
+		auto NP = geomVector3D(sint, -cost, 0);
 
-		// Точка пересечения траектории с секущей плоскостью
-		dist = -(pt * NP) / (ut * NP);
+		double utnp = ut * NP;
+		if (fabs(utnp) < MINDELTA)
+			dist *= 2;
+		else
+			dist = -(pt * NP) / utnp;
 		auto pc = pt + (ut * dist);
-		double rp = pc.lengthXY();	// particle
 
 		// Грубое отсечение ситуаций без столкновений
+		double rp = pc.lengthXY();	// particle
 		if (rp > s.R && rp > s1.R) return DBL_MAX;
 
 		double rs = getSurfaceR(idx, pc);
@@ -561,10 +571,10 @@ double mcTransportTube3D::getSurfaceR(int idx, const geomVector3D& pc) const
 	auto& s = segments_->at(idx);
 	auto& s1 = segments_->at(idx - 1);
 	// Две точки пересечения торцевых кругов с найденной плоскостью. 
-	geomVector3D c0 = (pc ^ s.N0) ^ s.N0;
+	geomVector3D c0 = (s.NT ^ pc) ^ s.NT;
 	c0.normalize();
 	c0 = c0 * s.R;
-	geomVector3D c1 = ((pc - geomVector3D(0, 0, s.D)) ^ s1.N0) ^ s1.N0;
+	geomVector3D c1 = (s.NT1 ^ (pc - geomVector3D(0, 0, s.D))) ^ s.NT1;
 	c1.normalize();
 	c1 = geomVector3D(0, 0, s.D) + (c1 * s1.R);
 	// Вычисляем точку поверхности при координате pc.Z в секущей плоскости.

@@ -16,6 +16,8 @@ struct TubeSection
 	geomVector3D P0;	// Положение центра в системе трубки
 	geomVector3D V0;	// Направление оси сегмента
 	geomVector3D N0;	// Нормаль к стартовой секущей сегмент плоскости
+	geomVector3D NT;	// Нормаль к стартовой секущей сегмент плоскости в системе трубки
+	geomVector3D NT1;	// Нормаль к плоскости второго торца в системе трубки
 	double R;			// Внешний радиус
 	double D;			// Расстояние между точками P0 данного и следующего сегментов
 
@@ -58,7 +60,6 @@ protected:
 
 	// Расстояние до точки пересечения поверхности, соответствующей точке пересечения траекторией (pc)
 	double getSurfaceR(int idx, const geomVector3D& pc) const;
-
 
 	std::unique_ptr<std::vector<TubeSection>> segments_;
 };
