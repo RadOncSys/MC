@@ -167,6 +167,7 @@
     <ClCompile Include="mcTransportConeTest.cpp" />
     <ClCompile Include="mcTransportCylinderTest.cpp" />
     <ClCompile Include="mcTransportEmbeddedGroupTest.cpp" />
+    <ClCompile Include="mcTransportGridFilterTest.cpp" />
     <ClCompile Include="mcTransportJawPairRoundedTest.cpp" />
     <ClCompile Include="mcTransportLinearChainTest.cpp" />
     <ClCompile Include="mcTransportMantleBlockTest.cpp" />

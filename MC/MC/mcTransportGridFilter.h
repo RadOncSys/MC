@@ -1,14 +1,14 @@
-// Radiation Oncology Monte Carlo open source project
+п»ї// Radiation Oncology Monte Carlo open source project
 //
 // Author: [2024] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 #pragma once
 #include "mcTransportPrism.h"
 
-// Класс транспорта в гребенчатом фильтре, представляущем 2D матрицу пирамид, 
-// состоящих из корпичиков прямоугольного сечения одинаковой высоты, но разного размера.
-// Изначально класс разрабатывался для транспорта протонов в проекте ОКО.
-// Наследуем Prism с целью использования ее методов для обработки столкновений с данным обектом и выхода из него.
+// РљР»Р°СЃСЃ С‚СЂР°РЅСЃРїРѕСЂС‚Р° РІ РіСЂРµР±РµРЅС‡Р°С‚РѕРј С„РёР»СЊС‚СЂРµ, РїСЂРµРґСЃС‚Р°РІР»СЏСѓС‰РµРј 2D РјР°С‚СЂРёС†Сѓ РїРёСЂР°РјРёРґ, 
+// СЃРѕСЃС‚РѕСЏС‰РёС… РёР· РєРѕСЂРїРёС‡РёРєРѕРІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕРіРѕ СЃРµС‡РµРЅРёСЏ РѕРґРёРЅР°РєРѕРІРѕР№ РІС‹СЃРѕС‚С‹, РЅРѕ СЂР°Р·РЅРѕРіРѕ СЂР°Р·РјРµСЂР°.
+// РР·РЅР°С‡Р°Р»СЊРЅРѕ РєР»Р°СЃСЃ СЂР°Р·СЂР°Р±Р°С‚С‹РІР°Р»СЃСЏ РґР»СЏ С‚СЂР°РЅСЃРїРѕСЂС‚Р° РїСЂРѕС‚РѕРЅРѕРІ РІ РїСЂРѕРµРєС‚Рµ РћРљРћ.
+// РќР°СЃР»РµРґСѓРµРј Prism СЃ С†РµР»СЊСЋ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РµРµ РјРµС‚РѕРґРѕРІ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё СЃС‚РѕР»РєРЅРѕРІРµРЅРёР№ СЃ РґР°РЅРЅС‹Рј РѕР±РµРєС‚РѕРј Рё РІС‹С…РѕРґР° РёР· РЅРµРіРѕ.
 class mcTransportGridFilter : public mcTransportPrism
 {
 public:
@@ -16,41 +16,50 @@ public:
 		int nx, int ny, int nz, double psx, double psy, double psz);
 	virtual ~mcTransportGridFilter(void);
 
-	// В отличие от стандартного начала переносит частицу на поверхность фантома 
-	// и вычисляет индекс стартовой ячейки
+	// Р’ РѕС‚Р»РёС‡РёРµ РѕС‚ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ РЅР°С‡Р°Р»Р° РїРµСЂРµРЅРѕСЃРёС‚ С‡Р°СЃС‚РёС†Сѓ РЅР° РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ С„Р°РЅС‚РѕРјР° 
+	// Рё РІС‹С‡РёСЃР»СЏРµС‚ РёРЅРґРµРєСЃ СЃС‚Р°СЂС‚РѕРІРѕР№ СЏС‡РµР№РєРё
 	void beginTransport(mcParticle& p) override;
 
-	// Старт транспорта может вызываться как в объекте, вложенном во внутреннюю структуру - воздушеый слой.
+	// РЎС‚Р°СЂС‚ С‚СЂР°РЅСЃРїРѕСЂС‚Р° РјРѕР¶РµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РєР°Рє РІ РѕР±СЉРµРєС‚Рµ, РІР»РѕР¶РµРЅРЅРѕРј РІРѕ РІРЅСѓС‚СЂРµРЅРЅСЋСЋ СЃС‚СЂСѓРєС‚СѓСЂСѓ - РІРѕР·РґСѓС€РµС‹Р№ СЃР»РѕР№.
 	void beginTransportInside(mcParticle& p) override;
 
-	// Виртуальная функция перемещения частицы полностью покрывает специфику транспорта в сетке.
+	// Р’РёСЂС‚СѓР°Р»СЊРЅР°СЏ С„СѓРЅРєС†РёСЏ РїРµСЂРµРјРµС‰РµРЅРёСЏ С‡Р°СЃС‚РёС†С‹ РїРѕР»РЅРѕСЃС‚СЊСЋ РїРѕРєСЂС‹РІР°РµС‚ СЃРїРµС†РёС„РёРєСѓ С‚СЂР°РЅСЃРїРѕСЂС‚Р° РІ СЃРµС‚РєРµ.
 	mc_move_result_t moveParticle(mcParticle* particle, double& step, double& edep) override;
 
-	// Специфичные параметры
+	// РЎРїРµС†РёС„РёС‡РЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹
 	void setMedia(short inb, short outb) { inBrickIdx_ = inb; outBrickIdx_ = outb; }
 	void setBrickSize(int iz, double x, double y) { bx_[iz] = x; by_[iz] = y; }
+
+	int getIdxAtPoint(const geomVector3D& p, short* pgidxx, bool& isInBrick) const;
+	double getDistanceInsideVoxel(const mcParticle& particle, short* gidxNext, int& idx, bool& isHitCell);
+
+	// Р”Р°РЅРЅС‹Рµ РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
+	double getBrickSize(int i) const { return bx_[i]; }
+	double psx() const { return psx_; }
+	double psy() const { return psy_; }
+	double psz() const { return psz_; }
+	double nx() const { return nx_; }
+	double ny() const { return ny_; }
+	double nz() const { return nz_; }
 
 	void dump(ostream& os) const override;
 	void dumpVRML(ostream& os)const override;
 
 protected:
-	int getIdxAtPoint(const geomVector3D& p, short* pgidxx, bool& isInBrick) const;
-	double getDistanceInsideVoxel(const mcParticle& particle, short* gidxNext, int& idx, bool& isHitCell);
-
-	// Размер матрицы пирамид
+	// Р Р°Р·РјРµСЂ РјР°С‚СЂРёС†С‹ РїРёСЂР°РјРёРґ
 	int nx_, ny_, nz_;
 
-	// Шаг между пирамидами
+	// РЁР°Рі РјРµР¶РґСѓ РїРёСЂР°РјРёРґР°РјРё
 	double psx_, psy_, psz_;
 
-	// Стартовый угол стартовой пирамиды
+	// РЎС‚Р°СЂС‚РѕРІС‹Р№ СѓРіРѕР» СЃС‚Р°СЂС‚РѕРІРѕР№ РїРёСЂР°РјРёРґС‹
 	double x0_, y0_, z0_;
 
-	// Размеры брикетиков пирамид по слоям 
+	// Р Р°Р·РјРµСЂС‹ Р±СЂРёРєРµС‚РёРєРѕРІ РїРёСЂР°РјРёРґ РїРѕ СЃР»РѕСЏРј 
 	std::vector<double> bx_;
 	std::vector<double> by_;
 
-	// Индексы сред внутри и снаружи брикетиков
+	// РРЅРґРµРєСЃС‹ СЃСЂРµРґ РІРЅСѓС‚СЂРё Рё СЃРЅР°СЂСѓР¶Рё Р±СЂРёРєРµС‚РёРєРѕРІ
 	short inBrickIdx_;
 	short outBrickIdx_;
 };

@@ -21,12 +21,13 @@ public:
 	double ay() const { return ay_; }
 	double az() const { return az_; }
 
+	double getDistanceInside(mcParticle& p) const override;
+	double getDistanceOutside(mcParticle& p) const override;
+
 	void dump(ostream& os) const override;
 	void dumpVRML(ostream& os)const override;
 
 protected:
-	double getDistanceInside(mcParticle& p) const override;
-	double getDistanceOutside(mcParticle& p) const override;
 	double getDNearInside(const geomVector3D& p) const override;
 
 protected:

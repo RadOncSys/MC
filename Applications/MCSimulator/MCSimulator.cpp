@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "GeometryParser.h"
 #include "XmlParseReaderBase.h"
 

@@ -1,4 +1,4 @@
-#include "mcTransportGridFilter.h"
+п»ї#include "mcTransportGridFilter.h"
 #include "mcGeometry.h"
 #include "mcMedia.h"
 #include "mcPhysics.h"
@@ -59,19 +59,19 @@ double mcTransportGridFilter::getDistanceInsideVoxel(const mcParticle& particle,
 	double dx = DBL_MAX, dy = DBL_MAX, dz = DBL_MAX;
 	double vx = particle.u.x(), vy = particle.u.y(), vz = particle.u.z();
 
-	// Частица внутри брикета
+	// Р§Р°СЃС‚РёС†Р° РІРЅСѓС‚СЂРё Р±СЂРёРєРµС‚Р°
 	if (particle.region.subidx_ > 0)
 	{
-		// Координаты частицы относительно границы брикета
+		// РљРѕРѕСЂРґРёРЅР°С‚С‹ С‡Р°СЃС‚РёС†С‹ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РіСЂР°РЅРёС†С‹ Р±СЂРёРєРµС‚Р°
 		double x = particle.p.x() - ((x0_ + psx_ * (particle.region.gidx_[0] + 0.5)) - bx);
 		double y = particle.p.y() - ((y0_ + psy_ * (particle.region.gidx_[1] + 0.5)) - by);
 		double z = particle.p.z() - (z0_ + psz_ * k);
 
 		if (vx < 0) dx = -x / vx;
-		else if (vx > 0) dx = (psx_ - bx - x) / vx;
+		else if (vx > 0) dx = (2 * bx - x) / vx;
 
 		if (vy < 0) dy = -y / vy;
-		else if (vy > 0) dy = (psy_ - by - y) / vy;
+		else if (vy > 0) dy = (2 * by - y) / vy;
 
 		if (vz < 0) dz = -z / vz;
 		else if (vz > 0) dz = (psz_ - z) / vz;
@@ -102,11 +102,11 @@ double mcTransportGridFilter::getDistanceInsideVoxel(const mcParticle& particle,
 		}
 	}
 
-	// Частица за пределами брикета
+	// Р§Р°СЃС‚РёС†Р° Р·Р° РїСЂРµРґРµР»Р°РјРё Р±СЂРёРєРµС‚Р°
 	else
 	{
-		// Пересечение с ячейкой
-		// Координаты частицы относительно границы ячейки
+		// РџРµСЂРµСЃРµС‡РµРЅРёРµ СЃ СЏС‡РµР№РєРѕР№
+		// РљРѕРѕСЂРґРёРЅР°С‚С‹ С‡Р°СЃС‚РёС†С‹ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РіСЂР°РЅРёС†С‹ СЏС‡РµР№РєРё
 		double x = particle.p.x() - (x0_ + psx_ * particle.region.gidx_[0]);
 		double y = particle.p.y() - (y0_ + psy_ * particle.region.gidx_[1]);
 		double z = particle.p.z() - (z0_ + psz_ * k);
@@ -120,9 +120,9 @@ double mcTransportGridFilter::getDistanceInsideVoxel(const mcParticle& particle,
 		if (vz < 0) dz = -z / vz;
 		else if (vz > 0) dz = (psz_ - z) / vz;
 
-		// Пересечения с брикетом.
+		// РџРµСЂРµСЃРµС‡РµРЅРёСЏ СЃ Р±СЂРёРєРµС‚РѕРј.
 		double db = mcGeometry::getDistanceToRectanglePipeOutside(
-			geomVector3D(x, y, z), particle.u, bx, psx_ - bx, by, psy_ - by);
+			geomVector3D(x, y, z), particle.u, psx_ / 2 - bx, psx_ / 2 + bx, psy_ / 2 - by, psy_ / 2 + by);
 
 		if (db < dx && db < dy && db < dz)
 		{
@@ -159,7 +159,7 @@ double mcTransportGridFilter::getDistanceInsideVoxel(const mcParticle& particle,
 
 void mcTransportGridFilter::beginTransport(mcParticle& p)
 {
-	// Указатель на транспортный объект, в котором частица находится в данный момент
+	// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° С‚СЂР°РЅСЃРїРѕСЂС‚РЅС‹Р№ РѕР±СЉРµРєС‚, РІ РєРѕС‚РѕСЂРѕРј С‡Р°СЃС‚РёС†Р° РЅР°С…РѕРґРёС‚СЃСЏ РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚
 	p.transport_ = this;
 
 	mcParticle* particle = p.thread_->NextParticle();
@@ -170,7 +170,7 @@ void mcTransportGridFilter::beginTransport(mcParticle& p)
 	particle->dnear = 0;
 	particle->mfps = HowManyMFPs(p.thread_->rng());
 
-	// Переместить частицу на поверхность, если она еще не внутри
+	// РџРµСЂРµРјРµСЃС‚РёС‚СЊ С‡Р°СЃС‚РёС†Сѓ РЅР° РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ, РµСЃР»Рё РѕРЅР° РµС‰Рµ РЅРµ РІРЅСѓС‚СЂРё
 	bool isInBrick;
 	int idx = getIdxAtPoint(particle->p, particle->region.gidx_, isInBrick);
 	if (idx < 0)
@@ -186,7 +186,7 @@ void mcTransportGridFilter::beginTransport(mcParticle& p)
 	particle->region.subidx_ = isInBrick ? 1 : 0;
 	particle->regDensityRatio = 1.0;
 
-	// Транспорт в локальной системе координат
+	// РўСЂР°РЅСЃРїРѕСЂС‚ РІ Р»РѕРєР°Р»СЊРЅРѕР№ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚
 	simulate(p.thread_);
 }
 
@@ -200,8 +200,8 @@ mc_move_result_t mcTransportGridFilter::moveParticle(mcParticle* particle, doubl
 	edep = 0;
 	step = 0;
 
-	// Важный момент! 
-	// Если частица находится за пределами (на что указывает индекс региона), то возвращаемся с метокй о выходе.
+	// Р’Р°Р¶РЅС‹Р№ РјРѕРјРµРЅС‚! 
+	// Р•СЃР»Рё С‡Р°СЃС‚РёС†Р° РЅР°С…РѕРґРёС‚СЃСЏ Р·Р° РїСЂРµРґРµР»Р°РјРё (РЅР° С‡С‚Рѕ СѓРєР°Р·С‹РІР°РµС‚ РёРЅРґРµРєСЃ СЂРµРіРёРѕРЅР°), С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРјСЃСЏ СЃ РјРµС‚РѕРєР№ Рѕ РІС‹С…РѕРґРµ.
 	if (particle->region.idx_ < 0)
 	{
 		particle->exitSurface_ = mcParticle::temb_shit_t::External;
@@ -209,8 +209,8 @@ mc_move_result_t mcTransportGridFilter::moveParticle(mcParticle* particle, doubl
 	}
 
 	// HACK!!
-	// По непонятным причинам координаты частицы могут быть абсурдными.
-	// Удалаяем такие частицы
+	// РџРѕ РЅРµРїРѕРЅСЏС‚РЅС‹Рј РїСЂРёС‡РёРЅР°Рј РєРѕРѕСЂРґРёРЅР°С‚С‹ С‡Р°СЃС‚РёС†С‹ РјРѕРіСѓС‚ Р±С‹С‚СЊ Р°Р±СЃСѓСЂРґРЅС‹РјРё.
+	// РЈРґР°Р»Р°СЏРµРј С‚Р°РєРёРµ С‡Р°СЃС‚РёС†С‹
 	if (_isnan(particle->p.x()) != 0)
 	{
 		//cout << "Non number position or direction in object: " << this->getName() << endl;
@@ -223,10 +223,10 @@ mc_move_result_t mcTransportGridFilter::moveParticle(mcParticle* particle, doubl
 
 	const mcPhysics* phys = media_->getPhysics(particle->t);
 
-	//Параметры сред транспорта фотонов и электронов
+	//РџР°СЂР°РјРµС‚СЂС‹ СЃСЂРµРґ С‚СЂР°РЅСЃРїРѕСЂС‚Р° С„РѕС‚РѕРЅРѕРІ Рё СЌР»РµРєС‚СЂРѕРЅРѕРІ
 	const mcMedium* med = media_->getMedium(particle->t, particle->region.medidx_);
 
-	// Частицы с энергией ниже критической должны быть уничтожены раньше любых расчетов транспорта.
+	// Р§Р°СЃС‚РёС†С‹ СЃ СЌРЅРµСЂРіРёРµР№ РЅРёР¶Рµ РєСЂРёС‚РёС‡РµСЃРєРѕР№ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ СѓРЅРёС‡С‚РѕР¶РµРЅС‹ СЂР°РЅСЊС€Рµ Р»СЋР±С‹С… СЂР°СЃС‡РµС‚РѕРІ С‚СЂР°РЅСЃРїРѕСЂС‚Р°.
 	if (phys->Discarge(particle, *med, edep))
 		return MCMR_DISCARGE;
 
@@ -243,15 +243,15 @@ mc_move_result_t mcTransportGridFilter::moveParticle(mcParticle* particle, doubl
 	double freepath = phys->MeanFreePath(particle->ke, *med, particle->regDensityRatio);
 	step = freepath * particle->mfps;
 
-	// Расстояние до границы ячейки в направлении частицы.
-	// Если потом мы сделаем шаг до границы, то должны переместить частиу в следующую ячейку.
-	// Именно в это момент мы пометим частицу как находящуюся на грани
+	// Р Р°СЃСЃС‚РѕСЏРЅРёРµ РґРѕ РіСЂР°РЅРёС†С‹ СЏС‡РµР№РєРё РІ РЅР°РїСЂР°РІР»РµРЅРёРё С‡Р°СЃС‚РёС†С‹.
+	// Р•СЃР»Рё РїРѕС‚РѕРј РјС‹ СЃРґРµР»Р°РµРј С€Р°Рі РґРѕ РіСЂР°РЅРёС†С‹, С‚Рѕ РґРѕР»Р¶РЅС‹ РїРµСЂРµРјРµСЃС‚РёС‚СЊ С‡Р°СЃС‚РёСѓ РІ СЃР»РµРґСѓСЋС‰СѓСЋ СЏС‡РµР№РєСѓ.
+	// РРјРµРЅРЅРѕ РІ СЌС‚Рѕ РјРѕРјРµРЅС‚ РјС‹ РїРѕРјРµС‚РёРј С‡Р°СЃС‚РёС†Сѓ РєР°Рє РЅР°С…РѕРґСЏС‰СѓСЋСЃСЏ РЅР° РіСЂР°РЅРё
 	short gidxNext[3];
 	int idx;
-	bool isHitCell;	// true - будет пересечена граница ячейки, false - граница брикета.
+	bool isHitCell;	// true - Р±СѓРґРµС‚ РїРµСЂРµСЃРµС‡РµРЅР° РіСЂР°РЅРёС†Р° СЏС‡РµР№РєРё, false - РіСЂР°РЅРёС†Р° Р±СЂРёРєРµС‚Р°.
 	double dist = getDistanceInsideVoxel(*particle, gidxNext, idx, isHitCell) + GEOM_EPSILON;
 
-	// Игнорируем ускорение за счет оценки расстояния до границы
+	// РРіРЅРѕСЂРёСЂСѓРµРј СѓСЃРєРѕСЂРµРЅРёРµ Р·Р° СЃС‡РµС‚ РѕС†РµРЅРєРё СЂР°СЃСЃС‚РѕСЏРЅРёСЏ РґРѕ РіСЂР°РЅРёС†С‹
 	particle->dnear = 0;
 
 	if (step < dist)
@@ -266,7 +266,7 @@ mc_move_result_t mcTransportGridFilter::moveParticle(mcParticle* particle, doubl
 	}
 	else
 	{
-		// HACK! На поверхности возможно залипание, если расстояние в пределах погрешности вычислений.
+		// HACK! РќР° РїРѕРІРµСЂС…РЅРѕСЃС‚Рё РІРѕР·РјРѕР¶РЅРѕ Р·Р°Р»РёРїР°РЅРёРµ, РµСЃР»Рё СЂР°СЃСЃС‚РѕСЏРЅРёРµ РІ РїСЂРµРґРµР»Р°С… РїРѕРіСЂРµС€РЅРѕСЃС‚Рё РІС‹С‡РёСЃР»РµРЅРёР№.
 		if (dist < GEOM_EPSILON)
 			dist = GEOM_EPSILON;
 		step = dist;
@@ -275,14 +275,14 @@ mc_move_result_t mcTransportGridFilter::moveParticle(mcParticle* particle, doubl
 		particle->mfps -= step / freepath;
 		if (step == dist)
 		{
-			// Добрались до границы воксела. Нужно перенастороить частицу на новый.
+			// Р”РѕР±СЂР°Р»РёСЃСЊ РґРѕ РіСЂР°РЅРёС†С‹ РІРѕРєСЃРµР»Р°. РќСѓР¶РЅРѕ РїРµСЂРµРЅР°СЃС‚РѕСЂРѕРёС‚СЊ С‡Р°СЃС‚РёС†Сѓ РЅР° РЅРѕРІС‹Р№.
 			particle->region.idx_ = idx;
 			if (idx >= 0)
 			{
-				// Если пересекаем границу ячейки, то уходим в другую и 
-				// нужно определять где именно частица окажется.
-				// проще всего это сделать с помощью уже имеющейся 
-				// функции определения где находится частица по ее координатам.
+				// Р•СЃР»Рё РїРµСЂРµСЃРµРєР°РµРј РіСЂР°РЅРёС†Сѓ СЏС‡РµР№РєРё, С‚Рѕ СѓС…РѕРґРёРј РІ РґСЂСѓРіСѓСЋ Рё 
+				// РЅСѓР¶РЅРѕ РѕРїСЂРµРґРµР»СЏС‚СЊ РіРґРµ РёРјРµРЅРЅРѕ С‡Р°СЃС‚РёС†Р° РѕРєР°Р¶РµС‚СЃСЏ.
+				// РїСЂРѕС‰Рµ РІСЃРµРіРѕ СЌС‚Рѕ СЃРґРµР»Р°С‚СЊ СЃ РїРѕРјРѕС‰СЊСЋ СѓР¶Рµ РёРјРµСЋС‰РµР№СЃСЏ 
+				// С„СѓРЅРєС†РёРё РѕРїСЂРµРґРµР»РµРЅРёСЏ РіРґРµ РЅР°С…РѕРґРёС‚СЃСЏ С‡Р°СЃС‚РёС†Р° РїРѕ РµРµ РєРѕРѕСЂРґРёРЅР°С‚Р°Рј.
 				if (isHitCell)
 				{
 					bool isInBrick;
@@ -330,7 +330,7 @@ void mcTransportGridFilter::dumpVRML(ostream& os) const
 			{
 				double x0 = x0_ + psx_ * (ii + 0.5) - 0.5 * ax;
 
-				// Каждый брикет изображаем как отдельный объект
+				// РљР°Р¶РґС‹Р№ Р±СЂРёРєРµС‚ РёР·РѕР±СЂР°Р¶Р°РµРј РєР°Рє РѕС‚РґРµР»СЊРЅС‹Р№ РѕР±СЉРµРєС‚
 				geomVector3D p[8];
 
 				int i = 0;
