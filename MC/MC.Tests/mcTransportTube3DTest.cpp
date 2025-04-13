@@ -170,7 +170,7 @@ namespace MCTests
 				geomVector3D(0, 0, 0), geomVector3D(0, 0, 1), geomVector3D(1, 0, 0), pts, rs);
 			t->setColor(0.8, 0.8, 0.8, 0.0);
 
-			std::ofstream os("c:/tmp/Tube3D.wrl");
+			std::ofstream os("c:\\Users\\Ohanyan\\Documents\\MC_simulations\\Æåíÿ");
 			if (!os.fail())
 			{
 				mcVRMLDumper::dumpHead(os);

@@ -28,6 +28,7 @@
 #include "../../mc/mc/mcTransportLinearChain.h"
 #include "../../mc/mc/mcTransportGridFilter.h"
 #include "../../mc/mc/mcTransportMantleBlock.h"
+#include "../../mc/mc/mcTransportTube3D.h"
 
 #include "../../mc/mc/mcScorePHSP.h"
 #include "../../mc/mc/mcScoreBeamFluence.h"
@@ -156,6 +157,9 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	std::vector<double> poly_z;
 	std::vector<double> poly_x;
 	std::vector<double> poly_y;
+
+	std::vector<geomVector3D> p;
+	std::vector<double> r;
 
 	std::vector<double> bricks_x;
 	std::vector<double> bricks_y;
@@ -322,9 +326,37 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 					poly_x.push_back(x);
 					poly_y.push_back(y == DBL_MAX ? x : y);
 					poly_z.push_back(z);
+
 				}
 			}
 		}
+		else if (_wcsicmp(node.Name.c_str(), L"segments") == 0)
+		{
+			for (auto n1 : node.Nodes)
+			{
+				if (_wcsicmp(n1.Name.c_str(), L"point") == 0)
+				{
+					double x = 0, y = DBL_MAX, z = 0;
+					for (auto n2 : n1.Nodes)
+					{
+						if (_wcsicmp(n2.Name.c_str(), L"x") == 0)
+							x = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"y") == 0)
+							y = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"z") == 0)
+							z = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"r0") == 0)
+							r0 = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"r1") == 0)
+							r1 = _wtof(n2.Text.c_str());
+					}
+					
+					r.push_back(r0);
+					p.push_back(geomVector3D(x, y, z));
+				}
+			}
+			}
+
 
 		else if (_wcsicmp(node.Name.c_str(), L"bricks") == 0)
 		{
@@ -446,6 +478,8 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	else if (_wcsicmp(geomType.c_str(), L"spheretrap") == 0)
 	{
 		t = new mcTransportSphereTrap(origin, normal, xaxis, radius);
+
+
 	}
 	else if (_wcsicmp(geomType.c_str(), L"axial_splitter") == 0)
 	{
@@ -571,6 +605,13 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	{
 		t = new mcTransportMantleBlock(origin, normal, xaxis, r1, height, poly_x, poly_y);
 	}
+	else if (_wcsicmp(geomType.c_str(), L"3dtube") == 0)
+	{
+		t = new mcTransportTube3D(origin, normal, xaxis, p, r);
+
+	}
+
+
 
 	if (t == nullptr)
 		throw exception(XmlParseReaderBase::copyWStringToStlString(
