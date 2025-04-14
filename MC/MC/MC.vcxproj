@@ -233,7 +233,6 @@
     <ClInclude Include="mcSourceSimpleParallel.h" />
     <ClInclude Include="mcSourceSphereC60.h" />
     <ClInclude Include="mcSourceUniformCone.h" />
-    <ClInclude Include="mcSourceXoft.h" />
     <ClInclude Include="mcSourceXrayBeam.h" />
     <ClInclude Include="mcSourceXraySigmaR.h" />
     <ClInclude Include="mcSpline.h" />
@@ -345,7 +344,6 @@
     <ClCompile Include="mcSourceSimpleParallel.cpp" />
     <ClCompile Include="mcSourceSphereC60.cpp" />
     <ClCompile Include="mcSourceUniformCone.cpp" />
-    <ClCompile Include="mcSourceXoft.cpp" />
     <ClCompile Include="mcSourceXrayBeam.cpp" />
     <ClCompile Include="mcSourceXraySigmaR.cpp" />
     <ClCompile Include="mcThread.cpp" />

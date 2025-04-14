@@ -62,7 +62,6 @@
 #include "../../mc/mc/mcSourceAcceleratedBeam.h"
 #include "../../mc/mc/mcClinicalElectronBeam.h"
 #include "../../mc/mc/mcSourceProtonRF.h"
-#include "../../mc/mc/mcSourceXoft.h"
 
 #include "../../mc/mc/mcMedia.h"
 
@@ -1210,12 +1209,6 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		if (!isCoreSetDefined)
 			throw exception("Please, indicate radiation source dimensions");
 		source = new mcSourceSphereC60(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), radius);
-	}
-	else if (_wcsicmp(radTypeName.c_str(), L"Xoft") == 0)
-	{
-		if (!isCoreSetDefined)
-			throw exception("Please, indicate radiation source dimensions");
-		source = new mcSourceXoft(srcName.c_str(), nThreads, geomVector3D(x0, y0, z0), geomVector3D(vx, vy, vz), radius);
 	}
 	else if (_wcsicmp(radTypeName.c_str(), L"brachy") == 0)
 	{
