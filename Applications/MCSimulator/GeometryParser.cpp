@@ -28,6 +28,7 @@
 #include "../../mc/mc/mcTransportLinearChain.h"
 #include "../../mc/mc/mcTransportGridFilter.h"
 #include "../../mc/mc/mcTransportMantleBlock.h"
+#include "../../mc/mc/mcTransportTube3D.h"
 
 #include "../../mc/mc/mcScorePHSP.h"
 #include "../../mc/mc/mcScoreBeamFluence.h"
@@ -157,8 +158,13 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	std::vector<double> poly_x;
 	std::vector<double> poly_y;
 
+	// Компоненты гребенчатого фильтра
 	std::vector<double> bricks_x;
 	std::vector<double> bricks_y;
+
+	// Сегменты 3D трубки
+	std::vector<geomVector3D> pts;
+	std::vector<double> rs;
 
 	for (auto node : geometry.Nodes)
 	{
@@ -344,6 +350,30 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 						throw exception("Brick size can not be 0");
 					bricks_x.push_back(bx);
 					bricks_y.push_back(by);
+				}
+			}
+		}
+
+		else if (_wcsicmp(node.Name.c_str(), L"segments") == 0)
+		{
+			for (auto n1 : node.Nodes)
+			{
+				if (_wcsicmp(n1.Name.c_str(), L"point") == 0)
+				{
+					double x = 0, y = 0, z = 0, rr = 0;
+					for (auto n2 : n1.Nodes)
+					{
+						if (_wcsicmp(n2.Name.c_str(), L"x") == 0)
+							x = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"y") == 0)
+							y = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"z") == 0)
+							z = _wtof(n2.Text.c_str());
+						else if (_wcsicmp(n2.Name.c_str(), L"radius") == 0)
+							rr = _wtof(n2.Text.c_str());
+					}
+					pts.push_back(geomVector3D(x, y, z));
+					rs.push_back(rr);
 				}
 			}
 		}
@@ -571,6 +601,10 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	{
 		t = new mcTransportMantleBlock(origin, normal, xaxis, r1, height, poly_x, poly_y);
 	}
+	else if (_wcsicmp(geomType.c_str(), L"3dtube") == 0)
+	{
+		t = new mcTransportTube3D(origin, normal, xaxis, pts, rs);
+    }
 
 	if (t == nullptr)
 		throw exception(XmlParseReaderBase::copyWStringToStlString(

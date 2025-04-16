@@ -146,6 +146,31 @@ namespace MCTests
 			p.u.normalize();
 			d = transport->getDistanceInside(p);
 			Assert::AreEqual(dexp, d, 0.2, errmsg, LINE_INFO());
+
+			//
+			// Дополнительный тест в связи с проблемами при ранспорте в брахитерапевтическом источнике, 
+			// воспроизводящий условия проблемного случая
+			//
+			transport = createTestTransport2();
+			p.p = geomVector3D(0.012850686228402975, 0.019238845775936410, 0.17900099635016914);
+			p.u = geomVector3D(0.046703267315407700, 0.071450298763663683, 0.99635016918182373);
+			d = transport->getDistanceInside(p);
+			Assert::AreEqual(0.0384, d, 0.01, errmsg, LINE_INFO());
+
+			p.p = geomVector3D(-0.00900814, 0.000891232, -0.179001);
+			p.u = geomVector3D(0.671535, -0.0894564, -0.735553);
+			d = transport->getDistanceInside(p);
+			Assert::AreEqual(0.0798, d, 0.01, errmsg, LINE_INFO());
+
+			p.p = geomVector3D(-0.015729, -0.000711092, -0.179001);
+			p.u = geomVector3D(-0.854681, -0.0385922, -0.517717);
+			d = transport->getDistanceInside(p);
+			Assert::AreEqual(0.0312, d, 0.01, errmsg, LINE_INFO());
+
+			p.p = geomVector3D(0.00587706, -0.000194463, -0.179001);
+			p.u = geomVector3D(-0.326909, 0.0918469, -0.940582);
+			d = transport->getDistanceInside(p);
+			Assert::AreEqual(0.1493, d, 0.01, errmsg, LINE_INFO());
 		}
 
 	private:
@@ -171,6 +196,35 @@ namespace MCTests
 			t->setColor(0.8, 0.8, 0.8, 0.0);
 
 			std::ofstream os("c:/tmp/Tube3D.wrl");
+			if (!os.fail())
+			{
+				mcVRMLDumper::dumpHead(os);
+				mcVRMLDumper::dumpWorldAxis(os);
+				t->dumpVRML(os);
+			}
+
+			return std::move(t);
+		}
+
+		static std::unique_ptr<mcTransportTube3D> createTestTransport2()
+		{
+			std::vector<geomVector3D> pts;
+			std::vector<double> rs;
+
+			pts.push_back(geomVector3D(0, 0, 0.242));
+			rs.push_back(0.0);
+
+			pts.push_back(geomVector3D(0, 0, 0.20));
+			rs.push_back(0.045);
+
+			pts.push_back(geomVector3D(0, 0, -2.1));
+			rs.push_back(0.045);
+
+			auto t = std::make_unique<mcTransportTube3D>(
+				geomVector3D(0, 0, 0), geomVector3D(0, 0, 1), geomVector3D(1, 0, 0), pts, rs);
+			t->setColor(0.8, 0.8, 0.8, 0.0);
+
+			std::ofstream os("c:/tmp/Tube3D_2.wrl");
 			if (!os.fail())
 			{
 				mcVRMLDumper::dumpHead(os);

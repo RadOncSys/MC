@@ -132,7 +132,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 				}
 				else
 				{
-					dist += segmentTubeDistance(si, pp, p.u, true);
+					dist += segmentTubeDistanceInside(si, pp, p.u);
 					break;
 				}
 			}
@@ -150,7 +150,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 				// Тогда гарантировано должно быть пересечение с боковой стенкой.
 				if(d_plane == DBL_MAX)
 				{
-					dist += segmentTubeDistance(si, pp, p.u, true);
+					dist += segmentTubeDistanceInside(si, pp, p.u);
 					break;
 				}
 				else
@@ -167,7 +167,7 @@ double mcTransportTube3D::getDistanceInside(mcParticle& p) const
 					}
 					else
 					{
-						dist += segmentTubeDistance(si, pp, p.u, true);
+						dist += segmentTubeDistanceInside(si, pp, p.u);
 						break;
 					}
 				}
@@ -243,7 +243,7 @@ double mcTransportTube3D::getDistanceOutside(mcParticle& p) const
 			continue;
 		}
 
-		double d_side = segmentTubeDistance(si, pp, p.u, false);
+		double d_side = segmentTubeDistanceOutside(si, pp, p.u);
 
 		// Летим назад
 		if (us.z() < 0)
@@ -309,7 +309,114 @@ int mcTransportTube3D::findSegment(const geomVector3D& p) const
 	return i;
 }
 
-double mcTransportTube3D::segmentTubeDistance(int idx, const geomVector3D& p, const geomVector3D& u, bool isInside) const
+double mcTransportTube3D::segmentTubeDistanceInside(int idx, const geomVector3D& p, const geomVector3D& u) const
+{
+	double LIMIVALUE = MINDELTA;
+	auto& s = segments_->at(idx);
+	auto& s1 = segments_->at(idx - 1);
+	double sinda = 0.4; // стартовый шаг по углу в радианах (порядка 5 градусов)
+	double dist = 0, dist_prev = 0, rp = 0, rs = 0;
+
+	// Траектория частицы в системе трубки
+	auto pt = p * s.ME2STube;
+	auto ut = u.transformDirection(s.ME2STube);
+
+	// Направо или налево летит частица если смотреть на нее из центра координат?
+	double dir = (pt ^ ut).z() < 0 ? 1 : -1;
+
+	// Стартовая плоскость проходит через текущее положение с небольшим поворотом в направлении движения
+	double f = pt.lengthXY();
+	double sint = pt.y() / f;
+	double cost = pt.x() / f;
+	double cos_da = sqrt(1 - LIMIVALUE * LIMIVALUE);
+	double sin_p = sint * cos_da - dir * cost * LIMIVALUE;
+	double cos_p = cost * cos_da + dir * sint * LIMIVALUE;
+
+	// Здесь счетчик - количество поворотов плоскости
+	bool isRtCalculated = false;
+	int count = 0;
+	for (; count < 100; count++)
+	{
+		// Делаем шаг и в зависимости от результата решаем
+		// Success - это положительное расстояние, не пересечение торца, не переход через поверхность
+		bool success = true;
+		cos_da = sqrt(1 - sinda * sinda);
+		sint = sin_p * cos_da - dir * cos_p * sinda;
+		cost = cos_p * cos_da + dir * sin_p * sinda;
+
+		// Проверяем результат
+		
+		// Нормаль к секущей плоскости
+		auto NP = geomVector3D(dir * sint, -dir * cost, 0);
+		// Точка пересечения траектории с секущей плоскостью
+		double utnp = ut * NP;
+		// Расстояние до секущей плоскости (при правильной ориентации которой 
+		// это и будет расстояние до границы боковой поверхности сегмента)
+		dist = -(pt * NP) / utnp;
+
+		if (dist < 0)
+			success = false;
+		else
+		{
+			if (ut.z() > 0)
+			{
+				double h = (geomVector3D(0, 0, s.D) - pt) * s.NT1;
+				double f = ut * s.NT1;
+				if (f != 0) h /= f;
+				if (dist > h) 
+					success = false;
+			}
+			else
+			{
+				double h = pt * s.NT;
+				double f = -(ut * s.NT);
+				if (f != 0) h /= f;
+				if (dist > h) 
+					success = false;
+			}
+		}
+
+		if (success)
+		{
+			auto pc = pt + (ut * dist);
+			rp = pc.lengthXY();
+			rs = getSurfaceR(idx, pc);
+			if(rp > rs || dist < dist_prev)
+				success = false;
+			isRtCalculated = true;
+		}
+
+		if (success)
+		{
+			// Поскольку всегда движемся в одном направлении и подходим к поверхности только изнутри, 
+			// то любой успех - это решение лучше предыдущего.
+			// Поэтому оставляем текущее положение как старт следующей итерации.
+			sin_p = sint;
+			cos_p = cost;
+			dist_prev = dist;
+		}
+		else
+			sinda /= 4;
+		
+		//std::cout << count << "\t" << success << "\t" << dist << "\t" << rp << "\t" << rs << "\t" << sinda << std::endl;
+
+		// Похоже, что из-за, вероятно, ошибок округления положение в окрестности решения 
+		// постоянно распознается как за пределами поверхности и далее зацикливание без изменения шага. 
+		// Поэтому делаем полноценный выход здесь при достижении условий.
+		if ((isRtCalculated && abs(rp - rs) < LIMIVALUE) || sinda < LIMIVALUE)
+			break;
+	}
+
+	//std::cout << "count = \t" << count << std::endl;
+
+	// Если не нашли хорошее решение возвращаем DBL_MAX в качестве сигнала о проблеме
+	if (count == 100 || dist_prev < 0)
+		return DBL_MAX;
+	else
+		return dist_prev;
+}
+
+double mcTransportTube3D::segmentTubeDistanceOutside(int idx, const geomVector3D& p, const geomVector3D& u) const
 {
 	// Попытки решить аналитически ни к чему не привели.
 	// Поэтому итерационное решение.
@@ -361,7 +468,7 @@ double mcTransportTube3D::segmentTubeDistance(int idx, const geomVector3D& p, co
 			dist *= 2;
 		else
 			dist = -(pt * NP) / utnp;
-		
+
 		auto pc = pt + (ut * dist);
 
 		// Расстояния до оси
@@ -380,8 +487,7 @@ double mcTransportTube3D::segmentTubeDistance(int idx, const geomVector3D& p, co
 				// отклоняющуюся от текущей на угол da
 				double cos_da = rp / rs;
 				double sin_da = sqrt(1 - cos_da * cos_da);
-				if (isRight) sin_da = -sin_da;
-				if (!isInside) sin_da = -sin_da;
+				if (!isRight) sin_da = -sin_da;
 				// Поворот новой секущей плоскости
 				double a = sint;
 				sint = a * cos_da + cost * sin_da;
@@ -395,15 +501,14 @@ double mcTransportTube3D::segmentTubeDistance(int idx, const geomVector3D& p, co
 				// Оцениваем эквивалентный радиус как rs = rp + (rp - rs) и далае аналогично предыдущему.
 				double cos_da = rs / rp;
 				double sin_da = sqrt(1 - cos_da * cos_da);
-				if (!isRight) sin_da = -sin_da;
-				if (!isInside) sin_da = -sin_da;
+				if (isRight) sin_da = -sin_da;
 				double a = sint;
 				sint = a * cos_da + cost * sin_da;
 				cost = cost * cos_da - a * sin_da;
 			}
 		}
 		// На втором шаге мы только начинаем прощупывать окрестности
-		else if(count == 1)
+		else if (count == 1)
 		{
 			// Поворачиваем на da и на следующем шаге увидим как изменились радиусы
 			double cos_da = sqrt(1 - sinda * sinda);
@@ -455,6 +560,30 @@ double mcTransportTube3D::getSurfaceR(int idx, const geomVector3D& pc) const
 	// Вычисляем точку поверхности при координате pc.Z в секущей плоскости.
 	auto ps = c0 + ((c1 - c0) * ((pc.z() - c0.z()) / (c1.z() - c0.z())));
 	return ps.lengthXY();
+}
+
+double mcTransportTube3D::getSurfaceRCut(int idx, const geomVector3D& pc) const
+{
+	auto& s = segments_->at(idx);
+	auto& s1 = segments_->at(idx - 1);
+	// Две точки пересечения торцевых кругов с найденной плоскостью. 
+	geomVector3D c0 = (s.NT ^ pc) ^ s.NT;
+	c0.normalize();
+	c0 = c0 * s.R;
+	geomVector3D c1 = (s.NT1 ^ (pc - geomVector3D(0, 0, s.D))) ^ s.NT1;
+	c1.normalize();
+	c1 = geomVector3D(0, 0, s.D) + (c1 * s1.R);
+
+	if (pc.z() < c0.z())
+		return c0.lengthXY();
+	else if (pc.z() > c1.z())
+		return c1.lengthXY();
+	else
+	{
+		// Вычисляем точку поверхности при координате pc.Z в секущей плоскости.
+		auto ps = c0 + ((c1 - c0) * ((pc.z() - c0.z()) / (c1.z() - c0.z())));
+		return ps.lengthXY();
+	}
 }
 
 void mcTransportTube3D::dump(ostream& os) const
