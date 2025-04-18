@@ -52,6 +52,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("CERROBEND700");
 		media.addName("PB700ICRU");
 		media.addName("W700ICRU");
+		media.addName("TUNGSTEN");
 		media.addName("AL700ICRU");
 		media.addName("TI700ICRU");
 		media.addName("STEEL700ICRU");
@@ -249,6 +250,7 @@ int _tmain(int argc, _TCHAR* argv [])
 			{
 				mcMediumXE* m = (mcMediumXE*) mm[i];
 				m->transCutoff_elec = m->eventCutoff_elec;
+				m->transCutoff_phot = m->eventCutoff_phot;
 
 				// К этому моменту среда уже имеет значение, прочитанное в PEGS4.
 				// Мы не можем назначать значение меньше.

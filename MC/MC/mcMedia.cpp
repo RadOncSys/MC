@@ -1,4 +1,4 @@
-#include "mcMedia.h"
+﻿#include "mcMedia.h"
 #include "mcMediumXE.h"
 #include "mcMediumProton.h"
 #include "mcMediumNeutron.h"
@@ -16,11 +16,6 @@
 #include <filesystem>
 #include <ctype.h>
 
-// Флаги вывода служебной информации в процесе отладки
-// Вывод осуществляется в корневую папку расчета.
-// Имя файла зависит от типа вывода и назначается непосредственно в коде.
-// 0 - ничего не выводить
-// 1 - вывод сечений реакций протонов
 #define MEDIA_TRACE 0
 
 #if MEDIA_TRACE > 0
@@ -159,7 +154,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 	// ENDF
 	mcEndfDB endfdb;
 
-	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
+	// Р¦РёРєР» РїРѕ С„Р°Р№Р»Р°Рј СЃРµС‡РµРЅРёР№, РІ РєР°Р¶РґРѕРј РёР· РєРѕС‚РѕСЂС‹С… СЃРѕРґРµСЂР¶Р°С‚СЃСЏ РїРѕР»РЅС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ РѕРґРЅРѕРіРѕ РёР·РѕС‚РѕРїР°
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
@@ -173,7 +168,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 		if (std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
-		// Метку атомного элемента берем из имени файла.
+		// РњРµС‚РєСѓ Р°С‚РѕРјРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° Р±РµСЂРµРј РёР· РёРјРµРЅРё С„Р°Р№Р»Р°.
 		string elementName = std::string(&fname[2]);
 		string AtNum = elementName;
 		int Z = 0;
@@ -188,7 +183,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 			}
 		}
 
-		// База данных изотопа для протонов
+		// Р‘Р°Р·Р° РґР°РЅРЅС‹С… РёР·РѕС‚РѕРїР° РґР»СЏ РїСЂРѕС‚РѕРЅРѕРІ
 		if (Table.IsNecessary[Z - 1])
 		{
 			if(Table.IsLoad[Z - 1])
@@ -237,7 +232,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 		}
 	}
 
-	// Чтобы не мучиться с отладкой в случае проблем сразу проверяем чего не хватает.
+	// Р§С‚РѕР±С‹ РЅРµ РјСѓС‡РёС‚СЊСЃСЏ СЃ РѕС‚Р»Р°РґРєРѕР№ РІ СЃР»СѓС‡Р°Рµ РїСЂРѕР±Р»РµРј СЃСЂР°Р·Сѓ РїСЂРѕРІРµСЂСЏРµРј С‡РµРіРѕ РЅРµ С…РІР°С‚Р°РµС‚.
 	string info;
 	for (int i = 0; i < Table.IsLoad.size(); i++)
 	{
@@ -247,19 +242,19 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 	if(info.size() != 0)
 		throw std::exception(info.c_str());
 
-	// Подготавливаем среды для протонов по шаблону EGS
-	// и устанавливаем параметры среды в части взаимодействия с электронами (PSTAR)
+	// РџРѕРґРіРѕС‚Р°РІР»РёРІР°РµРј СЃСЂРµРґС‹ РґР»СЏ РїСЂРѕС‚РѕРЅРѕРІ РїРѕ С€Р°Р±Р»РѕРЅСѓ EGS
+	// Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїР°СЂР°РјРµС‚СЂС‹ СЃСЂРµРґС‹ РІ С‡Р°СЃС‚Рё РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ СЃ СЌР»РµРєС‚СЂРѕРЅР°РјРё (PSTAR)
 	if (!protons_.empty())
 		throw std::exception("Proton crossectons already initialized");
 	for (int i = 0; i < xes_.size(); i++)
 	{
-		// Конструктор по шаблону EGS устанавливает и копию элементного состава среды
+		// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РїРѕ С€Р°Р±Р»РѕРЅСѓ EGS СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Рё РєРѕРїРёСЋ СЌР»РµРјРµРЅС‚РЅРѕРіРѕ СЃРѕСЃС‚Р°РІР° СЃСЂРµРґС‹
 		auto m = new mcMediumProton(*xes_[i]);
 
-		// Тормозные способности по базе данных PSTAR
+		// РўРѕСЂРјРѕР·РЅС‹Рµ СЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё РїРѕ Р±Р°Р·Рµ РґР°РЅРЅС‹С… PSTAR
 		m->SetEnergyLoses(pstardb);
 
-		// Упругие и неупругие рассеяния из базы данных ENDF для протонов
+		// РЈРїСЂСѓРіРёРµ Рё РЅРµСѓРїСЂСѓРіРёРµ СЂР°СЃСЃРµСЏРЅРёСЏ РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С… ENDF РґР»СЏ РїСЂРѕС‚РѕРЅРѕРІ
 		m->SetNuclearCrossSections(endfdb);
 		
 		m->status_ = mcMedium::LOADED;
@@ -279,7 +274,7 @@ void mcMedia::initNeutronFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		neutrons_.push_back(new mcMediumNeutron());
 
-	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
+	// Р§С‚РµРЅРёРµ РґР°РЅРЅС‹С… - С‡Р°СЃС‚СЊ РІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РїРѕР»РЅРѕСЃС‚СЊСЋ Р°РЅР°Р»РѕРіРёС‡РЅР° XA, С‚РѕР»СЊРєРѕ РґРѕР±Р°РІР»РµРЅР° РїСЂРѕРІРµСЂРєР° РІРµСЂСЃРёРё
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -289,13 +284,13 @@ void mcMedia::initNeutronFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// Проверяем, нужна ли данная среда для загрузки?
+			// РџСЂРѕРІРµСЂСЏРµРј, РЅСѓР¶РЅР° Р»Рё РґР°РЅРЅР°СЏ СЃСЂРµРґР° РґР»СЏ Р·Р°РіСЂСѓР·РєРё?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// дополнительно проверяем версию input file VER=0.0.0
+				// РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ РїСЂРѕРІРµСЂСЏРµРј РІРµСЂСЃРёСЋ input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -304,15 +299,15 @@ void mcMedia::initNeutronFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Neutron media data version"); 
-					//в принципе данные могут быть дальше в этом же файле в другой версии, 
-					// так что просто не считываем данные
+					//РІ РїСЂРёРЅС†РёРїРµ РґР°РЅРЅС‹Рµ РјРѕРіСѓС‚ Р±С‹С‚СЊ РґР°Р»СЊС€Рµ РІ СЌС‚РѕРј Р¶Рµ С„Р°Р№Р»Рµ РІ РґСЂСѓРіРѕР№ РІРµСЂСЃРёРё, 
+					// С‚Р°Рє С‡С‚Рѕ РїСЂРѕСЃС‚Рѕ РЅРµ СЃС‡РёС‚С‹РІР°РµРј РґР°РЅРЅС‹Рµ
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// Проверяем, все ли среды загружены
+	// РџСЂРѕРІРµСЂСЏРµРј, РІСЃРµ Р»Рё СЃСЂРµРґС‹ Р·Р°РіСЂСѓР¶РµРЅС‹
 	string errmedia;
 	for (int i = 0; i < (int)neutrons_.size(); i++)
 	{
@@ -341,7 +336,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 	// ENDF
 	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfN>>>();
 
-	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
+	// Р¦РёРєР» РїРѕ С„Р°Р№Р»Р°Рј СЃРµС‡РµРЅРёР№, РІ РєР°Р¶РґРѕРј РёР· РєРѕС‚РѕСЂС‹С… СЃРѕРґРµСЂР¶Р°С‚СЃСЏ РїРѕР»РЅС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ РѕРґРЅРѕРіРѕ РёР·РѕС‚РѕРїР°
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
@@ -355,7 +350,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 		if (std::toupper(fname[0]) != 'N' || ext != ".DAT")
 			continue;
 
-		// Метку атомного элемента берем из имени файла.
+		// РњРµС‚РєСѓ Р°С‚РѕРјРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° Р±РµСЂРµРј РёР· РёРјРµРЅРё С„Р°Р№Р»Р°.
 		string elementName = std::string(&fname[2]);
 		string AtNum = elementName;
 		int Z;
@@ -370,7 +365,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 			}
 		}
 
-		// База данных изотопа
+		// Р‘Р°Р·Р° РґР°РЅРЅС‹С… РёР·РѕС‚РѕРїР°
 		//mcCSNuclear csForElement;
 		auto csForElement = std::make_shared<mcEndfN>();
 		if (Table.IsNecessary[Z - 1])
