@@ -62,6 +62,7 @@
 #include "../../mc/mc/mcSourceAcceleratedBeam.h"
 #include "../../mc/mc/mcClinicalElectronBeam.h"
 #include "../../mc/mc/mcSourceProtonRF.h"
+#include "../../mc/mc/mcGaussSource.h"
 
 #include "../../mc/mc/mcMedia.h"
 
@@ -762,6 +763,7 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 					y2 = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"z2") == 0)
 					z2 = _wtof(n1.Text.c_str());
+				
 			}
 			if (node.Nodes.size() > 0)
 				isSizeSetFound = true;
@@ -978,6 +980,7 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	double x0 = 0, y0 = 0, z0 = 0;
 	double vx = 0, vy = 0, vz = 0;
 	bool isStartInside = false;
+	double spreadenergy = 0, sigmax = 0, sigmay = 0, sigmathetax = 0, sigmathetay = 0;
 
 	// Специфичные для модуля параметры.
 	// Для простоты перечисляем все возможные варианты.
@@ -1116,6 +1119,16 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 					r0 = _wtof(n1.Text.c_str());
 				else if (_wcsicmp(n1.Name.c_str(), L"sad") == 0)
 					sad = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"spreadenergy") == 0)
+					spreadenergy = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"sigmax") == 0)
+					sigmax = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"sigmay") == 0)
+					sigmay = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"anglesigmax") == 0)
+					sigmathetax = _wtof(n1.Text.c_str());
+				else if (_wcsicmp(n1.Name.c_str(), L"anglesigmay") == 0)
+					sigmathetay = _wtof(n1.Text.c_str());
 			}
 			if (node.Nodes.size() > 0)
 				isShapeDefined = true;
@@ -1254,6 +1267,10 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		else if (_wcsicmp(srcType.c_str(), L"uniform_cone") == 0)
 		{
 			source = new mcSourceUniformCone(srcName.c_str(), nThreads, particleType, energy, z0, r0, sad);
+		}
+		else if (_wcsicmp(srcType.c_str(), L"gauss_ellipse") == 0)
+		{
+			source = new mcGaussSource(srcName.c_str(), nThreads, particleType, energy, spreadenergy, z0, sigmax, sigmay,sigmathetax,sigmathetay);
 		}
 		else
 			throw exception("Unknown radiation source type");

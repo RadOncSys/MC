@@ -63,6 +63,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("POLYETH700ICRU");
 		media.addName("YELBRASS700ICRU");
 		media.addName("GRIDFILTER");
+		media.addName("BE700ICRU");
 
 		//media.addName("C60");
 		//media.addName("NAI700ICRU");
@@ -70,7 +71,7 @@ int _tmain(int argc, _TCHAR* argv [])
 		//media.addName("170C700ICRU");
 		//media.addName("226C700ICRU");
 
-		//media.addName("BE700ICRU");
+		
 
 		//media.addName("TA700ICRU");
 		//media.addName("AU700ICRU");

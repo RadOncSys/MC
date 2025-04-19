@@ -164,6 +164,7 @@
     <ClInclude Include="mcETransportConvexPolygonCircle.h" />
     <ClInclude Include="mcETransportSphere.h" />
     <ClInclude Include="mcETransportTrap.h" />
+    <ClInclude Include="mcGaussSource.h" />
     <ClInclude Include="mcGeometry.h" />
     <ClInclude Include="mcGeomRectSide.h" />
     <ClInclude Include="mcGeomShape.h" />
@@ -276,6 +277,7 @@
     <ClCompile Include="mcETransportConvexPolygonCircle.cpp" />
     <ClCompile Include="mcETransportSphere.cpp" />
     <ClCompile Include="mcETransportTrap.cpp" />
+    <ClCompile Include="mcGaussSource.cpp" />
     <ClCompile Include="mcGeometry.cpp" />
     <ClCompile Include="mcGeomRectSide.cpp" />
     <ClCompile Include="mcGeomShape.cpp" />

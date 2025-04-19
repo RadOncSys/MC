@@ -308,6 +308,9 @@
     <ClCompile Include="mcSourceProtonRF.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="mcGaussSource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcDefs.h" />
@@ -626,6 +629,9 @@
       <Filter>Transport</Filter>
     </ClInclude>
     <ClInclude Include="mcSourceProtonRF.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcGaussSource.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
