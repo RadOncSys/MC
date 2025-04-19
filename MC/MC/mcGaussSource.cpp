@@ -37,8 +37,8 @@ void mcGaussSource::sample(mcParticle& p, mcThread* thread)
 		p.p.set(0, 0, z_);
 	else
 	{
-		double x = s * sigmax_ * mcSamplers::SampleGauss2D(rng.rnd()); // Розыгрыш места рождения частиц в эллипме на оси Х
-		double y = s * sigmay_ * mcSamplers::SampleGauss2D(rng.rnd()); // Розыгрыш  места рождения частиц в эллипсе по оси y
+		double x =  sigmax_ * mcSamplers::SampleGaussBoxMuller(rng.rnd(), rng.rnd()); // Розыгрыш места рождения частиц в эллипме на оси Х
+		double y =  sigmay_ * mcSamplers::SampleGaussBoxMuller(rng.rnd(), rng.rnd()); // Розыгрыш  места рождения частиц в эллипсе по оси y
 		p.p.set(x, y, z_);
 		//p.p.set(0, 0, z_);
 	}

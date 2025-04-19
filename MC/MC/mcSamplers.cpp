@@ -44,6 +44,12 @@ double mcSamplers::SampleGauss2D(double rnd)
 	return s * ((rnd < 0.5) ? -sqrt(-log(rnd * 2.0)) : sqrt(-log((1.0 - rnd) * 2.0)));
 }
 
+double mcSamplers::SampleGaussBoxMuller(double rnd1, double rnd2)
+{
+	const double s = sqrt(2.0);
+	return  ((rnd1 < 0.5) ? -(sqrt(-2*log(rnd1)))*cos(2*PI*rnd2) : (sqrt(-2 * log(rnd1))) * cos(2 * PI * rnd2));
+}
+
 double mcSamplers::SampleExponent2D(double C)
 {
 	double sign = 1.0;
