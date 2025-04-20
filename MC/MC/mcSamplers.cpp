@@ -1,7 +1,5 @@
 #include "mcSamplers.h"
-#include "mcDefs.h"
-#include <float.h>
-#include <math.h>
+
 
 double mcSamplers::SamplePrism(double rnd)
 {
@@ -44,10 +42,24 @@ double mcSamplers::SampleGauss2D(double rnd)
 	return s * ((rnd < 0.5) ? -sqrt(-log(rnd * 2.0)) : sqrt(-log((1.0 - rnd) * 2.0)));
 }
 
-double mcSamplers::SampleGaussBoxMuller(double rnd1, double rnd2)
+std::pair<double, double> mcSamplers::SampleGaussBoxMuller(double rnd1, double rnd2)
 {
-	const double s = sqrt(2.0);
-	return  ((rnd1 < 0.5) ? -(sqrt(-2*log(rnd1)))*cos(2*PI*rnd2) : (sqrt(-2 * log(rnd1))) * cos(2 * PI * rnd2));
+	const double factor = sqrt(-2 * log(rnd1));
+	double val1 = factor * cos(2 * PI * rnd2);
+	double val2 = factor * sin(2 * PI * rnd2);
+
+	if (rnd1 < 0.5) 
+	{
+		val2 = -val2;
+		
+	}
+
+	if (rnd2 < 0.5)
+	{
+		val1 = -val1;
+	}
+
+	return { val1, val2 };
 }
 
 double mcSamplers::SampleExponent2D(double C)

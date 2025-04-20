@@ -37,16 +37,17 @@ void mcGaussSource::sample(mcParticle& p, mcThread* thread)
 		p.p.set(0, 0, z_);
 	else
 	{
-		double x =  sigmax_ * mcSamplers::SampleGaussBoxMuller(rng.rnd(), rng.rnd()); // Розыгрыш места рождения частиц в эллипме на оси Х
-		double y =  sigmay_ * mcSamplers::SampleGaussBoxMuller(rng.rnd(), rng.rnd()); // Розыгрыш  места рождения частиц в эллипсе по оси y
+		std::pair<double, double> gauss = mcSamplers::SampleGaussBoxMuller(rng.rnd(), rng.rnd());
+		double x = sigmax_ * gauss.first; // Розыгрыш места рождения частиц в эллипме на оси Х
+		double y =  sigmay_ * gauss.second; // Розыгрыш  места рождения частиц в эллипсе по оси y
 		p.p.set(x, y, z_);
 		//p.p.set(0, 0, z_);
 	}
 	p.plast = p.p;
 
-	
-		double phix = s * sigmathetax_ * mcSamplers::SampleGauss2D(rng.rnd());
-		double phiy = s * sigmathetay_ * mcSamplers::SampleGauss2D(rng.rnd());
+		std::pair<double, double> gauss = mcSamplers::SampleGaussBoxMuller(rng.rnd(), rng.rnd());
+		double phix = s * sigmathetax_ * gauss.first;
+		double phiy = s * sigmathetay_ * gauss.second;
 		p.u.set(sin(phix), sin(phiy) , sqrt(1- sin(phix)*sin(phix)- sin(phiy)*sin(phiy)));
 		//p.u.set(0, 0, 1);
 	

@@ -3,7 +3,10 @@
 // Author: [2005-2017] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 #pragma once
-
+#include "mcDefs.h"
+#include <float.h>
+#include <math.h>
+#include <utility>
 // Набор полезных саплеров различных функций.
 // На входе всех генераторов всех функций случайные числа в интервале [0, 1].
 class mcSamplers
@@ -23,7 +26,7 @@ public:
 	static double SampleGauss2D(double rnd);
 
 	// Генератаор гаусовского распределения алгоритмом Бокса-Мюллера.
-	static double SampleGaussBoxMuller(double rnd1, double rnd2);
+	static std::pair<double, double>  SampleGaussBoxMuller(double rnd1, double rnd2);
 
 	// Самплинг радиуса из экспоненциального распределения интенсивности при 
 	// единичном показателе экспоненты.
