@@ -52,7 +52,6 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("CERROBEND700");
 		media.addName("PB700ICRU");
 		media.addName("W700ICRU");
-		media.addName("TUNGSTEN");
 		media.addName("AL700ICRU");
 		media.addName("TI700ICRU");
 		media.addName("STEEL700ICRU");
@@ -62,6 +61,10 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("AG700ICRU");
 		media.addName("PMMA700ICRU");
 		media.addName("POLYETH700ICRU");
+
+		media.addName("AIR521ICRU");
+		media.addName("H2O521ICRU");
+		media.addName("W521ICRU");
 
 		//media.addName("C60");
 		//media.addName("NAI700ICRU");

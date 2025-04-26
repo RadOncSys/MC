@@ -43,6 +43,13 @@ void mcBrachySource::sample(mcParticle& p, mcThread* thread)
 	{
 		p.ke = rng.rnd() < 0.5 ? 1.33 : 1.17;
 	}
+	else if (isotope_ == mc_isotope_t::E050)
+	{
+		// Электронный пучок 50 КэВ
+		p.t = MCP_NEGATRON;
+		p.q = -1;
+		p.ke = 0.050;
+	}
 	else
 		throw exception("mcBrachySource; Isotope type not implemeted");
 

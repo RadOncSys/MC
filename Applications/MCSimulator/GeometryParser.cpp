@@ -1015,7 +1015,8 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 				else if (_wcsicmp(n1.Name.c_str(), L"isotope") == 0)
 				{
 					isotope = _wcsicmp(n1.Text.c_str(), L"C60") == 0 ? mc_isotope_t::C60 :
-						_wcsicmp(n1.Text.c_str(), L"IR192") == 0 ? mc_isotope_t::IR192 : mc_isotope_t::UNKNOWN;
+							  _wcsicmp(n1.Text.c_str(), L"IR192") == 0 ? mc_isotope_t::IR192 :
+							  _wcsicmp(n1.Text.c_str(), L"E050") == 0 ? mc_isotope_t::E050 : mc_isotope_t::UNKNOWN;
 				}
 			}
 			if (node.Nodes.size() > 0)
