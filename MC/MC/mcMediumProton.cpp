@@ -4,32 +4,32 @@
 #include "mcPhysicsCommon.h"
 #include "mcEndfP.h"
 
-//РќРµРѕР±С…РѕРґРёРјРѕ Р·Р°РґР°С‚СЊ РєРѕРЅРєСЂРµС‚РЅСѓСЋ С„РѕСЂРјСѓР»Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј СЃ РјР°РєСЂРѕСЃРѕРј, РЅР°РїСЂРёРјРµСЂ:
+//Необходимо задать конкретную формулу соответствующим с макросом, например:
 #ifndef InverseRadiationLength
 #define InverseRadiationLength InverseRadiationLength_DahlApproximation
 #endif InverseRadiationLength
 
-// Р’РµР»РёС‡РёРЅР° РѕР±СЂР°С‚РЅР°СЏ СЂР°РґРёР°С†РёРѕРЅРЅРѕР№ РґР»РёРЅРµ РІРµС‰РµСЃС‚РІР° 
-// c Р°С‚РѕРјРЅРѕР№ РјР°СЃСЃРѕР№ A [Рі/РјРѕР»СЊ],
-// Рё Р·Р°СЂСЏРґРѕРј СЏРґСЂР° (Р°С‚РѕРјРЅС‹Рј РЅРѕРјРµСЂРѕРј) Z (РІ РµРґРёРЅРёС†Р°С… Р·Р°СЂСЏРґР° СЌР»РµРєС‚СЂРѕРЅР°)
-// РІС‹С‡РёСЃР»РµРЅРЅР°СЏ РІ РїСЂРёР±Р»РёР¶РµРЅРёРё Dahl'a
+// Величина обратная радиационной длине вещества 
+// c атомной массой A [г/моль],
+// и зарядом ядра (атомным номером) Z (в единицах заряда электрона)
+// вычисленная в приближении Dahl'a
 // rpp-2006-book.pdf 27.4.1 p.264 (eq.27.22)
-// СЃРѕРІРїР°РґР°РµС‚ СЃ С„РѕСЂРјСѓР»РѕР№ Tsai'СЏ (27.20) СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ Р»СѓС‡С€Рµ 2.5%, Р·Р° РёСЃРєР»СЋС‡РµРЅРёРµРј РіРµР»РёСЏ (5%)
-// РІ 1/(g/cm^2)
+// совпадает с формулой Tsai'я (27.20) с точностью лучше 2.5%, за исключением гелия (5%)
+// в 1/(g/cm^2)
 double InverseRadiationLength_DahlApproximation(const double A, const double Z)
 {
 	return Z * (Z + 1) * log(287 / sqrt(Z)) / (716.4 * A);
 }
 
-// Р’РµР»РёС‡РёРЅР° РѕР±СЂР°С‚РЅР°СЏ СЂР°РґРёР°С†РёРѕРЅРЅРѕР№ РґР»РёРЅРµ РІРµС‰РµСЃС‚РІР° СЃРѕСЃС‚РѕСЏС‰РµРіРѕ РёР· n СЌР»РµРјРµРЅС‚РѕРІ.
-// Р”Р»СЏ i-РіРѕ СЌР»РµРјРµРЅС‚Р° 0<=i<n
-// w[i] - РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РјР°СЃСЃРѕРІС‹Р№(?) РІРµСЃ 
-// A[i] - Р°С‚РѕРјРЅР°СЏ РјР°СЃСЃР° A [Рі/РјРѕР»СЊ],
-// Z[i]	- Р·Р°СЂСЏРґ СЏРґСЂР° (Р°С‚РѕРјРЅС‹Р№ РЅРѕРјРµСЂ)
+// Величина обратная радиационной длине вещества состоящего из n элементов.
+// Для i-го элемента 0<=i<n
+// w[i] - относительный массовый(?) вес 
+// A[i] - атомная масса A [г/моль],
+// Z[i]	- заряд ядра (атомный номер)
 // rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
-// Р”Р»СЏ СЂР°СЃС‡С‘С‚Р° СЂР°РґРёР°С†РёРѕРЅРЅРѕР№ РґР»РёРЅС‹ РѕС‚РґРµР»СЊРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РІС‹Р·С‹РІР°РµС‚
-// InverseRadiationLength (РїСЂРёРЅСЏС‚РѕРµ РїСЂРёР±Р»РёР¶РµРЅРёРµ)
-// РІ 1/(g/cm^2)
+// Для расчёта радиационной длины отдельного элемента вызывает
+// InverseRadiationLength (принятое приближение)
+// в 1/(g/cm^2)
 double InverseRadiationLength(const double* A, const double* Z, const double* w, const int n)
 {
 	double s = 0;
@@ -40,7 +40,7 @@ double InverseRadiationLength(const double* A, const double* Z, const double* w,
 
 string CLEARFROMALPHA(string x)
 {
-	for (int i = (int)x.length() - 1; i >= 0 ; i--)
+	for (int i = (int)x.length() - 1; i >= 0; i--)
 		if (x[i] > '9')
 			x.erase(i, 1);
 	return x;
@@ -51,16 +51,16 @@ string CLEARFROMALPHA(string x)
 #define InverseRadiationLength InverseRadiationLength_DahlApproximation
 #endif InverseRadiationLength
 
-// Р’РѕР·РІСЂР°С‰Р°РµС‚ rms СЂР°РґРёСѓСЃ СЏРґСЂР° РІ С„Рј (1E-13 СЃРј)
-// СЃРј. Wilson, et al 1991 rp1257.pdf 4.5.2 (eq.4.84,4.85) СЃ РёСЃРїСЂР°РІР»РµРЅРёСЏРјРё:
-// РїСЂРµРґРїРѕР»Р°РіР°РµРј, С‡С‚Рѕ РІ С„РѕСЂРјСѓР»Рµ 4.84 РѕС€РёР±РєР° - Р»РёС€РЅРёР№ РєРѕСЂРµРЅСЊ
-// "РїСЂРёРІРµРґС‘РЅРЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ, РїСЂРµРґРїРѕР»Р°РіР°РµС‚, С‡С‚Рѕ СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ СЏРґРµСЂРЅРѕР№ РјР°С‚РµСЂРёРё, 
-// СЏРІР»СЏРµС‚СЃСЏ С„СѓРЅРєС†РёРµР№ Р“Р°СѓСЃСЃР°. РўР°РєРѕРµ РїСЂРµРґРїРѕР»РѕР¶РµРЅРёРµ РіРѕРґРёС‚СЃСЏ РґР»СЏ Р»С‘РіРєРёС… СЏРґРµСЂ (light-weight) 
-// Рё РјРµРЅРµРµ СѓРїРѕС‚СЂРµР±РёРјРѕ  РґР»СЏ At >> 20"
+// Возвращает rms радиус ядра в фм (1E-13 см)
+// см. Wilson, et al 1991 rp1257.pdf 4.5.2 (eq.4.84,4.85) с исправлениями:
+// предполагаем, что в формуле 4.84 ошибка - лишний корень
+// "приведённое выражение, предполагает, что распределение ядерной материи, 
+// является функцией Гаусса. Такое предположение годится для лёгких ядер (light-weight) 
+// и менее употребимо  для At >> 20"
 // [VK add 06.08]
 double	rmsNuclearRadius(int At)
 {
-	// СЏРґРµСЂРЅС‹Р№ С„РѕСЂРјС„Р°РєС‚РѕСЂ
+	// ядерный формфактор
 	double ac =
 		(At == 1) ? 0.84 :
 		(At == 2) ? 2.71 :
@@ -69,52 +69,52 @@ double	rmsNuclearRadius(int At)
 		((At >= 6) && (At <= 14)) ? 2.4 :
 		(0.82 * pow(At, 1.0 / 3.0) + 0.58);	// At>=16
 
-	// СЃРј С‚Р°РєР¶Рµ rpp-2006-book.pdf p.71
-	// РїСЂРѕС‚РѕРЅ Charge Radius = 0.875+-0.007 С„Рј
-	// РџСЂР°РІРґР° РЅРµ СЏСЃРЅРѕ, РїРѕС‡РµРјСѓ С‡РµСЂРµР· A, Р° РЅРµ С‡РµСЂРµР· Z Сѓ РЈРёР»СЊСЏРјСЃР° - СЃ РЅРµР№С‚СЂРѕРЅРѕРј РЅРµ СЃРѕР№РґС‘С‚СЃСЏ.
+	// см также rpp-2006-book.pdf p.71
+	// протон Charge Radius = 0.875+-0.007 фм
+	// Правда не ясно, почему через A, а не через Z у Уильямса - с нейтроном не сойдётся.
 
-	// РџСЂРµРґРїРѕР»Р°РіР°РµРј, С‡С‚Рѕ РІ С„РѕСЂРјСѓР»Рµ 4.84 РѕС€РёР±РєР° - Р»РёС€РЅРёР№ РєРѕСЂРµРЅСЊ
+	// Предполагаем, что в формуле 4.84 ошибка - лишний корень
 	return sqrt(SQUARE(ac) - 0.64);
 }
 
-// РРЎРџРћР›Р¬Р—РЈР•РњРђРЇ СЂРµР°Р»СЊРЅРѕ С„СѓРЅРєС†РёСЏ РІ 1-РѕР№ Р·Р°РєРѕРЅС‡РµРЅРЅРѕР№ РІРµСЂСЃРёРё
-// РџРѕР»РЅРѕРµ СЃРµС‡РµРЅРёРµ СЏРґРµСЂРЅС‹С… РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёР№ РїРѕ РјРѕРґРµР»Рё РўСЂРёРїР°С‚Рё РґР»СЏ Р»С‘РіРєРёС… СЃРёСЃС‚РµРј
-// Р РµР·СѓР»СЊС‚Р°С‚ СЃРј2.
-// Ap, Zp - Р°С‚РѕРјРЅС‹Р№ РЅРѕРјРµСЂ Рё Р·Р°СЂСЏРґ РЅР°Р»РµС‚Р°СЋС‰РµР№ С‡Р°СЃС‚РёС†С‹ (СЏРґСЂР°)
-// At, Zt - Р°С‚РѕРјРЅС‹Р№ РЅРѕРјРµСЂ Рё Р·Р°СЂСЏРґ СЏРґСЂР°-РјРёС€РµРЅРё
-// KE - РєРёРЅРµС‚РёС‡РµСЃРєР°СЏ СЌРЅРµСЂРіРёСЏ РЅР°Р»РµС‚Р°СЋС‰РµР№ С‡Р°СЃС‚РёС†С‹ (СЏРґСЂР°) РІ РњСЌР’
-double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE) 
+// ИСПОЛЬЗУЕМАЯ реально функция в 1-ой законченной версии
+// Полное сечение ядерных взаимодействий по модели Трипати для лёгких систем
+// Результат см2.
+// Ap, Zp - атомный номер и заряд налетающей частицы (ядра)
+// At, Zt - атомный номер и заряд ядра-мишени
+// KE - кинетическая энергия налетающей частицы (ядра) в МэВ
+double sigmaTripathiLight(int Ap, int Zp, int At, int Zt, double KE)
 {
-	double r0 = 100.0 * 1.1E-15; // РІ СЃР°РЅС‚РёРјРµС‚СЂР°С…, С‡С‚РѕР±С‹ СЃСЂР°Р·Сѓ РІРѕР·РІСЂР°С‰Р°С‚СЊ СЂРµР·. РІ СЃРј2
+	double r0 = 100.0 * 1.1E-15; // в сантиметрах, чтобы сразу возвращать рез. в см2
 	double Z3 = 1.0 / 3.0;
 	double Ap3 = pow(Ap, Z3);
 	double At3 = pow(At, Z3);
 	double Apt3 = Ap3 + At3;
-	double Ecm = ECenterOfMass(At * PMASS, Ap * PMASS, Ap * PMASS + KE); // РїСЂРёР±Р»РёР¶С‘РЅРЅРѕРµ РІС‹С‡РёСЃР»РµРЅРёРµ РјР°СЃСЃ
+	double Ecm = ECenterOfMass(At * PMASS, Ap * PMASS, Ap * PMASS + KE); // приближённое вычисление масс
 	double Ecm3 = pow(Ecm, Z3);
 	double SL = 1.2 + 1.6 * (1 - exp(-KE / 15.0));
-	double X1 = 2.83 - 3.1E-2 * At + 1.7E-4 * SQUARE(At); // РґР»СЏ РїСЂРѕС‚РѕРЅРѕРІ
+	double X1 = 2.83 - 3.1E-2 * At + 1.7E-4 * SQUARE(At); // для протонов
 	double Xm = 1.0 - X1 * exp(-KE / (X1 * SL));
 	double D = 1.85 + 0.16 / (1.0 + exp((500.0 - KE) / 200.0));
-	double T1 = 18; // РґР»СЏ РїСЂРѕС‚РѕРЅРѕРІ, С…РѕС‚СЏ РµСЃС‚СЊ РїРѕРґРѕР·СЂРµРЅРёРµ, С‡С‚Рѕ 18 
-	double CE = D * (1.0 - exp(-KE / T1)) - 0.292 * exp(-KE / 792.0) * cos(0.229 * pow(KE, 0.453));// Р±С‹Р»Рѕ РѕС€РёР±РѕС‡РЅРѕ 0.291,
+	double T1 = 18; // для протонов, хотя есть подозрение, что 18
+	double CE = D * (1.0 - exp(-KE / T1)) - 0.292 * exp(-KE / 792.0) * cos(0.229 * pow(KE, 0.453));// было ошибочно 0.291,
 	double S = Ap3 * At3 / Apt3;
 	double deltaE = (1.85 + 0.16 / Ecm3) * S - CE + 0.91 * (At - 2 * Zt) * Zp / (At * Ap);
-	//double rTrms	= At3;//1.3*At3; // root mean square radius in fm (РїРѕ Р°РЅР°Р»РѕРіРёРё СЃ С„. РЁРµРЅР°)
-	//double rPrms	= Ap3;//1.3*Ap3; // РјРѕСЏ Р°РїРїСЂРѕРєСЃРёРјР°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ Рё РїСЂРµРґРїРѕР»РѕР¶РµРЅРёРµ Рѕ РµРґРёРЅРёС†Р°С…
+	//double rTrms	= At3;//1.3*At3; // root mean square radius in fm (по аналогии с ф. Шена)
+	//double rPrms	= Ap3;//1.3*Ap3; // моя аппроксимация значений и предположение о единицах
 	double rTrms = rmsNuclearRadius(At); // root mean square radius in fm 
-	double rPrms = rmsNuclearRadius(Ap); // Р°РїРїСЂРѕРєСЃРёРјР°С†РёСЏ Willson et al. 1991 [VK add 06.08]
+	double rPrms = rmsNuclearRadius(Ap); // аппроксимация Willson et al. 1991 [VK add 06.08]
 	double rT = 1.29 * rTrms;
 	double rP = 1.29 * rPrms;
 	double R = rP + rT + 1.2 * (Apt3) / Ecm3;
 	double B = 1.44 * Zp * Zt / R;
 	double RC =
-		(At == 1 && Zt == 1) ? 7.0 : // p+p - РјРѕС‘ РїСЂРµРґРїРѕР»РѕР¶РµРЅРёРµ - Р»РёРЅРµР№РЅР°СЏ СЌРєСЃС‚Р°СЂРїРѕР»СЏС†РёСЏ. Р•СЃР»Рё СЌС‚Рѕ РІСЃС‘ РІРѕРѕР±С‰Рµ РїСЂРёРјРµРЅРёРјРѕ РґР»СЏ pp
+		(At == 1 && Zt == 1) ? 7.0 : // p+p - моё предположение - линейная экстарполяция. Если это всё вообще применимо для pp
 		(At == 2 && Zt == 1) ? 13.5 : // p+d
 		(At == 3 && Zt == 2) ? 21.0 : // p+3He
 		(At == 4 && Zt == 2) ? 27.0 : // p+4He
 		(At == 6 && Zt == 3) ? 2.2 : // p+4He
-		1.0; // РїРѕ Р°РЅР°Р»РѕРіРёРё СЃ РґСЂСѓРіРёРјРё С„РѕСЂРјСѓР»Р°РјРё РіРґРµ РЅРµС‚ СЌС‚РѕРіРѕ РјРЅРѕР¶РёС‚РµР»СЏ Рё РѕР±С‰РµР№ С‚РµРЅРґРµРЅС†РёРµР№
+		1.0; // по аналогии с другими формулами где нет этого множителя и общей тенденцией
 	double fff = r0 * (Apt3 + deltaE);
 	double sigmaTL = PI * SQUARE(fff) * (1 - RC * B / Ecm) * Xm;
 	sigmaTL = (sigmaTL > 0.0) ? sigmaTL : 0.0;
@@ -142,10 +142,10 @@ double sigmaENDF(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF)
 		}
 	}
 	if (!isFound)
-		//return SIGMA;	//Р•СЃР»Рё РЅСѓРєР»РёРґ РЅРµ РЅР°Р№РґРµРЅ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С… ENDF РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 0
+		//return SIGMA;	//Если нуклид не найден в базе данных ENDF возвращается 0
 		throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
 	if (ENDF->at(i)->NuclearCrossSections.isEmpty)
-		return SIGMA;	//Р•СЃР»Рё РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ MF=3 MT=5 РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 0
+		return SIGMA;	//Если нет данных по MF=3 MT=5 возвращается 0
 	if (kE <= ENDF->at(i)->NuclearCrossSections.Energies[0])
 		return SIGMA;
 	else
@@ -208,10 +208,10 @@ double mcMediumProton::microsigmaforelement(int A, int Z, double kE) const
 		}
 	}
 	if (!isFound)
-		return SIGMA;	//Р•СЃР»Рё РЅСѓРєР»РёРґ РЅРµ РЅР°Р№РґРµРЅ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С… ENDF РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 0
+		return SIGMA;	//Если нуклид не найден в базе данных ENDF возвращается 0
 	//throw exception((string("Nucleus with ID: ") + elName + string(" was not found.")).c_str());
-	if (ENDFdata->at(i)->NuclearCrossSections.isEmpty)
-		return SIGMA;	//Р•СЃР»Рё РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ MF=3 MT=5 РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 0
+	if (ENDFdata[i].NuclearCrossSections.isEmpty)
+		return SIGMA;	//Если нет данных по MF=3 MT=5 возвращается 0
 	if (kE <= ENDFdata->at(i)->NuclearCrossSections.Energies[0])
 		return SIGMA;
 	SIGMA = ENDFdata->at(i)->NuclearCrossSections.get_value(kE);
@@ -271,7 +271,7 @@ void mcMediumProton::SetEnergyLoses(const mcPStar& starDB)
 		double log_e0 = (idx - iLogKE0_proto) / iLogKE1_proto;
 		double log_e1 = (idx + 1 - iLogKE0_proto) / iLogKE1_proto;
 		dedx1_proto[idx] = (crs[idx + 1] - crs[idx]) / (log_e1 - log_e0);
-		dedx0_proto[idx] = crs[idx] -log_e0 * dedx1_proto[idx];
+		dedx0_proto[idx] = crs[idx] - log_e0 * dedx1_proto[idx];
 	}
 
 	// Р”Р°РЅРЅС‹Рµ Р·Р°РіСЂСѓР·РёР»Рё, РЅРѕ РЅР°РґРѕ РµС‰С‘ Рё СЂР°СЃС‡РёС‚Р°С‚СЊ РЅРµРґРѕСЃС‚Р°СЋС‰РёРµ
@@ -376,16 +376,16 @@ void mcMediumProton::SetNuclearCrossSections(const mcEndfDB& endfdb)
 }
 
 //--------------------------------
-// Р“РµРЅРµСЂР°С†РёСЏ РґР°РЅРЅС‹С… (С„РёР·РёРєР°!)
+// Генерация данных (физика!)
 //--------------------------------
 
 //----------------------------------------------------------------------------------
-// РџР°СЂР°РјРµС‚СЂС‹ СЃС‚СЂР°РіРіР»РёРЅРіР° (СЂР°Р·Р±СЂРѕСЃР°) dE/dx РЅР° РЅРµРєРѕС‚РѕСЂРѕРј РїСѓС‚Рё РІ Р“Р°СѓСЃСЃРѕРІРѕРј РїСЂРёР±Р»РёР¶РµРЅРёРё
+// Параметры страгглинга (разброса) dE/dx на некотором пути в Гауссовом приближении
 //----------------------------------------------------------------------------------
 
-// РіРµРЅРµСЂРёСЂСѓРµС‚ РїРѕСЃС‚РѕСЏРЅРЅСѓСЋ (РїРѕ СЌРЅРµСЂРіРёРё Рё РїСѓС‚Рё) С‡Р°СЃС‚СЊ РІР°СЂРёР°С†РёРё Р“Р°СѓСЃСЃРѕРІР° РїСЂРёР±Р»РёР¶РµРЅРёСЏ СЂР°Р·Р±СЂРѕСЃР° dE/dx. 
-// С‚.Рµ. {sigma^2 of dE/dx} / [path *  (1-(totalE/Mass)^2)]
-// РёСЃС…РѕРґРЅР°СЏ С„РѕСЂРјСѓР»Р° РІР·СЏС‚С‹ РёР· РґРёСЃСЃРµСЂС‚Р°С†РёРё Рќ.Рњ.РЎРѕР±РѕР»РµРІСЃРєРѕРіРѕ
+// генерирует постоянную (по энергии и пути) часть вариации Гауссова приближения разброса dE/dx. 
+// т.е. {sigma^2 of dE/dx} / [path *  (1-(totalE/Mass)^2)]
+// исходная формула взяты из диссертации Н.М.Соболевского
 double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 {
 	//(sigma^2 of dE/dx) 
@@ -396,8 +396,8 @@ double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 	// = {this function return}	* {path} * {1+(totalE/Mass)^2}
 	// {this function return} = const * f3(medium) = {0.3*(EMASS)^2} * {density*SUMi(w[i]Z[i]/A[i])
 
-	// СѓС‡РёС‚С‹РІР°РµРј, С‡С‚Рѕ Wi=Ni/A
-	// Р·Р°РІРёСЃРёРјР°СЏ РѕС‚ СЃРѕСЃС‚Р°РІР° СЃСЂРµРґС‹ С‡Р°СЃС‚СЊ
+	// учитываем, что Wi=Ni/A
+	// зависимая от состава среды часть
 	dEdxStragglingGaussVarianceConstPart_ = 0.0;
 	for (vector<mcElement>::iterator el = elements_.begin(); el != elements_.end(); el++) {
 		dEdxStragglingGaussVarianceConstPart_ += el->partsByNumber * el->atomicNumber; // wi*Zi/Ai=ni*Zi/A
@@ -407,11 +407,11 @@ double mcMediumProton::gdEdxStragglingGaussVarianceConstPart()
 	return dEdxStragglingGaussVarianceConstPart_;
 };
 
-// РіРµРЅРµСЂРёСЂСѓРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµР»РёС‡РёРЅСѓ СЂР°РґРёР°С†РёРѕРЅРЅРѕР№ РґР»РёРЅС‹ СЃР»РѕР¶РЅРѕРіРѕ РІРµС‰РµСЃС‚РІР° 
+// генерирует и возвращает величину радиационной длины сложного вещества 
 // rpp-2006-book.pdf 27.4.1 p.263 (eq.27.23)
-// РґР»СЏ СЂР°СЃС‡С‘С‚Р° СЂР°РґРёР°С†РёРѕРЅРЅРѕР№ РґР»РёРЅС‹ РѕС‚РґРµР»СЊРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РІС‹Р·С‹РІР°РµС‚ InverseRadiationLength 
-// (РїСЂРёРЅСЏС‚РѕРµ РїСЂРёР±Р»РёР¶РµРЅРёРµ (РІ РІРµСЂСЃРёРё 2007 РіРѕРґР° СЌС‚Рѕ РїСЂРёР±Р»РёР¶РµРЅРёРµ Dahl'Р°))
-// РІ СЃРј!!!
+// для расчёта радиационной длины отдельного элемента вызывает InverseRadiationLength 
+// (принятое приближение (в версии 2007 года это приближение Dahl'а))
+// в см!!!
 double mcMediumProton::gRadiationLength()
 {
 	radLength = 0.0;
@@ -438,7 +438,7 @@ void mcMediumProton::dump(std::ostream& os) const
 	os << endl;
 	os << "Medium data:\t" << name_ << " density =\t" << density_ << endl;
 	os << "atomicSymbol\t atomicNumber\t atomicMass\t partsByNumber" << endl;
-	for(auto element : elements_)
+	for (auto element : elements_)
 		os << element.atomicSymbol << "\t" << element.atomicNumber << "\t" << element.atomicMass << "\t" << element.partsByNumber << endl;
 	os << endl;
 

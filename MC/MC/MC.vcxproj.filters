@@ -308,6 +308,12 @@
     <ClCompile Include="mcSourceProtonRF.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="mcEBTSourcePhsp.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="mcEBTScorePhsp.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcDefs.h" />
@@ -627,6 +633,12 @@
     </ClInclude>
     <ClInclude Include="mcSourceProtonRF.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcEBTSourcePhsp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="mcEBTScorePhsp.h">
+      <Filter>Score</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

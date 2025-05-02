@@ -65,6 +65,10 @@ int _tmain(int argc, _TCHAR* argv [])
 		media.addName("AIR521ICRU");
 		media.addName("H2O521ICRU");
 		media.addName("W521ICRU");
+		media.addName("XANODE");
+
+		//media.addName("GRIDFILTER");
+		media.addName("YELBRASS700ICRU");
 
 		//media.addName("C60");
 		//media.addName("NAI700ICRU");

@@ -159,6 +159,8 @@
     <ClInclude Include="mcClinicalElectronBeam.h" />
     <ClInclude Include="mcCSNuclear.h" />
     <ClInclude Include="mcDefs.h" />
+    <ClInclude Include="mcEBTScorePhsp.h" />
+    <ClInclude Include="mcEBTSourcePhsp.h" />
     <ClInclude Include="mcElement.h" />
     <ClInclude Include="mcEndfP.h" />
     <ClInclude Include="mcETransportConvexPolygonCircle.h" />
@@ -272,6 +274,8 @@
     <ClCompile Include="mcBrachySource.cpp" />
     <ClCompile Include="mcClinicalElectronBeam.cpp" />
     <ClCompile Include="mcCSNuclear.cpp" />
+    <ClCompile Include="mcEBTScorePhsp.cpp" />
+    <ClCompile Include="mcEBTSourcePhsp.cpp" />
     <ClCompile Include="mcEndfP.cpp" />
     <ClCompile Include="mcETransportConvexPolygonCircle.cpp" />
     <ClCompile Include="mcETransportSphere.cpp" />

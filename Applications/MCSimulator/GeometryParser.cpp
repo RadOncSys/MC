@@ -47,6 +47,7 @@
 #include "../../mc/mc/mcScoreSpectraFluenceSphere.h"
 #include "../../mc/mc/mcScoreParticleContainer.h"
 #include "../../mc/mc/mcScoreSphereFluence.h"
+#include "../../mc/mc/mcEBTScorePhsp.h"
 #include "../../mc/mc/mcScoreSphereMatrix.h"
 
 #include "../../mc/mc/mcSourceSimpleMono.h"
@@ -60,6 +61,7 @@
 #include "../../mc/mc/mcSourceUniformCone.h"
 #include "../../mc/mc/mcSourceSphereC60.h"
 #include "../../mc/mc/mcSourceAcceleratedBeam.h"
+#include "../../mc/mc/mcEBTSourcePhsp.h"
 #include "../../mc/mc/mcClinicalElectronBeam.h"
 #include "../../mc/mc/mcSourceProtonRF.h"
 
@@ -817,7 +819,8 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	}
 
 	if (!isSizeSetFound && _wcsicmp(scoreType.c_str(), L"fluence_sphere") != 0 &&
-		_wcsicmp(scoreType.c_str(), L"fluence_plane") != 0 && _wcsicmp(scoreType.c_str(), L"phsp") != 0)
+		_wcsicmp(scoreType.c_str(), L"fluence_plane") != 0 && _wcsicmp(scoreType.c_str(), L"phsp") != 0 && 
+		_wcsicmp(scoreType.c_str(), L"ebt_phsp") != 0)
 		throw exception(("Please, indicate score size for module: " + scoreModule).c_str());
 
 	if (_wcsicmp(scoreType.c_str(), L"phsp") == 0)
@@ -940,6 +943,12 @@ mcScore* GeometryParser::ParseScore(const XPRNode& item, int nThreads)
 	else if (_wcsicmp(scoreType.c_str(), L"fluence_sphere") == 0)
 	{
 		score = new mcScoreSphereFluence(scoreModule.c_str(), nThreads);
+	}
+
+	// Генератор контейнера частиц попадающих в объект
+	else if (_wcsicmp(scoreType.c_str(), L"ebt_phsp") == 0)
+	{
+		score = new mcEBTScorePhsp(scoreModule.c_str(), nThreads, outfile.c_str());
 	}
 
 	else if (_wcsicmp(scoreType.c_str(), L"matrix_sphere") == 0)
@@ -1128,7 +1137,9 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 	if (!isDirectionDefined)
 		throw exception("Please, indicate radiation source direction");
 
-	if (_wcsicmp(radTypeName.c_str(), L"phsp_photon") == 0 || _wcsicmp(radTypeName.c_str(), L"phsp_photon_direct") == 0)
+	if (_wcsicmp(radTypeName.c_str(), L"phsp_photon") == 0 ||
+		_wcsicmp(radTypeName.c_str(), L"phsp_photon_direct") == 0 || 
+		_wcsicmp(radTypeName.c_str(), L"ebt_phsp") == 0)
 	{
 		// Источник на основе модели фазового пространства (гистограм распределений частиц)
 		if (!isRadiationDefined)
@@ -1155,6 +1166,12 @@ mcSource* GeometryParser::ParseSource(const XPRNode& item, int nThreads)
 		{
 			source = new mcSourceModelRadialPhsp(srcName.c_str(), nThreads, z0);
 			((mcSourceModelRadialPhsp*)source)->readFromMemory(buf);
+		}
+		else if (_wcsicmp(radTypeName.c_str(), L"ebt_phsp") == 0)
+		{
+			auto src = new mcEBTSourcePhsp(srcName.c_str(), nThreads, z0);
+			src->readFromMemory(buf);
+			source = src;
 		}
 		else
 		{
