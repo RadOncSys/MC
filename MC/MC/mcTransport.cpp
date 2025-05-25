@@ -298,6 +298,21 @@ mc_move_result_t mcTransport::moveParticle(mcParticle* particle, double& step, d
 		return MCMR_DISCARGE;
 	}
 
+	// HACK!!
+	// Иногда частица может залипать на границе.
+	// Удалаяем такие частицы при превышении количества шагов
+	if (particle->stepCount_ > 1000)
+	{
+		//cout << "Non number position or direction in object: " << this->getName() << endl;
+		cout << "Too many steps - position in object: " << this->getName() << endl;
+		cout << "Position: " << particle->p;
+		cout << "Direction: " << particle->u;
+		particle->thread_->RemoveParticle();
+		return MCMR_DISCARGE;
+	}
+	else
+		particle->stepCount_++;
+
 	// Переместить частицу на поверхность, если она еще не внутри
 	step = DBL_MAX;
 	if (particle->region.idx_ == 0)

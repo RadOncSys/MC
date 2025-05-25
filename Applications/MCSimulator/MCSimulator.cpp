@@ -69,6 +69,7 @@ int _tmain(int argc, _TCHAR* argv [])
 
 		//media.addName("GRIDFILTER");
 		media.addName("YELBRASS700ICRU");
+		//media.addName("BE700ICRU");
 
 		//media.addName("C60");
 		//media.addName("NAI700ICRU");
@@ -325,6 +326,7 @@ int _tmain(int argc, _TCHAR* argv [])
 				for (int ii = 0; ii < nParticles; ii++)
 				{
 					source->sample(particle, &threads[0]);
+					particle.stepCount_ = 0;
 					energySource[0] += particle.ke * particle.weight;
 
 					if (startinside)
@@ -341,6 +343,7 @@ int _tmain(int argc, _TCHAR* argv [])
 					for (int ii = 0; ii < nParticles; ii++)
 					{
 						source->sample(particle, &threads[it]);
+						particle.stepCount_ = 0;
 						energySource[it] += particle.ke * particle.weight;
 
 						if (startinside)

@@ -15,6 +15,7 @@ mcParticle::mcParticle(void)
 	, regionBirth(0)
 	, regionFlags(0)
 	, exitSurface_(temb_shit_t::Undefined)
+	, stepCount_(0)
 {
 }
 
@@ -35,6 +36,7 @@ mcParticle::mcParticle(mc_particle_t pt, int pq, double pke, const geomVector3D&
 	, regionBirth(0)
 	, regionFlags(0)
 	, exitSurface_(temb_shit_t::Undefined)
+	, stepCount_(0)
 {
 }
 
@@ -57,6 +59,7 @@ mcParticle::mcParticle(const mcParticle& p)
 	, regionBirth(p.regionBirth)
 	, regionFlags(p.regionFlags)
 	, exitSurface_(p.exitSurface_)
+	, stepCount_(0)
 {
 }
 

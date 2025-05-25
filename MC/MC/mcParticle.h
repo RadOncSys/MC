@@ -76,4 +76,7 @@ public:
 	// функции вычисления расстояний учитывают необходимость установки данного флага.
 	enum temb_shit_t : short { Undefined = 0, External, Internal };
 	temb_shit_t exitSurface_;
+
+	// Счетчик количества шагов для борьбы с зацикливанием транспорта как правило на границе
+	int stepCount_;
 };
