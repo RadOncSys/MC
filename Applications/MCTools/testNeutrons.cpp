@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include "mcEndfP.h"
 #include <fstream>
 #include <filesystem>
@@ -7,12 +7,12 @@
 
 using namespace std;
 
-void testEndf() 
+void testNeutrons()
 {
-	const char* element = "O016";
-	std::string fname("../data/ENDFP/p-");
+	const char* element = "1H001";
+	std::string fname("../data/ENDFN/n-");
 	fname += element;
-	fname += ".tendl";
+	fname += ".dat";
 
 	mcEndfNP elementData;
 	elementData.Load(fname.c_str(), element);

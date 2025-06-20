@@ -127,6 +127,7 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	wstring geomType;
 	wstring geomName;
 	wstring geomMedium;
+	bool doFluence = false;
 	double densityRatio = 1.0;
 	double electron_cut = 0, photon_cut = 0;
 	double cr = 1.0, cg = 1.0, cb = 1.0, ct = 0.8;
@@ -178,6 +179,8 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 			geomMedium = node.Text;
 		else if (_wcsicmp(node.Name.c_str(), L"density") == 0)
 			densityRatio = _wtof(node.Text.c_str());
+		else if (_wcsicmp(node.Name.c_str(), L"trackfluence") == 0)
+			doFluence = _wcsicmp(node.Text.c_str(), L"true") == 0 ? true : false;
 
 		// Transport Cutoff
 		else if (_wcsicmp(node.Name.c_str(), L"transCutoff") == 0)
@@ -616,6 +619,7 @@ mcTransport* GeometryParser::ParseTransport(const XPRNode& geometry, const mcMed
 	{
 		t->transCutoff_elec = electron_cut;
 		t->transCutoff_phot = photon_cut;
+		t->setDoFluence(doFluence);
 
 		t->setMediaRef(media);
 		t->setName(XmlParseReaderBase::copyWStringToStlString(geomName.c_str()).c_str());

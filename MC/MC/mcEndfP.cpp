@@ -505,6 +505,7 @@ void mcEndfProduct::Load(std::istream& is)
 
 void mcEndfCrossSectionTable::dump(std::ostream& os) const
 {
+	if (npoints.size() == 0) return;
 	os << "NPoints = \t" << npoints[0] << endl;
 	os << "InterpolationType = \t" << interpolationType[0] << endl;
 	os << endl;
@@ -2829,7 +2830,7 @@ void mcEndfNP::dumpTotalCrossections(ostream& os) const
 			os << "Nucleous with:" << endl << "A = \t" << Products[i]->ZAP % 1000 << endl << "Z = \t" << Products[i]->ZAP / 1000 << endl << endl;
 		Products[i]->EANuclearCrossSections[0]->dump(os);	
 	}
-	double** a = Products[0]->EANuclearCrossSections[0]->playpar(rng1, 70000000, Products[0]->LAW);
+	//double** a = Products[0]->EANuclearCrossSections[0]->playpar(rng1, 70000000, Products[0]->LAW);
 }
 
 const mcEndfNP& mcEndfDB::GetDataForElement(int Z) const

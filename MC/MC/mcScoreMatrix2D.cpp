@@ -204,9 +204,9 @@ void mcScoreMatrix2D::dumpStatistic(ostream& os) const
 	mcScore::dumpStatistic(os);
 
 	if (dconverted_)
-		os << "Energy:" << endl;
-	else
 		os << "Dose:" << endl;
+	else
+		os << "Energy:" << endl;
 
 	os << "NX\tNZ\tX1\tY1\tZ1\tX2\tY2\tZ2" << endl;
 	os << nx << '\t' << nz << '\t' << xmin << '\t' << ymin << '\t' << zmin << '\t'

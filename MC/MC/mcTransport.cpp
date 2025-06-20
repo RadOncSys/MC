@@ -22,6 +22,7 @@ mcTransport::mcTransport()
 	, defmedidx_(0)
 	, defdensity_(1.0)
 	, stamp_(0)
+	, doFluence_(false)
 	, isMultiRegions_(false)
 {
 }
@@ -38,6 +39,7 @@ mcTransport::mcTransport(const geomVector3D& orgn, const geomVector3D& z, const 
 	, media_(nullptr)
 	, defmedidx_(0)
 	, defdensity_(1.0)
+	, doFluence_(false)
 	, isMultiRegions_(false)
 {
 	setPosition(orgn, z, x);
@@ -231,7 +233,7 @@ void mcTransport::simulate(mcThread* thread)
 			continue;
 		}
 
-		if (edep > 0 && t->score_ != nullptr)
+		if ((t->doFluence_ || edep > 0) && t->score_ != nullptr)
 			t->score_->ScoreLine(edep * weight, thread->id(), region, pt, point, (*pCurParticle)->p);
 
 		// ≈сли частица после израсходовани€ пути остаетс€ в транспорте, то разыгрываем взаимодействие.

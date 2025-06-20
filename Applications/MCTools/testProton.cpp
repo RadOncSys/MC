@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include "mcEndfP.h"
 #include <fstream>
 #include <filesystem>
@@ -32,8 +32,8 @@ void testproton() {
 		pars = elementData.Products[29]->EANuclearCrossSections[0]->playpar(rng, kE, elementData.Products[29]->LAW);
 		cout << pars[0][0] << "  " << pars[1][0] << "  ";// << pars[2][0] << endl;
 
-		// TODO: îò ôàíàðÿ ïîñòàâëåíû äâà ïàðàìåòðà òîëüêî ÷òîáû êîìïèëèðîâàëîñü.
-		// Ñìûñë íå ïîíÿòåí.
+		// TODO: Ð¾Ñ‚ Ñ„Ð°Ð½Ð°Ñ€Ñ Ð¿Ð¾ÑÑ‚Ð°Ð²Ð»ÐµÐ½Ñ‹ Ð´Ð²Ð° Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð° Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ñ‡Ñ‚Ð¾Ð±Ñ‹ ÐºÐ¾Ð¼Ð¿Ð¸Ð»Ð¸Ñ€Ð¾Ð²Ð°Ð»Ð¾ÑÑŒ.
+		// Ð¡Ð¼Ñ‹ÑÐ» Ð½Ðµ Ð¿Ð¾Ð½ÑÑ‚ÐµÐ½.
 		mu = elementData.Products[29]->EANuclearCrossSections[0]->playmu(kE, elementData.Products[29]->LAW, (int)pars[0][0], (int)pars[0][1], elementData.Products[29]->product_type, rng);
 
 		cout << mu;
@@ -108,7 +108,7 @@ void testproton() {
 				//double meantointeruct = 0;
 				//for (int i = 0; i < 1000000; i++)
 				//{
-				//	inteructDist.push_back(mcTransport::HowManyMFPs(rng) * lambda);				//ÇÀÄÀ×À ÂÀËÈÄÀÖÈÈ #1 äëÿ Âîäû - ðåøåíà
+				//	inteructDist.push_back(mcTransport::HowManyMFPs(rng) * lambda);				//Ð—ÐÐ”ÐÐ§Ð Ð’ÐÐ›Ð˜Ð”ÐÐ¦Ð˜Ð˜ #1 Ð´Ð»Ñ Ð’Ð¾Ð´Ñ‹ - Ñ€ÐµÑˆÐµÐ½Ð°
 				//	meantointeruct += inteructDist[i];
 				//}
 				//meantointeruct /= inteructDist.size();

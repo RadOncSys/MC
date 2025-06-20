@@ -208,6 +208,7 @@
     <ClInclude Include="mcScoreConicalRZ.h" />
     <ClInclude Include="mcScoreEnergyFluence.h" />
     <ClInclude Include="mcScoreEnergySpectrum.h" />
+    <ClInclude Include="mcScoreFluence3D.h" />
     <ClInclude Include="mcScoreMatrix2D.h" />
     <ClInclude Include="mcScoreMatrixCylinderAzimut.h" />
     <ClInclude Include="mcScoreMatrixRZ.h" />
@@ -321,6 +322,7 @@
     <ClCompile Include="mcScoreConicalRZ.cpp" />
     <ClCompile Include="mcScoreEnergyFluence.cpp" />
     <ClCompile Include="mcScoreEnergySpectrum.cpp" />
+    <ClCompile Include="mcScoreFluence3D.cpp" />
     <ClCompile Include="mcScoreMatrix2D.cpp" />
     <ClCompile Include="mcScoreMatrixCylinderAzimut.cpp" />
     <ClCompile Include="mcScoreMatrixRZ.cpp" />

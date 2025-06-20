@@ -314,6 +314,9 @@
     <ClCompile Include="mcEBTScorePhsp.cpp">
       <Filter>Score</Filter>
     </ClCompile>
+    <ClCompile Include="mcScoreFluence3D.cpp">
+      <Filter>Score</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcDefs.h" />
@@ -638,6 +641,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="mcEBTScorePhsp.h">
+      <Filter>Score</Filter>
+    </ClInclude>
+    <ClInclude Include="mcScoreFluence3D.h">
       <Filter>Score</Filter>
     </ClInclude>
   </ItemGroup>

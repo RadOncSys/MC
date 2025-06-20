@@ -1,4 +1,4 @@
-// Radiation Oncology Monte Carlo open source project
+﻿// Radiation Oncology Monte Carlo open source project
 //
 // Author: [2023] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
@@ -9,6 +9,7 @@
 
 void testproton();
 void testEndf();
+void testNeutrons();
 
 int main(int argc, char* argv[])
 {
@@ -18,6 +19,9 @@ int main(int argc, char* argv[])
 		std::wcout << argv[0] << L" mode" << std::endl << std::endl;
 		std::wcout << L"modes:" << std::endl;
 		std::wcout << "   1 - " << L"dump example nuclear reaction crossections for protons" << std::endl;
+		std::wcout << "   3 - " << L"testproton" << std::endl;
+		std::wcout << "   5 - " << L"testEndf" << std::endl;
+		std::wcout << "   7 - " << L"testNeutrons" << std::endl;
 		std::wcout << std::endl;
 		return -1;
 	}
@@ -42,6 +46,10 @@ int main(int argc, char* argv[])
 		else if (strcmp(argv[1], "5") == 0)
 		{
 			testEndf();
+		}
+		else if (strcmp(argv[1], "7") == 0)
+		{
+			testNeutrons();
 		}
 	}
 	catch (std::exception& e)

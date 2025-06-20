@@ -1,4 +1,4 @@
-#include "mcPhysicsProton.h"
+﻿#include "mcPhysicsProton.h"
 #include "mcMediumProton.h"
 #include "mcPhysicsCommon.h"
 #include "mcParticle.h"
@@ -54,28 +54,23 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 	// Разыграть рассеяние - изменить направление
 
 	// 1. Определяем средние потери энергии
-	// 
-	// TODO: У электронов и позитронов есть отдельные таблицы PEGS, которые ограничивают шаг.
-	// Вероятно и для протонов нужна похожая модель максимальной величины шага в среде в зависимости от энергии!
-	// 
 	// Пока полагаем, что протон на каждом шаге теряет не больше 1% энергии
 	e_dep = 0.01 * p->ke;	// Задаём максимальную величину потерь энергии на шаге
 
-	// GG 20240831 Попытка сэкономить на транспорте протонов при низких энергиях
-	// На 177 МэВ протонах ускорение в 2.3 раза приотстутствии разницы в дозовых распределениях.
+	// GG 20240831 
 	if (e_dep < 0.5) e_dep = 0.5;	
 
 	// поправка на убыль энергии вдоль шага
 	// берём dE/dx для средней энергии вдоль шага: kE-dE/2.0
 	//double mE = kE;		// исходная версия (Отчёт)
-	double mE = p->ke - e_dep / 2.0;  // коррекция март 2008
+	double mE = p->ke - e_dep / 2.0;  // РєРѕСЂСЂРµРєС†РёСЏ РјР°СЂС‚ 2008
 	// вместо логарифма используем линейно энергию
 	double logKE = log(mE);
 	int iLogKE = int(m.iLogKE0_proto + logKE * m.iLogKE1_proto);
 	double dedx = p->regDensityRatio * (m.dedx0_proto[iLogKE] + logKE * m.dedx1_proto[iLogKE]);	
 	// более короткие шаги (до пересечения с границей или точечного вз. считаем без поправки
 	step = MIN(step, e_dep / dedx);
-	e_dep = step * dedx;	// если изменился шаг
+	e_dep = step * dedx;	// РµСЃР»Рё РёР·РјРµРЅРёР»СЃСЏ С€Р°Рі
 
 	// Поправку на то, что пробег больше длины шага не вводим
 	// 2. Учитываем страгглинг
@@ -93,7 +88,7 @@ double mcPhysicsProton::TakeOneStep(mcParticle* p, const mcMedium& med, double& 
 
 	// 4. Разыгрываем новое направление и устанавливаем его
 	// Моделируем Мольеровское рассеяние
-	double tE = p->ke + PMASS; // полная энергия
+	double tE = p->ke + PMASS; // РїРѕР»РЅР°СЏ СЌРЅРµСЂРіРёСЏ
 	// Не уверен на счёт p->regDensityRatio, но в Nova вроде именно так входит
 	double l = p->regDensityRatio * step / m.radLength;
 	//double a1	= 1+0.038*log(l); // выражение в скобках
@@ -141,7 +136,7 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 	// Возвращаем энергию, выделившуюся в точке.
 	//return 2 * p->ke * p->weight;
 
-	//return 0; // Версия с игнорированием ядерных реакций
+	//return 0; // Р’РµСЂСЃРёСЏ СЃ РёРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµРј СЏРґРµСЂРЅС‹С… СЂРµР°РєС†РёР№
 
 	p->ke /= 3.0;
 	return 2 * p->ke * p->weight;
@@ -184,7 +179,8 @@ double mcPhysicsProton::DoInterruction(mcParticle* p, const mcMedium* med) const
 			else break;
 		}
 	}			
-						//Теперь реакция осуществляется на nucID-ом ядре
+						
+	// Теперь реакция осуществляется на nucID-ом ядре
 	int endfID = 0;
 	int A = ROUND(m->elements_[nucID].atomicMass);
 	int Z = ROUND(m->elements_[nucID].atomicNumber);
@@ -281,7 +277,7 @@ void mcPhysicsProton::createnewparticleswithEA(mcRng& rng, mcParticle* primary, 
 void mcPhysicsProton::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumProton* pmed, int keIN, int eoutID)
 {
 	int pID = (p->t == MCP_PROTON) ? (1) : (0);
-	double ke_ = pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->Energies[keIN]; //В первом приближении энергия без интерполяции
+	double ke_ = pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->Energies[keIN]; // В первом приближении энергия без интерполяции
 	double costheta = pmed->ENDFdata->at(endfID)->Products[pID]->EANuclearCrossSections[0]->playmu(ke_, pmed->ENDFdata->at(endfID)->Products[pID]->LAW, keIN, eoutID, pID, rng);
 	double phi = 2 * PI * rng.rnd();
 	double cosphi = cos(phi);

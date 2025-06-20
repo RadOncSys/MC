@@ -154,7 +154,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 	// ENDF
 	mcEndfDB endfdb;
 
-	// Р¦РёРєР» РїРѕ С„Р°Р№Р»Р°Рј СЃРµС‡РµРЅРёР№, РІ РєР°Р¶РґРѕРј РёР· РєРѕС‚РѕСЂС‹С… СЃРѕРґРµСЂР¶Р°С‚СЃСЏ РїРѕР»РЅС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ РѕРґРЅРѕРіРѕ РёР·РѕС‚РѕРїР°
+	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
@@ -168,7 +168,7 @@ void mcMedia::initProtonFromFiles(const string& pstardir, const string& nuclearD
 		if (std::toupper(fname[0]) != 'P' || ext != ".DAT")
 			continue;
 
-		// РњРµС‚РєСѓ Р°С‚РѕРјРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° Р±РµСЂРµРј РёР· РёРјРµРЅРё С„Р°Р№Р»Р°.
+		// Метку атомного элемента берем из имени файла.
 		string elementName = std::string(&fname[2]);
 		string AtNum = elementName;
 		int Z = 0;
@@ -274,7 +274,7 @@ void mcMedia::initNeutronFromStream(istream& is)
 	for (i = 0; i < (int)mnames_.size(); i++)
 		neutrons_.push_back(new mcMediumNeutron());
 
-	// Р§С‚РµРЅРёРµ РґР°РЅРЅС‹С… - С‡Р°СЃС‚СЊ РІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РїРѕР»РЅРѕСЃС‚СЊСЋ Р°РЅР°Р»РѕРіРёС‡РЅР° XA, С‚РѕР»СЊРєРѕ РґРѕР±Р°РІР»РµРЅР° РїСЂРѕРІРµСЂРєР° РІРµСЂСЃРёРё
+	// Чтение данных - часть в этой функции полностью аналогична XA, только добавлена проверка версии
 	string line, s1, s2, s3, s4;
 	getline(is, line, '\n');
 	while (!is.fail())
@@ -284,13 +284,13 @@ void mcMedia::initNeutronFromStream(istream& is)
 			GetTwoStringsFromLine(line, s1, s2);
 			GetTwoStringsFromLine(s2, line, s1);
 
-			// РџСЂРѕРІРµСЂСЏРµРј, РЅСѓР¶РЅР° Р»Рё РґР°РЅРЅР°СЏ СЃСЂРµРґР° РґР»СЏ Р·Р°РіСЂСѓР·РєРё?
+			// Проверяем, нужна ли данная среда для загрузки?
 			int i;
 			for (i = 0; i < (int)mnames_.size(); i++)
 				if (mnames_[i] == line) break;
 
 			if (i < (int)mnames_.size()) {
-				// РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ РїСЂРѕРІРµСЂСЏРµРј РІРµСЂСЃРёСЋ input file VER=0.0.0
+				// дополнительно проверяем версию input file VER=0.0.0
 				GetTwoStringsFromLine(s1, s2, s3);
 				GetTwoStringsFromLine(s3, s1, s4);
 				if ((s2 == "VER") || (s3 == "0.0.0")) {
@@ -299,15 +299,15 @@ void mcMedia::initNeutronFromStream(istream& is)
 				}
 				else {
 					//throw std::exception("Wrong Neutron media data version"); 
-					//РІ РїСЂРёРЅС†РёРїРµ РґР°РЅРЅС‹Рµ РјРѕРіСѓС‚ Р±С‹С‚СЊ РґР°Р»СЊС€Рµ РІ СЌС‚РѕРј Р¶Рµ С„Р°Р№Р»Рµ РІ РґСЂСѓРіРѕР№ РІРµСЂСЃРёРё, 
-					// С‚Р°Рє С‡С‚Рѕ РїСЂРѕСЃС‚Рѕ РЅРµ СЃС‡РёС‚С‹РІР°РµРј РґР°РЅРЅС‹Рµ
+					//в принципе данные могут быть дальше в этом же файле в другой версии, 
+					// так что просто не считываем данные
 				}
 			}
 		}
 		getline(is, line, '\n');
 	}
 
-	// РџСЂРѕРІРµСЂСЏРµРј, РІСЃРµ Р»Рё СЃСЂРµРґС‹ Р·Р°РіСЂСѓР¶РµРЅС‹
+	// Проверяем, все ли среды загружены
 	string errmedia;
 	for (int i = 0; i < (int)neutrons_.size(); i++)
 	{
@@ -336,7 +336,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 	// ENDF
 	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfN>>>();
 
-	// Р¦РёРєР» РїРѕ С„Р°Р№Р»Р°Рј СЃРµС‡РµРЅРёР№, РІ РєР°Р¶РґРѕРј РёР· РєРѕС‚РѕСЂС‹С… СЃРѕРґРµСЂР¶Р°С‚СЃСЏ РїРѕР»РЅС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ РѕРґРЅРѕРіРѕ РёР·РѕС‚РѕРїР°
+	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
 	{
 		if (!fs::path(entry.path()).has_stem() || !fs::path(entry.path()).has_extension())
@@ -350,7 +350,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 		if (std::toupper(fname[0]) != 'N' || ext != ".DAT")
 			continue;
 
-		// РњРµС‚РєСѓ Р°С‚РѕРјРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° Р±РµСЂРµРј РёР· РёРјРµРЅРё С„Р°Р№Р»Р°.
+		// Метку атомного элемента берем из имени файла.
 		string elementName = std::string(&fname[2]);
 		string AtNum = elementName;
 		int Z;
@@ -365,7 +365,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 			}
 		}
 
-		// Р‘Р°Р·Р° РґР°РЅРЅС‹С… РёР·РѕС‚РѕРїР°
+		// База данных изотопа
 		//mcCSNuclear csForElement;
 		auto csForElement = std::make_shared<mcEndfN>();
 		if (Table.IsNecessary[Z - 1])
