@@ -4,7 +4,7 @@
 //---------------------------------------------------------------------------
 #pragma once
 
-#include "mcEndfP.h"
+#include "mcEndfNP.h"
 #include "mcMedium.h"
 #include "mcPStar.h"
 #include "mcDefs.h"

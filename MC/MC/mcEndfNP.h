@@ -1,6 +1,6 @@
 ﻿// Radiation Oncology Monte Carlo open source project
 //
-// Author: [2023] Gennady Gorlachev (ggorlachev@roiss.ru) 
+// Author: [2023-25] Gennady Gorlachev (ggorlachev@roiss.ru) 
 //---------------------------------------------------------------------------
 // Classes to manage cross sections load for proton nuclear interractions
 // from ENDF format
@@ -11,8 +11,7 @@
 #include <memory>
 #include "mcRng.h"
 
-// Типы налетающих частиц
-#define NSUB_PROTON 10010
+enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gammas, electron };
 
 // Структура стрроки ENDF файла
 struct mcEndfRecord
@@ -28,7 +27,6 @@ struct mcEndfRecord
 	// Парсинг значени с плавающей точкой в формате ENDF
 	// (где степень указана нестандартно после знака +/-).
 	static double ParseValue(const char* s, int n);
-
 
 	// Парсинг целого числа
 	double GetFloatValue(int idx);
@@ -63,19 +61,12 @@ public:
 	//Энергия возбуждения уровня
 	double Q;
 
-	// Количество пар энергия падающей частицы / сечение
-	std::vector<int> npoints;
-
-	// Количество видов интерполяции
-	// Временно предполагаем, что мы не столкнемся со 
-	// множесвенностью интерполяций в пределах одной таблицы.
-	// TODO: Проверить эту гипотезу (в коде стоит exception на этот случай)
-	int ninterpolations;
-	 
-	// Тип интерполяции.
-	// TODO: если обнаружится потребность в поддержке 
-	// множества типов интерполяций переделать в массив
-	std::vector<int> interpolationType;
+	// Типы интерполяции.
+	// Таблица может содержать несколько регионов с разными методами.
+	// Первый массив содержит количество методов интерполяции в таблице.
+	// Второй массив - количество точек от начала таблице до окончания очередного метода интерполяции
+	std::vector<int> interpolationTypes;
+	std::vector<int> interpolationPoints;
 
 	short MT;
 	
@@ -84,8 +75,49 @@ public:
 	std::vector<double> Values;
 };
 
-// Класс для чтения MF=6 MT=5 
+// Класс для чтения MF=4
+class mcEndfAngular
+{
+public:
+	mcEndfAngular();
 
+	double LegendreScat(int keID, mcRng& rng);
+
+	double TableScat(int keID, mcRng& rng);
+
+	void Load(std::istream& is, const std::string& firstLine);
+	void dump(std::ostream& os) const;
+
+	short MT;
+
+	bool isEmpty;
+
+	int ZA;
+
+	double AWR;
+
+	// Вид представления угловых распределений в секции
+	short LTT;
+
+	// 1 - все распределения изотропны, 0 - нет
+	short LI;
+
+	// Система отсчета, в которой представлены распределения
+	short LCT;
+
+	int NE1, NE2;
+
+	//Распределения по Лежандру
+	std::vector<double> LEnergies;
+	std::vector<std::vector<double>> LValues;
+
+	//Табличные распределения
+	std::vector<double>TEnergies;
+	std::vector<std::vector<double>> Cosines;
+	std::vector<std::vector<double>> TValues;
+};
+
+// Класс для чтения MF=6 MT=5 
 class mcEndfEANuclearCrossSectionTable
 {
 public:
@@ -187,30 +219,25 @@ public:
 	std::vector<double> Multiplicities;
 };
 
-enum particle_type { neutron = 0, proton, deutron, triton, alpha, recoils, gammas, electron };
-
 class mcEndfProduct
 {
 public:
-
 	mcEndfProduct();
-
 	~mcEndfProduct();
+	
+	void Load(std::istream& is);
 
 	//Type of product
 	particle_type product_type;
+	std::string name() const;
 
 	int ZAP;
-
 	double AWP;
-
 	//Закон представления распределения
 	int LAW;
 
 	// Энерго-угловые сечения в зависимости от энергии налетающих протонов
 	std::vector<std::shared_ptr<mcEndfEANuclearCrossSectionTable>> EANuclearCrossSections;
-	
-	void Load(std::istream& is);
 };
 
 // Class that keeps cross sections for one atomic isotope
@@ -218,13 +245,15 @@ class mcEndfNP
 {
 public:
 	mcEndfNP();
-
 	~mcEndfNP();
+
+	// Загрузка одного файла сечений
+	void Load(const char* fname, const char* ename);
+	void Clear();
 
 	// Назавание изотопа, включающее атомное имя и атомный вес.
 	// Используется как уникальный идентификатор.
 	std::string ElementName;
-
 	int Z;
 
 	// Служебная информация
@@ -233,138 +262,40 @@ public:
 	double M_AWR;	// A (стандартное точное значение)
 	int LRP;		// Flag indicating whether resolved and/or unresolved resonance parameters are given
 
+	// MF = 3 MT = 1
 	// Сечения суммы упругих рассеяний и ядерных реакций в зависимости от энергии падающей частицы
 	// TODO: Возможно временная таблица. Разобраться, не нужно ли эти реакции учитывать 
 	// в дополнение к тому, что в угловом смысле ассоциируется с dE/dX.
 	mcEndfCrossSectionTable TotalCrossSections;
 
-	// MF = 3 MT = 2 для протонов.
+	// MF = 3 MT = 2
 	// Содержит суммарные сечения упругих рассеяний 
 	// (вероятно за вычетом мольеровского рассеяния, т.е. читсо кулоновского).
 	mcEndfCrossSectionTable ElasticCrossSections;
 
+	// MF = 3 MT = 3
+	mcEndfCrossSectionTable NonElasticCrossSections;
+
+	// MF = 3 MT = 4
+	mcEndfCrossSectionTable NeutronProductionCrossSections;
+
+	// MF = 3 MT = 102
+	mcEndfCrossSectionTable GammaProductionCrossSections;
+
+	// MF = 4 MT = 2
+	mcEndfAngular ElasticNeutronAngleDistribution;
+
+	// MF = 4 MT = 102
+	mcEndfAngular GammaAngleDistribution;
+
 	mcEndfCrossSectionTable NuclearCrossSections;
-
-	// Сечения реакций (p,n) MF = 3 MT = 50
-	mcEndfCrossSectionTable Neutron0CrossSection;
-
-	// Сечения реакций (p,n) MF = 3 MT = 51
-	mcEndfCrossSectionTable Neutron1CrossSection;
-
-	// Сечения реакций (p,n) MF = 3 MT = 52
-	mcEndfCrossSectionTable Neutron2CrossSection;					//СДЕЛАТЬ VECTOR ДЛЯ MT = 50 - 90
-
-	// Сечения реакций (p,n) MF = 3 MT = 53
-	mcEndfCrossSectionTable Neutron3CrossSection;
-
-	// Сечения реакций (p,n) MF = 3 MT = 54
-	mcEndfCrossSectionTable Neutron4CrossSection;
-
-	// Сечения реакций (p,n) MF = 3 MT = 55
-	mcEndfCrossSectionTable Neutron5CrossSection;
 
 	std::vector<mcEndfProduct*> Products;
 
 	//MT = 50, 51...; MF = 6;
 	std::vector<mcEndfProduct*> EmittedNeutrons;
 
-	// Загрузка одного файла сечений
-	void Load(const char* fname, const char* ename);
-
-	void Clear();
-
 	void dumpTotalCrossections(std::ostream& os) const;
-};
-
-// Класс для чтения MF=4
-
-class mcEndfAngular
-{
-public:
-	mcEndfAngular() {
-		isEmpty = true;
-		NE1 = 0;
-		NE2 = 0;
-		MT = -1;
-	}
-
-	double LegendreScat(int keID, mcRng& rng);
-
-	double TableScat(int keID, mcRng& rng);
-
-	void Load(std::istream& is);
-
-	short MT;
-
-	bool isEmpty;
-
-	int ZA;
-
-	double AWR;
-
-	// Вид представления угловых распределений в секции
-	short LTT;
-
-	// 1 - все распределения изотропны, 0 - нет
-	short LI;
-
-	// Система отсчета, в которой представлены распределения
-	short LCT;
-
-	int NE1, NE2;
-	
-	//Распределения по Лежандру
-	std::vector<double> LEnergies;
-	std::vector<std::vector<double>> LValues;
-
-	//Табличные распределения
-	std::vector<double>TEnergies;
-	std::vector<std::vector<double>> Cosines;
-	std::vector<std::vector<double>> TValues;
-
-};
-
-class mcEndfN
-{
-public:
-	mcEndfN();
-
-	~mcEndfN();
-
-	// Служебная информация
-	int NSUB;		// Тип налетающей частицы (секция 0.3, табл. 3) 
-	double M_ZA;	// Z * 1000 + A
-	double M_AWR;	// A (стандартное точное значение)
-	int LRP;		// Flag indicating whether resolved and/or unresolved resonance parameters are given
-
-	// Назавание изотопа, включающее атомное имя и атомный вес.
-	// Используется как уникальный идентификатор.
-	std::string ElementName;
-
-	mcEndfCrossSectionTable TotalCrossSections;
-
-	mcEndfCrossSectionTable ElasticCrossSections;
-
-	mcEndfCrossSectionTable InelasticCrossSections;
-
-	// Сечения ядерных реакций в зависимости от энергии падающей частицы
-	mcEndfCrossSectionTable NuclearCrossSections;
-
-	// MF = 4, MT = 2
-	mcEndfAngular nElasticAngular;
-	
-	std::vector<mcEndfAngular*> inelasticLevelsAng;
-
-	// Сечения реакций (p,n) MF = 3 MT = 51-90;
-	std::vector<mcEndfCrossSectionTable*> nInelasticCS;
-
-	std::vector<mcEndfProduct*> Products;
-
-	//MT = 91; MF = 6;
-	std::vector<mcEndfProduct*> nInelasticContin;
-
-	// Загрузка одного файла сечений
-	void Load(const char* fname, const char* ename);
 };
 
 class mcEndfDB

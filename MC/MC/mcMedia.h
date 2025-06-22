@@ -15,7 +15,6 @@ class mcMediumProton;
 class mcMediumNeutron;
 class mcPhysics;
 class mcEndfNP;
-class mcEndfN;
 
 class mcMedia
 {
@@ -46,7 +45,7 @@ public:
 
 	void initNeutronFromStream(istream&);
 	void initNeutronFromFiles(const string& path, const string& nuclearDir);
-	void initNeutronCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfN>>> dbData);
+	void initNeutronCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfNP>>> dbData);
 
 	// Возвращает указатель объекта физических расчетов для частицы указанного типа
 	const mcPhysics* getPhysics(int ptype) const;

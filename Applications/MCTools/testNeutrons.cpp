@@ -1,5 +1,5 @@
 #include <iostream>
-#include "mcEndfP.h"
+#include "mcEndfNP.h"
 #include <fstream>
 #include <filesystem>
 #include "mcRng.h"

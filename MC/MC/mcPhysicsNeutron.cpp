@@ -47,7 +47,8 @@ double mcPhysicsNeutron::TakeOneStep(mcParticle* p, const mcMedium& med, double&
 
 double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) const
 {
-
+	double edep = 0;
+	/*
 	mcRng& rng = p->thread_->rng();
 	const mcMediumNeutron* m = (const mcMediumNeutron*)med;
 	double logKE = p->ke;//log(ke);
@@ -108,7 +109,6 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 	Inel = m->Nmicrosigmaforelement(A, Z, p->ke, 2);
 	double Tot = El + Inel;
 	El /= Tot;
-	double edep = 0;
 	if (rng.rnd() < El)
 	{
 		double ke_before = p->ke;
@@ -145,11 +145,13 @@ double mcPhysicsNeutron::DoInterruction(mcParticle* p, const mcMedium* med) cons
 			edep = ke_before - p->ke;
 		}
 	}
+	*/
 	return edep * p->weight;
 }
 
 void mcPhysicsNeutron::DoElastic(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed, int A)
 {
+	/*
 	int i = 0;
 	bool isLegendre = false;
 	double cosCM = 0;
@@ -196,10 +198,12 @@ void mcPhysicsNeutron::DoElastic(mcRng& rng, int endfID, mcParticle* p, const mc
 	double cosphi = cos(2 * PI * rng.rnd());
 	ChangeDirection(cosLS, sin(acos(cosLS)), cosphi, sinphi, p->u);
 	p->ke = ke_;
+	*/
 }
 
 void mcPhysicsNeutron::DoInelastic(mcRng& rng, int endfID, int LVLid, mcParticle* p, const mcMediumNeutron* pmed, int A)
 {
+	/*
 	int i = 0;
 	bool isLegendre = false;
 	double cosCM = 0;
@@ -248,10 +252,12 @@ void mcPhysicsNeutron::DoInelastic(mcRng& rng, int endfID, int LVLid, mcParticle
 	double cosphi = cos(2 * PI * rng.rnd());
 	ChangeDirection(cosLS, sin(acos(cosLS)), cosphi, sinphi, p->u);
 	p->ke = ke_;
+	*/
 }
 
 void mcPhysicsNeutron::DoInelasticCont(mcRng& rng, int endfID, int LVLid, mcParticle* p, const mcMediumNeutron* pmed)
 {
+	/*
 	double primary_ke = p->ke;
 	int Nquantity = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playMulti(p->ke * 1000000, rng);
 	if (Nquantity > 1)
@@ -277,10 +283,12 @@ void mcPhysicsNeutron::DoInelasticCont(mcRng& rng, int endfID, int LVLid, mcPart
 	getKallbachMannAngle(rng, endfID, pNewNeutron, pmed, keIN, eoutID);
 	p->ke -= neutron_ke;
 	pNewNeutron->ke = neutron_ke;
+	*/
 }
 
 void mcPhysicsNeutron::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* p, const mcMediumNeutron* pmed, int keIN, int eoutID)
 {
+	/*
 	double ke_ = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->Energies[keIN]; //В первом приближении энергия без интерполяции
 	double costheta = pmed->ENDFdata->at(endfID)->nInelasticContin[0]->EANuclearCrossSections[0]->playmu(ke_, pmed->ENDFdata->at(endfID)->nInelasticContin[0]->LAW, keIN, eoutID, 0, rng);
 	double phi = 2 * PI * rng.rnd();
@@ -295,4 +303,5 @@ void mcPhysicsNeutron::getKallbachMannAngle(mcRng& rng, int endfID, mcParticle* 
 	double sintheta = sin(acos(costheta));
 	ChangeDirection(costheta, sintheta, cosphi, sinphi, p->u);
 	return;
+	*/
 }

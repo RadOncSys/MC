@@ -6,7 +6,7 @@
 
 #include "mcMedium.h"
 #include "mcDefs.h"
-#include "mcEndfP.h"
+#include "mcEndfNP.h"
 
 // Класс описания параметров конкретной среды для транспорта нейтронов.
 class mcMediumNeutron : public mcMedium
@@ -45,6 +45,6 @@ public:
 
 	double transCutoff_neutron;
 
-	std::shared_ptr<std::vector<std::shared_ptr<mcEndfN>>> ENDFdata;
+	std::shared_ptr<std::vector<std::shared_ptr<mcEndfNP>>> ENDFdata;
 	double Nmicrosigmaforelement(int A, int Z, double kE, int MTid) const;
 };

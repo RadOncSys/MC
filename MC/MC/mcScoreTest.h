@@ -4,7 +4,7 @@
 #include <memory>
 #include <iostream>
 #include "mcRng.h"
-#include "mcEndfP.h"
+#include "mcEndfNP.h"
 
 using namespace std;
 

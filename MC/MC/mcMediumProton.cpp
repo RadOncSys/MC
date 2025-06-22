@@ -2,7 +2,7 @@
 #include "../geometry/text.h"
 #include <iostream>
 #include "mcPhysicsCommon.h"
-#include "mcEndfP.h"
+#include "mcEndfNP.h"
 
 //Необходимо задать конкретную формулу соответствующим с макросом, например:
 #ifndef InverseRadiationLength

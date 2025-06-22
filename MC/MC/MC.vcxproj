@@ -162,7 +162,7 @@
     <ClInclude Include="mcEBTScorePhsp.h" />
     <ClInclude Include="mcEBTSourcePhsp.h" />
     <ClInclude Include="mcElement.h" />
-    <ClInclude Include="mcEndfP.h" />
+    <ClInclude Include="mcEndfNP.h" />
     <ClInclude Include="mcETransportConvexPolygonCircle.h" />
     <ClInclude Include="mcETransportSphere.h" />
     <ClInclude Include="mcETransportTrap.h" />
@@ -277,7 +277,7 @@
     <ClCompile Include="mcCSNuclear.cpp" />
     <ClCompile Include="mcEBTScorePhsp.cpp" />
     <ClCompile Include="mcEBTSourcePhsp.cpp" />
-    <ClCompile Include="mcEndfP.cpp" />
+    <ClCompile Include="mcEndfNP.cpp" />
     <ClCompile Include="mcETransportConvexPolygonCircle.cpp" />
     <ClCompile Include="mcETransportSphere.cpp" />
     <ClCompile Include="mcETransportTrap.cpp" />

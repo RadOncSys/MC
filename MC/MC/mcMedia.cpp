@@ -9,7 +9,7 @@
 #include "mcPhysicsNeutron.h"
 #include "mcParticle.h"
 #include "mcMendeleev.h"
-#include "mcEndfP.h"
+#include "mcEndfNP.h"
 #include "mcPStar.h"
 #include "../geometry/text.h"
 #include <fstream>
@@ -334,7 +334,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 			Table.IsNecessary[xes_[i]->elements_[j].atomicNumber - 1] = true;
 
 	// ENDF
-	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfN>>>();
+	auto dbData = std::make_shared<std::vector<std::shared_ptr<mcEndfNP>>>();
 
 	// Цикл по файлам сечений, в каждом из которых содержатся полные данные для одного изотопа
 	for (const auto& entry : fs::directory_iterator(nuclearDir))
@@ -367,7 +367,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 
 		// База данных изотопа
 		//mcCSNuclear csForElement;
-		auto csForElement = std::make_shared<mcEndfN>();
+		auto csForElement = std::make_shared<mcEndfNP>();
 		if (Table.IsNecessary[Z - 1])
 		{
 			if (Table.IsLoad[Z - 1])
@@ -392,7 +392,7 @@ void mcMedia::initNeutronFromFiles(const string& path, const string& nuclearDir)
 	initNeutronCSFromVector(dbData);
 }
 
-void mcMedia::initNeutronCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfN>>> dbData)
+void mcMedia::initNeutronCSFromVector(std::shared_ptr<std::vector<std::shared_ptr<mcEndfNP>>> dbData)
 {
 	for (int i = 0; i < neutrons_.size(); i++)
 	{

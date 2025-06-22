@@ -11,7 +11,7 @@
     <ClCompile Include="mcCSNuclear.cpp">
       <Filter>Media</Filter>
     </ClCompile>
-    <ClCompile Include="mcEndfP.cpp">
+    <ClCompile Include="mcEndfNP.cpp">
       <Filter>Media</Filter>
     </ClCompile>
     <ClCompile Include="mcMedia.cpp">
@@ -334,7 +334,7 @@
     <ClInclude Include="mcElement.h">
       <Filter>Media</Filter>
     </ClInclude>
-    <ClInclude Include="mcEndfP.h">
+    <ClInclude Include="mcEndfNP.h">
       <Filter>Media</Filter>
     </ClInclude>
     <ClInclude Include="mcMedia.h">

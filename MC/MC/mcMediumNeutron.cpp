@@ -15,13 +15,13 @@ string CLEARFROMALPHA_(string x)
 	return x;
 }
 
-double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF);
+double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF);
 
-double sigmaENDFN_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF);
+double sigmaENDFN_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF);
 
-double sigmaENDFN_elas(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF);
+double sigmaENDFN_elas(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF);
 
-double sigmaENDFN_level_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF, int MT_);
+double sigmaENDFN_level_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF, int MT_);
 
 double InverseRadiationLength_DahlApproximationNeutron(const double A, const double Z)
 {
@@ -38,6 +38,7 @@ double InverseRadiationLengthNeutron(const double* A, const double* Z, const dou
 
 double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE, int MTid) const
 {
+	/*
 	double SIGMA = 0.0;
 	kE *= 1000000;
 	bool isFound = false;
@@ -106,6 +107,9 @@ double mcMediumNeutron::Nmicrosigmaforelement(int A, int Z, double kE, int MTid)
 		}
 		return SIGMA / pow(10, 24);
 	}
+	*/
+
+	return 0;
 }
 
 double rmsNuclearRadiusNeutron(int At)
@@ -239,7 +243,7 @@ void mcMediumNeutron::createNDB()
 	}
 }
 
-double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
+double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF)
 {
 	double SIGMA = 0.0;
 	kE *= 1000000;
@@ -285,9 +289,10 @@ double sigmaENDFN(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
 	return SIGMA;
 }
 
-double sigmaENDFN_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
+double sigmaENDFN_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF)
 {
 	double SIGMA = 0.0;
+	/*
 	kE *= 1000000;
 	bool isFound = false;
 	int i = 0;
@@ -328,10 +333,11 @@ double sigmaENDFN_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* E
 				break;
 			}
 	}
+	*/
 	return SIGMA;
 }
 
-double sigmaENDFN_elas(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF)
+double sigmaENDFN_elas(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF)
 {
 	double SIGMA = 0.0;
 	kE *= 1000000;
@@ -377,9 +383,10 @@ double sigmaENDFN_elas(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* E
 	return SIGMA;
 }
 
-double sigmaENDFN_level_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfN>>* ENDF, int MT_)
+double sigmaENDFN_level_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndfNP>>* ENDF, int MT_)
 {
 	double SIGMA = 0.0;
+	/*
 	kE *= 1000000;
 	bool isFound = false;
 	int i = 0;
@@ -422,6 +429,7 @@ double sigmaENDFN_level_inel(int A, int Z, int kE, vector<std::shared_ptr<mcEndf
 				break;
 			}
 	}
+	*/
 	return SIGMA;
 }
 

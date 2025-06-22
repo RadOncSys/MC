@@ -5,7 +5,7 @@
 // Auxilary project to make complex tests of MC code
 //---------------------------------------------------------------------------
 #include <iostream>
-#include "mcEndfP.h"
+#include "mcEndfNP.h"
 
 void testproton();
 void testEndf();
