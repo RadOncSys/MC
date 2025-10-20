@@ -129,7 +129,6 @@ void mcEndfCrossSectionTable::Load(istream& is)
 		}
 		else if (record.LineNumber[3] == ' ' && record.LineNumber[4] == '3')
 		{
-			int npoints = 0;
 			for (int i = 0; i < ninterpolations; i++)
 			{
 				npoints = atoi(record.c[i * 2]);
@@ -161,7 +160,6 @@ void mcEndfCrossSectionTable::Load(istream& is)
 void mcEndfCrossSectionTable::dump(std::ostream& os) const
 {
 	if (Energies.size() == 0) return;
-	os << endl;
 	os << "Type\tpoints" << endl;
 	for (int i = 0; i < interpolationTypes.size(); i++)
 		os << interpolationTypes[i] << "\t" << interpolationPoints[i] << endl;
@@ -1706,55 +1704,55 @@ void mcEndfNP::Clear()
 void mcEndfNP::dumpTotalCrossections(ostream& os) const
 {
 	os << endl;
-	os << "Dump total crossections for element = \t" << ElementName << endl;
+	os << "Dump total crossections for element" << endl;
 	os << "---------------------------------------------------------------" << endl;
 	os << endl;
 	TotalCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump elastic crossections for element = \t" << ElementName << endl;
+	os << "Dump elastic crossections for element" << endl;
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	ElasticCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump nonelastic crossections for element = \t" << ElementName << endl;
+	os << "Dump nonelastic crossections for element" << endl;
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	NonElasticCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump neutron production crossections for element = \t" << ElementName << endl;
+	os << "Dump neutron production crossections for element" << endl;
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	NeutronProductionCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump gamma production crossections for element = \t" << ElementName << endl;
+	os << "Dump gamma production crossections for element" << endl;
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	GammaProductionCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump elastic neutron angle distribution for element = \t" << ElementName << endl;
+	os << "Dump elastic neutron angle distribution for element" << endl;
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	ElasticNeutronAngleDistribution.dump(os);
 
 	os << endl;
-	os << "Dump gamma angle distribution for element = \t" << ElementName << endl;
+	os << "Dump gamma angle distribution for element" << endl;
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	GammaAngleDistribution.dump(os);
 
 	os << endl;
-	os << "Dump nuclear crossections for element = \t" << ElementName << endl;
+	os << "Dump nuclear crossections for element" << endl;
 	os << "--------------------------------------------------------------" << endl;
 	os << endl;
 	NuclearCrossSections.dump(os);
 
 	os << endl;
-	os << "Dump EA crossections for element = \t" << ElementName << " with \t" << Products.size() << " products." << endl;
+	os << "Dump EA crossections for element" << " with \t" << Products.size() << " products." << endl;
 	os << "---------------------------------------------------------------" << endl;
 	os << endl;
 
